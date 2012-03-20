@@ -1,0 +1,3 @@
+Bundle-Name: Atreus Core
+Bundle-Description: A high-level data access client for Cassandra.
+Bundle-Vendor: github.com/bemisguided/atreus
