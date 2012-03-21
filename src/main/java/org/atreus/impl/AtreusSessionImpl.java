@@ -24,39 +24,36 @@
 
 package org.atreus.impl;
 
-import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.atreus.AtreusDisconnectedException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
+import org.atreus.impl.commands.DeleteColumnCommand;
+import org.atreus.impl.commands.DeleteRowCommand;
+import org.atreus.impl.commands.ReadColumnCommand;
+import org.atreus.impl.commands.ReadCommand;
+import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.WriteCommand;
 import org.atreus.impl.utils.AssertUtils;
-import org.scale7.cassandra.pelops.Bytes;
-import org.scale7.cassandra.pelops.Mutator;
-import org.scale7.cassandra.pelops.RowDeletor;
-import org.scale7.cassandra.pelops.Selector;
-import org.scale7.cassandra.pelops.exceptions.NotFoundException;
 
 public class AtreusSessionImpl implements AtreusSession {
 
-	private String columnFamily;
+	private final Connection connection;
 
-	private Mutator mutator;
+	private String columnFamily;
 
 	private boolean open = true;
 
 	private ConsistencyLevel readConsistencyLevel;
 
-	private RowDeletor rowDeletor;
-
 	private Object rowKey;
-
-	private Selector selector;
 
 	private final AtreusSessionFactoryImpl sessionFactory;
 
 	private ConsistencyLevel writeConsistencyLevel;
 
-	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory) {
+	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory, Connection connection) {
+		this.connection = connection;
 		this.sessionFactory = sessionFactory;
 	}
 
@@ -81,16 +78,34 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	@Override
-	public void deleteColumn(String colName) {
+	public void deleteColumn(Object colName) {
 		assertIsReady();
-		// TODO Auto-generated method stub
+		assertFamilyAndKey();
+		AssertUtils.notNull(colName, "Column Name is a required parameter");
 
+		byte[] rowKey = toBytes(getRowKey());
+		byte[] colNameBytes = toBytes(colName);
+		execute(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, null, getWriteConsistencyLevel()));
+	}
+
+	@Override
+	public void deleteColumn(Object colName, Object subColName) {
+		assertIsReady();
+		assertFamilyAndKey();
+		AssertUtils.notNull(colName, "Column Name is a required parameter");
+		AssertUtils.notNull(subColName, "Sub Column Name is a required parameter");
+
+		byte[] rowKey = toBytes(getRowKey());
+		byte[] colNameBytes = toBytes(colName);
+		byte[] subColNameBytes = toBytes(subColName);
+		execute(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes, getWriteConsistencyLevel()));
 	}
 
 	@Override
 	public void deleteRow() {
 		assertIsReady();
 		assertFamilyAndKey();
+		
 		deleteRow(getColumnFamily(), getRowKey());
 	}
 
@@ -99,22 +114,31 @@ public class AtreusSessionImpl implements AtreusSession {
 		assertIsReady();
 		AssertUtils.hasText(colFamily, "Column family is a required parameter");
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
-		Bytes rowKeyBytes = toBytes(rowKey);
-		getRowDeletor().deleteRow(colFamily, rowKeyBytes, getWriteConsistencyLevel());
+		
+		byte[] rowKeyBytes = toBytes(rowKey);
+		execute(new DeleteRowCommand(getColumnFamily(), rowKeyBytes, getWriteConsistencyLevel()));
+	}
+
+	protected Object execute(ReadCommand command) {
+		return connection.execute(command);
+	}
+
+	protected void execute(WriteCommand command) {
+		connection.execute(command);
 	}
 
 	@Override
 	public boolean existsColumn(Object colName) {
 		assertIsReady();
-		// TODO Auto-generated method stub
-		return false;
+		byte[] value = readColumnAsBytes(colName);
+		return value != null;
 	}
 
 	@Override
 	public boolean existsColumn(Object colName, Object subColName) {
 		assertIsReady();
-		// TODO Auto-generated method stub
-		return false;
+		byte[] value = readColumnAsBytes(colName, subColName);
+		return value != null;
 	}
 
 	@Override
@@ -134,7 +158,6 @@ public class AtreusSessionImpl implements AtreusSession {
 	@Override
 	public void flush() {
 		assertIsReady();
-		getMutator().execute(getWriteConsistencyLevel());
 	}
 
 	protected <T> T fromBytes(Class<T> type, byte[] bytes) {
@@ -146,35 +169,14 @@ public class AtreusSessionImpl implements AtreusSession {
 		return columnFamily;
 	}
 
-	protected Mutator getMutator() {
-		if (mutator == null) {
-			mutator = sessionFactory.createMutator();
-		}
-		return mutator;
-	}
-
 	@Override
 	public ConsistencyLevel getReadConsistencyLevel() {
 		return readConsistencyLevel;
 	}
 
-	protected RowDeletor getRowDeletor() {
-		if (rowDeletor == null) {
-			rowDeletor = sessionFactory.createRowDeleter();
-		}
-		return rowDeletor;
-	}
-
 	@Override
 	public Object getRowKey() {
 		return rowKey;
-	}
-
-	protected Selector getSelector() {
-		if (selector == null) {
-			selector = sessionFactory.createSelector();
-		}
-		return selector;
 	}
 
 	@Override
@@ -207,33 +209,38 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public <T> T readColumn(Object colName, Class<T> type) {
-		assertIsReady();
-		try {
-			Bytes colNameBytes = toBytes(colName);
-			Bytes rowKeyBytes = toBytes(getRowKey());
-			Column col = getSelector().getColumnFromRow(getColumnFamily(), rowKeyBytes, colNameBytes, getReadConsistencyLevel());
-			byte[] value = col.getValue();
-			return fromBytes(type, value);
-		} catch (NotFoundException e) {
-			// Catch and do nothing, null for not found, empty for emptys
-			return null;
-		}
+		AssertUtils.notNull(type, "Type is a required parameter");
+		byte[] value = readColumnAsBytes(colName);
+		return fromBytes(type, value);
 	}
 
 	@Override
 	public <T> T readColumn(Object colName, Object subColName, Class<T> type) {
+		byte[] value = readColumnAsBytes(colName, subColName);
+		return fromBytes(type, value);
+	}
+
+	@Override
+	public byte[] readColumnAsBytes(Object colName) {
 		assertIsReady();
-		try {
-			Bytes colNameBytes = toBytes(colName);
-			Bytes subColNameBytes = toBytes(subColName);
-			Bytes rowKeyBytes = toBytes(getRowKey());
-			Column col = getSelector().getSubColumnFromRow(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, getReadConsistencyLevel());
-			byte[] value = col.getValue();
-			return fromBytes(type, value);
-		} catch (NotFoundException e) {
-			// Catch and do nothing, null for not found, empty for emptys
-			return null;
-		}
+		AssertUtils.notNull(colName, "Column Name is a required parameter");
+
+		byte[] colNameBytes = toBytes(colName);
+		byte[] rowKey = toBytes(getRowKey());
+		return (byte[]) execute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, null, getReadConsistencyLevel()));
+	}
+
+	@Override
+	public byte[] readColumnAsBytes(Object colName, Object subColName) {
+		assertIsReady();
+		assertFamilyAndKey();
+		AssertUtils.notNull(colName, "Column Name is a required parameter");
+		AssertUtils.notNull(subColName, "Sub Column Name is a required parameter");
+
+		byte[] colNameBytes = toBytes(colName);
+		byte[] rowKey = toBytes(getRowKey());
+		byte[] subColNameBytes = toBytes(subColName);
+		return (byte[]) execute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes, getReadConsistencyLevel()));
 	}
 
 	@Override
@@ -248,6 +255,11 @@ public class AtreusSessionImpl implements AtreusSession {
 		assertIsReady();
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void setColumnFamily(String colFamily) {
+		this.columnFamily = colFamily;
 	}
 
 	@Override
@@ -282,19 +294,8 @@ public class AtreusSessionImpl implements AtreusSession {
 		this.writeConsistencyLevel = writeConsistencyLevel;
 	}
 
-	protected Bytes toBytes(Object value) {
+	protected byte[] toBytes(Object value) {
 		return sessionFactory.toBytes(value);
-	}
-
-	private void writeColum(Object colName, Bytes value) {
-		assertIsReady();
-		assertFamilyAndKey();
-		AssertUtils.notNull(colName, "Column Name is a required parameter");
-		AssertUtils.notNull(value, "Value is a required parameter");
-		Bytes colNameBytes = toBytes(colName);
-		Bytes rowKeyBytes = toBytes(getRowKey());
-		Column col = getMutator().newColumn(colNameBytes, value);
-		getMutator().writeColumn(getColumnFamily(), rowKeyBytes, col);
 	}
 
 	@Override
@@ -304,39 +305,39 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public void writeColumn(Object colName, byte[] value) {
-		Bytes valueBytes = Bytes.fromByteArray(value);
-		writeColum(colName, valueBytes);
+		assertIsReady();
+		assertFamilyAndKey();
+		AssertUtils.notNull(colName, "Column Name is a required parameter");
+		AssertUtils.notNull(value, "Value is a required parameter");
+		byte[] colNameBytes = toBytes(colName);
+		byte[] rowKeyBytes = toBytes(getRowKey());
+
+		execute(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value, getWriteConsistencyLevel()));
 	}
 
 	@Override
 	public void writeColumn(Object colName, Object value) {
-		Bytes valueBytes = toBytes(value);
-		writeColum(colName, valueBytes);
+		byte[] valueBytes = toBytes(value);
+		writeColumn(colName, valueBytes);
 	}
 
 	@Override
 	public void writeColumn(Object colName, Object subColName, byte[] value) {
-		Bytes valueBytes = Bytes.fromByteArray(value);
-		writeColumn(colName, subColName, valueBytes);
-
-	}
-
-	private void writeColumn(Object colName, Object subColName, Bytes value) {
 		assertIsReady();
 		assertFamilyAndKey();
 		AssertUtils.notNull(colName, "Column Name is a required parameter");
 		AssertUtils.notNull(subColName, "Sub Column Name is a required parameter");
 		AssertUtils.notNull(value, "Value is a required parameter");
-		Bytes colNameBytes = toBytes(colName);
-		Bytes subColNameBytes = toBytes(subColName);
-		Bytes rowKeyBytes = toBytes(getRowKey());
-		Column col = getMutator().newColumn(subColNameBytes, value);
-		getMutator().writeSubColumn(getColumnFamily(), rowKeyBytes, colNameBytes, col);
+		byte[] colNameBytes = toBytes(colName);
+		byte[] subColNameBytes = toBytes(subColName);
+		byte[] rowKeyBytes = toBytes(getRowKey());
+
+		execute(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value, getWriteConsistencyLevel()));
 	}
 
 	@Override
 	public void writeColumn(Object colName, Object subColName, Object value) {
-		Bytes valueBytes = toBytes(value);
+		byte[] valueBytes = toBytes(value);
 		writeColumn(colName, subColName, valueBytes);
 	}
 

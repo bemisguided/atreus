@@ -29,13 +29,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusTypeConverter;
-import org.scale7.cassandra.pelops.Bytes;
-import org.scale7.cassandra.pelops.Cluster;
-import org.scale7.cassandra.pelops.Mutator;
-import org.scale7.cassandra.pelops.RowDeletor;
-import org.scale7.cassandra.pelops.Selector;
-import org.scale7.cassandra.pelops.pool.CommonsBackedPool;
-import org.scale7.cassandra.pelops.pool.IThriftPool;
 
 public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
@@ -48,8 +41,6 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 	private String host;
 
 	private String keyspace;
-
-	private IThriftPool pool;
 
 	private int port;
 
@@ -75,28 +66,13 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		this.port = port;
 		this.keyspace = keyspace;
 
-		Cluster cluster = new Cluster(host, port);
-		pool = new CommonsBackedPool(cluster, keyspace);
 		connected = true;
 		typeRegistry.addDefaultConverters();
-	}
-
-	protected Mutator createMutator() {
-		return pool.createMutator();
-	}
-
-	protected RowDeletor createRowDeleter() {
-		return pool.createRowDeletor();
-	}
-
-	protected Selector createSelector() {
-		return pool.createSelector();
 	}
 
 	@Override
 	public void disconnect() {
 		if (isConnected()) {
-			pool.shutdown();
 			connected = false;
 		}
 	}
@@ -137,7 +113,7 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
 	@Override
 	public AtreusSession openSession() {
-		AtreusSessionImpl session = new AtreusSessionImpl(this);
+		AtreusSessionImpl session = new AtreusSessionImpl(this, new Connection(host, port, keyspace));
 		session.setReadConsistencyLevel(defaultReaderConsistencyLevel);
 		session.setWriteConsistencyLevel(defaultWriterConsistencyLevel);
 		return session;
@@ -158,7 +134,7 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		this.defaultWriterConsistencyLevel = defaultWriteConsistencyLevel;
 	}
 
-	protected Bytes toBytes(Object value) {
+	protected byte[] toBytes(Object value) {
 		return typeRegistry.toBytes(value);
 	}
 

@@ -35,7 +35,6 @@ import org.atreus.converters.CalendarTypeConverter;
 import org.atreus.converters.IntegerTypeConverter;
 import org.atreus.converters.LongTypeConverter;
 import org.atreus.converters.StringTypeConverter;
-import org.scale7.cassandra.pelops.Bytes;
 import org.springframework.util.Assert;
 
 class TypeRegistry {
@@ -76,7 +75,9 @@ class TypeRegistry {
 	@SuppressWarnings("unchecked")
 	public <T> T fromBytes(Class<T> type, byte[] bytes) {
 		Assert.notNull(type, "Class cannot be null");
-		Assert.notNull(bytes, "Bytes cannot be null");
+		if (bytes == null) {
+			return null;
+		}
 		AtreusTypeConverter converter = findConverter(type);
 		return (T) converter.fromBytes(bytes);
 		// throw new DataAccessResourceFailureException(
@@ -102,9 +103,9 @@ class TypeRegistry {
 		this.converters = converters;
 	}
 
-	public Bytes toBytes(Object value) {
+	public byte[] toBytes(Object value) {
 		AtreusTypeConverter converter = findConverter(value);
-		return Bytes.fromByteArray(converter.toBytes(value));
+		return converter.toBytes(value);
 
 		// throw new DataAccessResourceFailureException(
 		// "Failure to convert Object value [" + value + "]", e);

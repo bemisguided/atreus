@@ -30,11 +30,21 @@ public interface AtreusSession {
 
 	public void close();
 
-	public void deleteColumn(String colName);
+	public void deleteColumn(Object colName);
+
+	public void deleteColumn(Object colName, Object subColName);
 
 	public void deleteRow();
 
 	public void deleteRow(String colFamily, Object rowKey);
+
+	public boolean existsColumn(Object colName);
+
+	public boolean existsColumn(Object colName, Object subColName);
+
+	public boolean existsRow();
+
+	public boolean existsRow(Object rowKey);
 
 	public void flush();
 
@@ -54,29 +64,27 @@ public interface AtreusSession {
 
 	public boolean isOpen();
 
-	public boolean existsRow();
-
-	public boolean existsRow(Object rowKey);
-
-	public boolean existsColumn(Object colName);
-
-	public boolean existsColumn(Object colName, Object subColName);
-
 	public <T> T readColumn(Object colName, Class<T> type);
 
 	public <T> T readColumn(Object colName, Object subColName, Class<T> type);
+
+	public byte[] readColumnAsBytes(Object colName);
+
+	public byte[] readColumnAsBytes(Object colName, Object subColName);
 
 	public void setBatchWriting(boolean batchWriting);
 
 	public void setCaching(boolean caching);
 
-	public void setEagerFetching(boolean eagerFetching);
+	public void setColumnFamily(String colFamily);
 
-	public void setRowKey(Object rowKey);
+	public void setEagerFetching(boolean eagerFetching);
 
 	public void setFamilyAndKey(String colFamily, Object rowKey);
 
 	public void setReadConsistencyLevel(ConsistencyLevel readConsistencyLevel);
+
+	public void setRowKey(Object rowKey);
 
 	public void setWriteConsistencyLevel(ConsistencyLevel writeConsistencyLevel);
 
