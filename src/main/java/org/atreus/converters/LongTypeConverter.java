@@ -25,7 +25,7 @@
 package org.atreus.converters;
 
 import org.atreus.AtreusTypeConverter;
-import org.scale7.cassandra.pelops.Bytes;
+import org.atreus.impl.utils.ByteUtils;
 
 public class LongTypeConverter implements AtreusTypeConverter {
 
@@ -35,11 +35,11 @@ public class LongTypeConverter implements AtreusTypeConverter {
 
 	public byte[] toBytes(Object value) {
 		Long longValue = (Long) value;
-		return Bytes.fromLong(longValue).toByteArray();
+		return ByteUtils.toBytes(longValue);
 	}
 
 	public Object fromBytes(byte[] bytes) {
-		return Bytes.fromByteArray(bytes).toLong();
+		return ByteUtils.toLong(bytes);
 	}
 
 }

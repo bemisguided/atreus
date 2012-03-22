@@ -24,22 +24,28 @@
 
 package org.atreus.converters;
 
+import java.util.Date;
+
 import org.atreus.AtreusTypeConverter;
 import org.atreus.impl.utils.ByteUtils;
 
-public class StringTypeConverter implements AtreusTypeConverter {
+public class DateTypeConverter implements AtreusTypeConverter {
 
+	@Override
 	public boolean isSupported(Class<?> type) {
-		return String.class.isAssignableFrom(type);
+		return Date.class.isAssignableFrom(type);
 	}
 
+	@Override
 	public byte[] toBytes(Object value) {
-		String strValue = (String) value;
-		return ByteUtils.toBytes(strValue);
+		Date date = (Date) value;
+		return ByteUtils.toBytes(date.getTime());
 	}
 
+	@Override
 	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toString(bytes);
+		long time = ByteUtils.toLong(bytes);
+		return new Date(time);
 	}
 
 }

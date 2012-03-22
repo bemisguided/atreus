@@ -27,19 +27,22 @@ package org.atreus.converters;
 import org.atreus.AtreusTypeConverter;
 import org.atreus.impl.utils.ByteUtils;
 
-public class StringTypeConverter implements AtreusTypeConverter {
+public class ShortTypeConverter implements AtreusTypeConverter {
 
+	@Override
 	public boolean isSupported(Class<?> type) {
-		return String.class.isAssignableFrom(type);
+		return Short.class.isAssignableFrom(type);
 	}
 
+	@Override
 	public byte[] toBytes(Object value) {
-		String strValue = (String) value;
-		return ByteUtils.toBytes(strValue);
+		Short shortVal = (Short) value;
+		return ByteUtils.toBytes(shortVal);
 	}
 
+	@Override
 	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toString(bytes);
+		return ByteUtils.toShort(bytes);
 	}
 
 }

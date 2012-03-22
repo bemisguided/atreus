@@ -25,7 +25,7 @@
 package org.atreus.converters;
 
 import org.atreus.AtreusTypeConverter;
-import org.scale7.cassandra.pelops.Bytes;
+import org.atreus.impl.utils.ByteUtils;
 
 public class IntegerTypeConverter implements AtreusTypeConverter {
 
@@ -35,11 +35,11 @@ public class IntegerTypeConverter implements AtreusTypeConverter {
 
 	public byte[] toBytes(Object value) {
 		Integer intValue = (Integer) value;
-		return Bytes.fromInt(intValue).toByteArray();
+		return ByteUtils.toBytes(intValue);
 	}
 
 	public Object fromBytes(byte[] bytes) {
-		return Bytes.fromByteArray(bytes).toInt();
+		return ByteUtils.toInt(bytes);
 	}
 
 }

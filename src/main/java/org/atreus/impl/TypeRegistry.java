@@ -31,9 +31,14 @@ import java.util.Map;
 
 import org.atreus.AtreusNoSuitableTypeConverterException;
 import org.atreus.AtreusTypeConverter;
+import org.atreus.converters.BooleanTypeConverter;
+import org.atreus.converters.ByteTypeConverter;
 import org.atreus.converters.CalendarTypeConverter;
+import org.atreus.converters.CharacterTypeConverter;
+import org.atreus.converters.DateTypeConverter;
 import org.atreus.converters.IntegerTypeConverter;
 import org.atreus.converters.LongTypeConverter;
+import org.atreus.converters.ShortTypeConverter;
 import org.atreus.converters.StringTypeConverter;
 import org.springframework.util.Assert;
 
@@ -48,10 +53,15 @@ class TypeRegistry {
 	}
 
 	protected void addDefaultConverters() {
-		converters.add(new CalendarTypeConverter());
+		converters.add(new BooleanTypeConverter());
+		converters.add(new ByteTypeConverter());
+		converters.add(new ShortTypeConverter());
 		converters.add(new IntegerTypeConverter());
 		converters.add(new LongTypeConverter());
+		converters.add(new CharacterTypeConverter());
 		converters.add(new StringTypeConverter());
+		converters.add(new CalendarTypeConverter());
+		converters.add(new DateTypeConverter());
 	}
 
 	public void removeConverter(AtreusTypeConverter converter) {
