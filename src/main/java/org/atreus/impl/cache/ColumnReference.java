@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl;
+package org.atreus.impl.cache;
 
 import java.util.Arrays;
 

@@ -24,28 +24,14 @@
 
 package org.atreus;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.atreus.impl.AtreusSessionFactoryImpl;
 
-public interface AtreusSessionFactory {
+public class AtreusSessionFactoryBuilder {
 
-	public void addConverter(AtreusTypeConverter converter);
-
-	public void disconnect();
-
-	public ConsistencyLevel getDefaultReadConsistencyLevel();
-
-	public ConsistencyLevel getDefaultWriteConsistencyLevel();
-
-	public String getHost();
-
-	public String getKeyspace();
-
-	public int getPort();
-
-	public boolean isConnected();
-
-	public AtreusSession openSession();
-
-	public void removeConverter(AtreusTypeConverter converter);
+	public static AtreusSessionFactory buildFactory(AtreusConfiguration config) {
+		AtreusSessionFactoryImpl factory = new AtreusSessionFactoryImpl(config);
+		factory.connect();
+		return factory;
+	}
 
 }

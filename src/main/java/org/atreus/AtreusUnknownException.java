@@ -22,24 +22,22 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+public class AtreusUnknownException extends AtreusException {
 
-public class LongTypeConverter implements AtreusTypeConverter {
+	private static final long serialVersionUID = -6111913440997845665L;
 
-	public boolean isSupported(Class<?> type) {
-		return Long.class.isAssignableFrom(type);
+	public AtreusUnknownException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
-	public byte[] toBytes(Object value) {
-		Long longValue = (Long) value;
-		return ByteUtils.toBytes(longValue);
+	public AtreusUnknownException(String message) {
+		super(message);
 	}
 
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toLong(bytes);
+	public AtreusUnknownException(Throwable exception) {
+		super(exception);
 	}
 
 }

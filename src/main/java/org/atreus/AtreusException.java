@@ -32,11 +32,11 @@ public abstract class AtreusException extends RuntimeException {
 		super(message, exception);
 	}
 
-	public AtreusException(String message) {
+	protected AtreusException(String message) {
 		super(message);
 	}
 
-	public AtreusException(Throwable exception) {
+	protected AtreusException(Throwable exception) {
 		super(exception);
 	}
 

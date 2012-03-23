@@ -22,13 +22,27 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl;
+package org.atreus.impl.converters;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.utils.ByteUtils;
 
-public class ColumnCache {
+public class ByteTypeConverter implements AtreusTypeConverter {
 
-	private final Map<ColumnReference, byte[]> columnCache = new HashMap<ColumnReference, byte[]>();
+	@Override
+	public boolean isSupported(Class<?> type) {
+		return Byte.class.isAssignableFrom(type);
+	}
+
+	@Override
+	public byte[] toBytes(Object value) {
+		Byte byteVal = (Byte) value;
+		return ByteUtils.toBytes(byteVal);
+	}
+
+	@Override
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toByte(bytes);
+	}
 
 }

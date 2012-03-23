@@ -22,27 +22,18 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl;
+package org.atreus.impl.converters;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.atreus.AtreusNoSuitableTypeConverterException;
+import org.atreus.AtreusTypeConverterException;
 import org.atreus.AtreusTypeConverter;
-import org.atreus.converters.BooleanTypeConverter;
-import org.atreus.converters.ByteTypeConverter;
-import org.atreus.converters.CalendarTypeConverter;
-import org.atreus.converters.CharacterTypeConverter;
-import org.atreus.converters.DateTypeConverter;
-import org.atreus.converters.IntegerTypeConverter;
-import org.atreus.converters.LongTypeConverter;
-import org.atreus.converters.ShortTypeConverter;
-import org.atreus.converters.StringTypeConverter;
 import org.springframework.util.Assert;
 
-class TypeRegistry {
+public class TypeConverterRegistry {
 
 	private Map<Class<?>, AtreusTypeConverter> converterCache = new HashMap<Class<?>, AtreusTypeConverter>();
 
@@ -52,7 +43,7 @@ class TypeRegistry {
 		converters.add(converter);
 	}
 
-	protected void addDefaultConverters() {
+	public void addDefaultConverters() {
 		converters.add(new BooleanTypeConverter());
 		converters.add(new ByteTypeConverter());
 		converters.add(new ShortTypeConverter());
@@ -90,9 +81,6 @@ class TypeRegistry {
 		}
 		AtreusTypeConverter converter = findConverter(type);
 		return (T) converter.fromBytes(bytes);
-		// throw new DataAccessResourceFailureException(
-		// "Failure to convert to Object of type [" + type.getName()
-		// + "]", e);
 	}
 
 	public List<AtreusTypeConverter> getConverters() {
@@ -106,7 +94,7 @@ class TypeRegistry {
 				return converter;
 			}
 		}
-		throw new AtreusNoSuitableTypeConverterException(type);
+		throw new AtreusTypeConverterException("Cannot find a suitable type converter", type);
 	}
 
 	public void setConverters(List<AtreusTypeConverter> converters) {
@@ -116,10 +104,6 @@ class TypeRegistry {
 	public byte[] toBytes(Object value) {
 		AtreusTypeConverter converter = findConverter(value);
 		return converter.toBytes(value);
-
-		// throw new DataAccessResourceFailureException(
-		// "Failure to convert Object value [" + value + "]", e);
-
 	}
 
 }

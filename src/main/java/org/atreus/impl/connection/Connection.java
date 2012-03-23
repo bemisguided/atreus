@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl;
+package org.atreus.impl.connection;
 
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Cassandra.Client;
@@ -35,7 +35,11 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.atreus.AtreusException;
+import org.apache.thrift.transport.TTransportException;
+import org.atreus.AtreusCommandException;
+import org.atreus.AtreusConnectionException;
+import org.atreus.AtreusNetworkException;
+import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.ReadCommand;
 import org.atreus.impl.commands.WriteCommand;
 
@@ -47,6 +51,8 @@ public class Connection {
 
 	private final String keyspace;
 
+	private boolean open = true;
+
 	private final int port;
 
 	private final TTransport transport;
@@ -54,66 +60,47 @@ public class Connection {
 	Connection(String host, int port, String keyspace) {
 		this.transport = new TFramedTransport(new TSocket(host, port, 1500));
 		TProtocol protocol = new TBinaryProtocol(transport);
-		client = new Cassandra.Client(protocol);
-		try {
-			transport.open();
-			client.set_keyspace(keyspace);
-		} catch (Exception e) {
-			throw new AtreusException(e) {
-			};
-		}
+		this.client = new Cassandra.Client(protocol);
 		this.host = host;
 		this.port = port;
 		this.keyspace = keyspace;
 	}
 
-	protected Client getClient() {
-		return client;
+	public void close() {
+		open = false;
+		transport.close();
+	}
+
+	public Object execute(ReadCommand command) {
+		try {
+			return command.execute(getClient());
+		} catch (InvalidRequestException e) {
+			throw new AtreusCommandException("Read command supplied was invalid [" + command + "]", e);
+		} catch (UnavailableException e) {
+			throw new AtreusNetworkException("Cassandra cluster unavailableto execute read command [" + command + "]", e);
+		} catch (TimedOutException e) {
+			throw new AtreusNetworkException("Timeout while executing read command [" + command + "]", e);
+		} catch (Exception e) {
+			throw new AtreusUnknownException("Exception while executing read command [" + command + "]", e);
+		}
 	}
 
 	public void execute(WriteCommand command) {
 		try {
 			command.execute(getClient());
 		} catch (InvalidRequestException e) {
-			throw new AtreusException(e) {
-			};
+			throw new AtreusCommandException("Write command supplied was invalid [" + command + "]", e);
 		} catch (UnavailableException e) {
-			throw new AtreusException(e) {
-			};
+			throw new AtreusNetworkException("Cassandra cluster unavailableto execute write command [" + command + "]", e);
 		} catch (TimedOutException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (TException e) {
-			throw new AtreusException(e) {
-			};
+			throw new AtreusNetworkException("Timeout while executing write command [" + command + "]", e);
 		} catch (Exception e) {
-			throw new AtreusException(e) {
-			};
+			throw new AtreusUnknownException("Exception while executing write command [" + command + "]", e);
 		}
 	}
 
-	public Object execute(ReadCommand command) {
-		try {
-			return command.execute(getClient());
-		} catch (IllegalStateException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (InvalidRequestException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (UnavailableException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (TimedOutException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (TException e) {
-			throw new AtreusException(e) {
-			};
-		} catch (Exception e) {
-			throw new AtreusException(e) {
-			};
-		}
+	protected Client getClient() {
+		return client;
 	}
 
 	public String getHost() {
@@ -128,7 +115,30 @@ public class Connection {
 		return port;
 	}
 
-	public void close() {
-		transport.close();
+	public boolean isOpen() {
+		return open;
+	}
+
+	public boolean isValid() {
+		try {
+			getClient().describe_cluster_name();
+			return true;
+		} catch (TException e) {
+			open = false;
+			return false;
+		}
+	}
+
+	public void open() {
+		try {
+			transport.open();
+		} catch (TTransportException e) {
+			throw new AtreusNetworkException("Unable to open transport to Cassandra cluster", e);
+		}
+		try {
+			client.set_keyspace(keyspace);
+		} catch (Exception e) {
+			throw new AtreusConnectionException("Unable to connect to Cassandra cluster keyspace [" + keyspace + "]", e);
+		}
 	}
 }

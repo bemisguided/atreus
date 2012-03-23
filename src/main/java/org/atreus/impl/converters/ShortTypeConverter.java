@@ -22,30 +22,27 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
-
-import java.util.Date;
+package org.atreus.impl.converters;
 
 import org.atreus.AtreusTypeConverter;
 import org.atreus.impl.utils.ByteUtils;
 
-public class DateTypeConverter implements AtreusTypeConverter {
+public class ShortTypeConverter implements AtreusTypeConverter {
 
 	@Override
 	public boolean isSupported(Class<?> type) {
-		return Date.class.isAssignableFrom(type);
+		return Short.class.isAssignableFrom(type);
 	}
 
 	@Override
 	public byte[] toBytes(Object value) {
-		Date date = (Date) value;
-		return ByteUtils.toBytes(date.getTime());
+		Short shortVal = (Short) value;
+		return ByteUtils.toBytes(shortVal);
 	}
 
 	@Override
 	public Object fromBytes(byte[] bytes) {
-		long time = ByteUtils.toLong(bytes);
-		return new Date(time);
+		return ByteUtils.toShort(bytes);
 	}
 
 }

@@ -22,15 +22,24 @@
  * THE SOFTWARE.
  */
 
-package org.atreus;
+package org.atreus.impl.converters;
 
-import org.springframework.dao.TypeMismatchDataAccessException;
+import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.utils.ByteUtils;
 
-public class AtreusNoSuitableTypeConverterException extends TypeMismatchDataAccessException {
+public class StringTypeConverter implements AtreusTypeConverter {
 
-	private static final long serialVersionUID = -6251445541821331289L;
-
-	public AtreusNoSuitableTypeConverterException(Class<?> type) {
-		super(type.getName());
+	public boolean isSupported(Class<?> type) {
+		return String.class.isAssignableFrom(type);
 	}
+
+	public byte[] toBytes(Object value) {
+		String strValue = (String) value;
+		return ByteUtils.toBytes(strValue);
+	}
+
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toString(bytes);
+	}
+
 }

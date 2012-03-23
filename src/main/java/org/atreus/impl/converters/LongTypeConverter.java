@@ -22,24 +22,24 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.converters;
 
 import org.atreus.AtreusTypeConverter;
 import org.atreus.impl.utils.ByteUtils;
 
-public class StringTypeConverter implements AtreusTypeConverter {
+public class LongTypeConverter implements AtreusTypeConverter {
 
 	public boolean isSupported(Class<?> type) {
-		return String.class.isAssignableFrom(type);
+		return Long.class.isAssignableFrom(type);
 	}
 
 	public byte[] toBytes(Object value) {
-		String strValue = (String) value;
-		return ByteUtils.toBytes(strValue);
+		Long longValue = (Long) value;
+		return ByteUtils.toBytes(longValue);
 	}
 
 	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toString(bytes);
+		return ByteUtils.toLong(bytes);
 	}
 
 }

@@ -22,27 +22,56 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.connection;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+import org.apache.commons.pool.PoolableObjectFactory;
+import org.atreus.AtreusConnectionException;
 
-public class ByteTypeConverter implements AtreusTypeConverter {
+class ConnectionFactory implements PoolableObjectFactory<Connection> {
 
-	@Override
-	public boolean isSupported(Class<?> type) {
-		return Byte.class.isAssignableFrom(type);
+	private final ConnectionManager manager;
+
+	ConnectionFactory(ConnectionManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
-	public byte[] toBytes(Object value) {
-		Byte byteVal = (Byte) value;
-		return ByteUtils.toBytes(byteVal);
+	public void activateObject(Connection connection) throws Exception {
+
 	}
 
 	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toByte(bytes);
+	public void destroyObject(Connection connection) throws Exception {
+		connection.close();
+	}
+
+	@Override
+	public Connection makeObject() throws Exception {
+		String[] hosts = manager.getHosts();
+		int port = manager.getPort();
+		String keyspace = manager.getKeyspace();
+		Exception cause = null;
+		for (String host : hosts) {
+			try {
+				Connection conn = new Connection(host, port, keyspace);
+				conn.open();
+				return conn;
+			} catch (Exception e) {
+				cause = e;
+				manager.removeHost(host);
+			}
+		}
+		throw new AtreusConnectionException("No Cassandra cluster hosts available", cause);
+	}
+
+	@Override
+	public void passivateObject(Connection connection) throws Exception {
+
+	}
+
+	@Override
+	public boolean validateObject(Connection connection) {
+		return connection.isValid();
 	}
 
 }

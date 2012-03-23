@@ -22,24 +22,13 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.cache;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+import java.util.HashMap;
+import java.util.Map;
 
-public class IntegerTypeConverter implements AtreusTypeConverter {
+public class ColumnCache {
 
-	public boolean isSupported(Class<?> type) {
-		return Integer.class.isAssignableFrom(type);
-	}
-
-	public byte[] toBytes(Object value) {
-		Integer intValue = (Integer) value;
-		return ByteUtils.toBytes(intValue);
-	}
-
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toInt(bytes);
-	}
+	private final Map<ColumnReference, byte[]> columnCache = new HashMap<ColumnReference, byte[]>();
 
 }

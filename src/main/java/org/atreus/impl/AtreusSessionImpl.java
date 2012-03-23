@@ -34,13 +34,19 @@ import org.atreus.impl.commands.ReadColumnCommand;
 import org.atreus.impl.commands.ReadCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.commands.WriteCommand;
+import org.atreus.impl.connection.Connection;
+import org.atreus.impl.connection.ConnectionManager;
 import org.atreus.impl.utils.AssertUtils;
 
 public class AtreusSessionImpl implements AtreusSession {
 
-	private final Connection connection;
-
 	private String columnFamily;
+
+	private boolean batchWriting;
+
+	private boolean caching;
+
+	private boolean eagerFetching;
 
 	private boolean open = true;
 
@@ -52,8 +58,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	private ConsistencyLevel writeConsistencyLevel;
 
-	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory, Connection connection) {
-		this.connection = connection;
+	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
 
@@ -105,7 +110,7 @@ public class AtreusSessionImpl implements AtreusSession {
 	public void deleteRow() {
 		assertIsReady();
 		assertFamilyAndKey();
-		
+
 		deleteRow(getColumnFamily(), getRowKey());
 	}
 
@@ -114,17 +119,27 @@ public class AtreusSessionImpl implements AtreusSession {
 		assertIsReady();
 		AssertUtils.hasText(colFamily, "Column family is a required parameter");
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
-		
+
 		byte[] rowKeyBytes = toBytes(rowKey);
 		execute(new DeleteRowCommand(getColumnFamily(), rowKeyBytes, getWriteConsistencyLevel()));
 	}
 
 	protected Object execute(ReadCommand command) {
-		return connection.execute(command);
+		Connection conn = getConnectionManager().getConnection();
+		try {
+			return conn.execute(command);
+		} finally {
+			getConnectionManager().returnConnection(conn);
+		}
 	}
 
 	protected void execute(WriteCommand command) {
-		connection.execute(command);
+		Connection conn = getConnectionManager().getConnection();
+		try {
+			conn.execute(command);
+		} finally {
+			getConnectionManager().returnConnection(conn);
+		}
 	}
 
 	@Override
@@ -169,6 +184,10 @@ public class AtreusSessionImpl implements AtreusSession {
 		return columnFamily;
 	}
 
+	private ConnectionManager getConnectionManager() {
+		return sessionFactory.getConnectionManager();
+	}
+
 	@Override
 	public ConsistencyLevel getReadConsistencyLevel() {
 		return readConsistencyLevel;
@@ -186,20 +205,17 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public boolean isBatchWriting() {
-		// TODO Auto-generated method stub
-		return false;
+		return batchWriting;
 	}
 
 	@Override
 	public boolean isCaching() {
-		// TODO Auto-generated method stub
-		return false;
+		return caching;
 	}
 
 	@Override
 	public boolean isEagerFetching() {
-		// TODO Auto-generated method stub
-		return false;
+		return eagerFetching;
 	}
 
 	@Override
@@ -246,15 +262,15 @@ public class AtreusSessionImpl implements AtreusSession {
 	@Override
 	public void setBatchWriting(boolean batchWriting) {
 		assertIsReady();
-		// TODO Auto-generated method stub
 
+		this.batchWriting = batchWriting;
 	}
 
 	@Override
 	public void setCaching(boolean caching) {
 		assertIsReady();
-		// TODO Auto-generated method stub
 
+		this.caching = caching;
 	}
 
 	@Override
@@ -265,8 +281,8 @@ public class AtreusSessionImpl implements AtreusSession {
 	@Override
 	public void setEagerFetching(boolean eagerFetching) {
 		assertIsReady();
-		// TODO Auto-generated method stub
 
+		this.eagerFetching = eagerFetching;
 	}
 
 	@Override

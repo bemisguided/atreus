@@ -27,6 +27,9 @@ package org.atreus.impl;
 import java.util.Calendar;
 import java.util.UUID;
 
+import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusSessionFactory;
+import org.atreus.AtreusSessionFactoryBuilder;
 import org.cassandraunit.AbstractCassandraUnit4TestCase;
 import org.cassandraunit.dataset.DataSet;
 import org.cassandraunit.dataset.xml.ClassPathXmlDataSet;
@@ -37,7 +40,7 @@ import org.junit.Test;
 
 public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 
-	private AtreusSessionFactoryImpl sessionFactory = new AtreusSessionFactoryImpl();
+	private AtreusSessionFactory sessionFactory;
 
 	private AtreusSessionImpl s;
 
@@ -48,7 +51,8 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 
 	@Before
 	public void setup() throws Exception {
-		sessionFactory.connect("localhost", 9171, "AtreusSessionTests");
+		AtreusConfiguration config = new AtreusConfiguration("localhost", 9171, "AtreusSessionTests");
+		sessionFactory = AtreusSessionFactoryBuilder.buildFactory(config);
 		s = (AtreusSessionImpl) sessionFactory.openSession();
 	}
 

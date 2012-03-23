@@ -22,41 +22,30 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.converters;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.Date;
 
 import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.utils.ByteUtils;
 
-public abstract class ObjectStreamTypeConverter implements AtreusTypeConverter {
+public class DateTypeConverter implements AtreusTypeConverter {
 
-	public final Object fromBytes(byte[] bytes) {
-		try {
-			ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-			return read(input);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	@Override
+	public boolean isSupported(Class<?> type) {
+		return Date.class.isAssignableFrom(type);
 	}
 
-	public abstract Object read(ObjectInputStream input) throws IOException;
-
-	public final byte[] toBytes(Object value) {
-		try {
-			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-			ObjectOutputStream output = new ObjectOutputStream(bytes);
-			write(value, output);
-			output.flush();
-			return bytes.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	@Override
+	public byte[] toBytes(Object value) {
+		Date date = (Date) value;
+		return ByteUtils.toBytes(date.getTime());
 	}
 
-	public abstract void write(Object value, ObjectOutputStream output) throws IOException;
+	@Override
+	public Object fromBytes(byte[] bytes) {
+		long time = ByteUtils.toLong(bytes);
+		return new Date(time);
+	}
 
 }

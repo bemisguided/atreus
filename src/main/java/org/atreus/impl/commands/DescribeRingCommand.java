@@ -22,27 +22,21 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.commands;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+import org.apache.cassandra.thrift.Cassandra.Client;
 
-public class BooleanTypeConverter implements AtreusTypeConverter {
+public class DescribeRingCommand implements ReadCommand {
 
-	@Override
-	public boolean isSupported(Class<?> type) {
-		return Boolean.class.isAssignableFrom(type);
+	private final String keyspace;
+
+	public DescribeRingCommand(String keyspace) {
+		this.keyspace = keyspace;
 	}
 
 	@Override
-	public byte[] toBytes(Object value) {
-		Boolean bolVal = (Boolean) value;
-		return ByteUtils.toBytes(bolVal);
-	}
-
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toBoolean(bytes);
+	public Object execute(Client client) throws Exception {
+		return client.describe_ring(keyspace);
 	}
 
 }

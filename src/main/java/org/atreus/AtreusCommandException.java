@@ -24,28 +24,20 @@
 
 package org.atreus;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
+public class AtreusCommandException extends AtreusException {
 
-public interface AtreusSessionFactory {
+	private static final long serialVersionUID = 6547437810640689006L;
 
-	public void addConverter(AtreusTypeConverter converter);
+	public AtreusCommandException(String message, Throwable exception) {
+		super(message, exception);
+	}
 
-	public void disconnect();
+	public AtreusCommandException(String message) {
+		super(message);
+	}
 
-	public ConsistencyLevel getDefaultReadConsistencyLevel();
-
-	public ConsistencyLevel getDefaultWriteConsistencyLevel();
-
-	public String getHost();
-
-	public String getKeyspace();
-
-	public int getPort();
-
-	public boolean isConnected();
-
-	public AtreusSession openSession();
-
-	public void removeConverter(AtreusTypeConverter converter);
+	public AtreusCommandException(Throwable exception) {
+		super(exception);
+	}
 
 }

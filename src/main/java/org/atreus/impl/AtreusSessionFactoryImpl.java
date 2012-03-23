@@ -25,28 +25,30 @@
 package org.atreus.impl;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.commons.lang.NotImplementedException;
+import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.connection.ConnectionManager;
+import org.atreus.impl.converters.TypeConverterRegistry;
 
 public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
-	private boolean connected = false;
+	private final AtreusConfiguration config;
 
-	private ConsistencyLevel defaultReaderConsistencyLevel = ConsistencyLevel.ONE;
-
-	private ConsistencyLevel defaultWriterConsistencyLevel = ConsistencyLevel.ANY;
+	private final ConnectionManager connectionManager;
 
 	private String host;
 
-	private String keyspace;
-
 	private int port;
 
-	private TypeRegistry typeRegistry = new TypeRegistry();
+	private TypeConverterRegistry typeRegistry = new TypeConverterRegistry();
 
-	public AtreusSessionFactoryImpl() {
+	public AtreusSessionFactoryImpl(AtreusConfiguration config) {
+		this.config = config;
+		this.connectionManager = new ConnectionManager(config);
+		typeRegistry.addDefaultConverters();
+
 	}
 
 	@Override
@@ -54,26 +56,14 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		typeRegistry.addConverter(converter);
 	}
 
-	@Override
-	public void connect(String url) {
-		// TODO implement connection url
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public void connect(String host, int port, String keyspace) {
-		this.host = host;
-		this.port = port;
-		this.keyspace = keyspace;
-
-		connected = true;
-		typeRegistry.addDefaultConverters();
+	public void connect() {
+		getConnectionManager().connect();
 	}
 
 	@Override
 	public void disconnect() {
 		if (isConnected()) {
-			connected = false;
+			getConnectionManager().disconnect();
 		}
 	}
 
@@ -83,12 +73,12 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
 	@Override
 	public ConsistencyLevel getDefaultReadConsistencyLevel() {
-		return defaultReaderConsistencyLevel;
+		return config.getDefaultReadConsistencyLevel();
 	}
 
 	@Override
 	public ConsistencyLevel getDefaultWriteConsistencyLevel() {
-		return defaultWriterConsistencyLevel;
+		return config.getDefaultWriteConsistencyLevel();
 	}
 
 	@Override
@@ -98,7 +88,7 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
 	@Override
 	public String getKeyspace() {
-		return keyspace;
+		return config.getKeyspace();
 	}
 
 	@Override
@@ -108,30 +98,27 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
 	@Override
 	public boolean isConnected() {
-		return connected;
+		return getConnectionManager().isConnected();
 	}
 
 	@Override
 	public AtreusSession openSession() {
-		AtreusSessionImpl session = new AtreusSessionImpl(this, new Connection(host, port, keyspace));
-		session.setReadConsistencyLevel(defaultReaderConsistencyLevel);
-		session.setWriteConsistencyLevel(defaultWriterConsistencyLevel);
+		AtreusSessionImpl session = new AtreusSessionImpl(this);
+		session.setReadConsistencyLevel(getDefaultReadConsistencyLevel());
+		session.setWriteConsistencyLevel(getDefaultWriteConsistencyLevel());
+		session.setBatchWriting(config.isDefaultBatchWriting());
+		session.setCaching(config.isDefaultCaching());
+		session.setEagerFetching(config.isDefaultEagerFetching());
 		return session;
+	}
+
+	public ConnectionManager getConnectionManager() {
+		return connectionManager;
 	}
 
 	@Override
 	public void removeConverter(AtreusTypeConverter converter) {
 		typeRegistry.removeConverter(converter);
-	}
-
-	@Override
-	public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
-		this.defaultReaderConsistencyLevel = defaultReadConsistencyLevel;
-	}
-
-	@Override
-	public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
-		this.defaultWriterConsistencyLevel = defaultWriteConsistencyLevel;
 	}
 
 	protected byte[] toBytes(Object value) {

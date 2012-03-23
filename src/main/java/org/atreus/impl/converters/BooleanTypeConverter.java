@@ -22,30 +22,27 @@
  * THE SOFTWARE.
  */
 
-package org.atreus;
+package org.atreus.impl.converters;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.utils.ByteUtils;
 
-public interface AtreusSessionFactory {
+public class BooleanTypeConverter implements AtreusTypeConverter {
 
-	public void addConverter(AtreusTypeConverter converter);
+	@Override
+	public boolean isSupported(Class<?> type) {
+		return Boolean.class.isAssignableFrom(type);
+	}
 
-	public void disconnect();
+	@Override
+	public byte[] toBytes(Object value) {
+		Boolean bolVal = (Boolean) value;
+		return ByteUtils.toBytes(bolVal);
+	}
 
-	public ConsistencyLevel getDefaultReadConsistencyLevel();
-
-	public ConsistencyLevel getDefaultWriteConsistencyLevel();
-
-	public String getHost();
-
-	public String getKeyspace();
-
-	public int getPort();
-
-	public boolean isConnected();
-
-	public AtreusSession openSession();
-
-	public void removeConverter(AtreusTypeConverter converter);
+	@Override
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toBoolean(bytes);
+	}
 
 }

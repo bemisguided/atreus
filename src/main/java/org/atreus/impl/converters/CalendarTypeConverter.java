@@ -22,27 +22,32 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.converters;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Calendar;
+import java.util.TimeZone;
 
-public class CharacterTypeConverter implements AtreusTypeConverter {
+public class CalendarTypeConverter extends ObjectStreamTypeConverter {
 
-	@Override
 	public boolean isSupported(Class<?> type) {
-		return Character.class.isAssignableFrom(type);
+		return Calendar.class.isAssignableFrom(type);
 	}
 
-	@Override
-	public byte[] toBytes(Object value) {
-		Character charVal = (Character) value;
-		return ByteUtils.toBytes(charVal);
+	public void write(Object value, ObjectOutputStream output) throws IOException {
+		Calendar cal = (Calendar) value;
+		output.writeLong(cal.getTimeInMillis());
+		output.writeUTF(cal.getTimeZone().getID());
 	}
 
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toChar(bytes);
+	public Object read(ObjectInputStream input) throws IOException {
+		long timestamp = input.readLong();
+		String tzId = input.readUTF();
+		TimeZone tz = TimeZone.getTimeZone(tzId);
+		Calendar cal = Calendar.getInstance(tz);
+		cal.setTimeInMillis(timestamp);
+		return cal;
 	}
-
 }

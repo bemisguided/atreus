@@ -22,27 +22,41 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.converters;
+package org.atreus.impl.converters;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
 
-public class ShortTypeConverter implements AtreusTypeConverter {
+public abstract class ObjectStreamTypeConverter implements AtreusTypeConverter {
 
-	@Override
-	public boolean isSupported(Class<?> type) {
-		return Short.class.isAssignableFrom(type);
+	public final Object fromBytes(byte[] bytes) {
+		try {
+			ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes));
+			return read(input);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	@Override
-	public byte[] toBytes(Object value) {
-		Short shortVal = (Short) value;
-		return ByteUtils.toBytes(shortVal);
+	public abstract Object read(ObjectInputStream input) throws IOException;
+
+	public final byte[] toBytes(Object value) {
+		try {
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+			ObjectOutputStream output = new ObjectOutputStream(bytes);
+			write(value, output);
+			output.flush();
+			return bytes.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toShort(bytes);
-	}
+	public abstract void write(Object value, ObjectOutputStream output) throws IOException;
 
 }
