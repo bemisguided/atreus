@@ -27,6 +27,7 @@ package org.atreus.impl;
 import java.util.Calendar;
 import java.util.UUID;
 
+import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusSessionFactoryBuilder;
@@ -134,6 +135,35 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 	}
 
 	@Test
+	public void testDeleteColumns() throws Exception {
+		// Setup test
+		String rowKey1 = UUID.randomUUID().toString();
+		String rowKey2 = UUID.randomUUID().toString();
+
+		s.setFamilyAndKey("ColumnTest1", rowKey1);
+		s.writeColumn("col1", "val1");
+		s.writeColumn("col2", "val2");
+
+		s.setFamilyAndKey("SuperColumnTest1", rowKey2);
+		s.writeColumn("col1", "subCol1", "val1");
+		s.writeColumn("col2", "subCol2", "val2");
+
+		s.setFamilyAndKey("ColumnTest1", rowKey1);
+		s.deleteColumn("col1");
+
+		s.setFamilyAndKey("SuperColumnTest1", rowKey2);
+		s.deleteColumn("col1", "subCol1");
+
+		s.setFamilyAndKey("ColumnTest1", rowKey1);
+		Assert.assertNull("Row key " + rowKey1 + " null", s.readColumn("col1", String.class));
+		Assert.assertNotNull("Row key " + rowKey1 + " not null", s.readColumn("col2", String.class));
+
+		s.setFamilyAndKey("SuperColumnTest1", rowKey2);
+		Assert.assertNull("Row key " + rowKey2 + " null", s.readColumn("col1", "subCol1", String.class));
+		Assert.assertNotNull("Row key " + rowKey2 + " not null", s.readColumn("col2", "subCol2", String.class));
+	}
+
+	@Test
 	public void testDeleteRows() throws Exception {
 		// Setup test
 		String rowKey1 = UUID.randomUUID().toString();
@@ -150,9 +180,47 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.deleteRow("ColumnTest1", rowKey1);
 
 		s.setFamilyAndKey("ColumnTest1", rowKey1);
-		Assert.assertNull("Row key " + rowKey1 + " not null", s.readColumn("col1", String.class));
+		Assert.assertNull("Row key " + rowKey1 + " null", s.readColumn("col1", String.class));
 		s.setFamilyAndKey("ColumnTest1", rowKey2);
-		Assert.assertNull("Row key " + rowKey2 + " not null", s.readColumn("col1", String.class));
+		Assert.assertNull("Row key " + rowKey2 + " null", s.readColumn("col1", String.class));
+	}
+
+	@Test
+	public void testReadMultipleColumns() throws Exception {
+
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Data for ColFamily
+		String col1 = "value1";
+		int col2 = 1234;
+		Calendar col3 = Calendar.getInstance();
+
+		// Write data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col1", col1);
+		s.writeColumn("col2", col2);
+		s.writeColumn("col3", col3);
+
+		AtreusColumnMap map = s.readColumns();
+
+		Assert.assertEquals(col1, map.get("col1", String.class));
+		Assert.assertEquals(Integer.valueOf(col2), map.get("col2", Integer.class));
+		Assert.assertEquals(col3, map.get("col3", Calendar.class));
+		Assert.assertNull(map.get("no-exist", String.class));
+	}
+
+	@Test
+	public void testReadMultipleColumnsNegative() throws Exception {
+
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Write data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		AtreusColumnMap map = s.readColumns();
+
+		Assert.assertEquals(0, map.size());
 	}
 
 	@Test

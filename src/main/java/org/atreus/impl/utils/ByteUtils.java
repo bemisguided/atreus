@@ -28,7 +28,18 @@ import java.nio.charset.Charset;
 
 public class ByteUtils {
 
+	private static final String HEX_CHARS = "0123456789abcdef";
+
 	private static final Charset UTF_8 = Charset.forName("UTF-8");
+
+	public static byte[] fromHex(String value) {
+		int len = value.length();
+		byte[] bytes = new byte[len / 2];
+		for (int i = 0; i < len; i += 2) {
+			bytes[i / 2] = (byte) ((Character.digit(value.charAt(i), 16) << 4) + Character.digit(value.charAt(i + 1), 16));
+		}
+		return bytes;
+	}
 
 	public static boolean toBoolean(byte[] bytes) {
 		return (bytes == null || bytes.length == 0) ? false : bytes[0] != 0x00;
@@ -272,6 +283,17 @@ public class ByteUtils {
 			flts[i] = toFloat(new byte[] { bytes[(i * 4)], bytes[(i * 4) + 1], bytes[(i * 4) + 2], bytes[(i * 4) + 3], });
 		}
 		return flts;
+	}
+
+	public static String toHex(byte[] bytes) {
+		if (bytes == null) {
+			return null;
+		}
+		final StringBuilder hex = new StringBuilder(2 * bytes.length);
+		for (final byte b : bytes) {
+			hex.append(HEX_CHARS.charAt((b & 0xF0) >> 4)).append(HEX_CHARS.charAt((b & 0x0F)));
+		}
+		return hex.toString();
 	}
 
 	public static int toInt(byte[] bytes) {

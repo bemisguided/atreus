@@ -22,14 +22,42 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.commands;
+package org.atreus;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
+import java.util.Set;
 
-public interface WriteCommand {
+public interface AtreusColumnMap {
 
-	public void batch(Batch batch);
+	public Set<byte[]> columnNameSet();
 
-	public void execute(Client client) throws Exception;
+	public <T> Set<T> columnNameSet(Class<T> type);
+
+	public boolean existsColumn(byte[] columnName);
+
+	public boolean existsColumn(Object columnName);
+
+	public boolean existsValue(byte[] columnName);
+
+	public boolean existsValue(Object value);
+
+	public <T> T get(byte[] columnName, Class<T> type);
+
+	public <T> T get(Object columnName, Class<T> type);
+
+	public byte[] getAsBytes(byte[] columnName);
+
+	public byte[] getAsBytes(Object columnName);
+
+	public boolean hasSubColumns();
+
+	public void put(byte[] columnName, byte[] value);
+
+	public void put(byte[] columnName, Object value);
+
+	public void put(Object columnName, byte[] value);
+
+	public void put(Object columnName, Object value);
+
+	public int size();
 
 }

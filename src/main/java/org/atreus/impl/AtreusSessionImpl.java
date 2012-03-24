@@ -25,6 +25,7 @@
 package org.atreus.impl;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusDisconnectedException;
 import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSession;
@@ -34,6 +35,7 @@ import org.atreus.impl.commands.BatchMutationCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
+import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.ReadCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.commands.WriteCommand;
@@ -243,6 +245,11 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	@Override
+	public AtreusColumnMap newColumnMap() {
+		return new AtreusColumnMapImpl(sessionFactory.getTypeRegistry());
+	}
+
+	@Override
 	public <T> T readColumn(Object colName, Class<T> type) {
 		AssertUtils.notNull(type, "Type is a required parameter");
 		byte[] value = readColumnAsBytes(colName);
@@ -276,6 +283,24 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] subColNameBytes = toBytes(subColName);
 		return (byte[]) execute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes, getReadConsistencyLevel()));
+	}
+
+	@Override
+	public AtreusColumnMap readColumns() {
+		assertIsReady();
+		assertFamilyAndKey();
+		return readColumns(getColumnFamily(), getRowKey());
+	}
+
+	@Override
+	public AtreusColumnMap readColumns(String colFamily, Object rowKey) {
+		assertIsReady();
+		AssertUtils.hasText(colFamily, "Column family is a required parameter");
+		AssertUtils.notNull(rowKey, "Row key is a required parameter");
+
+		byte[] rowKeyBytes = toBytes(rowKey);
+		AtreusColumnMapImpl result = new AtreusColumnMapImpl(sessionFactory.getTypeRegistry());
+		return (AtreusColumnMap) execute(new ReadMultipleColumnsCommand(result, colFamily, rowKeyBytes, getReadConsistencyLevel()));
 	}
 
 	@Override

@@ -100,6 +100,10 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		return port;
 	}
 
+	protected TypeConverterRegistry getTypeRegistry() {
+		return typeRegistry;
+	}
+
 	@Override
 	public boolean isConnected() {
 		return getConnectionManager().isConnected();

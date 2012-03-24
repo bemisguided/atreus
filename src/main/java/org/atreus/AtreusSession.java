@@ -64,6 +64,8 @@ public interface AtreusSession {
 
 	public boolean isOpen();
 
+	public AtreusColumnMap newColumnMap();
+
 	public <T> T readColumn(Object colName, Class<T> type);
 
 	public <T> T readColumn(Object colName, Object subColName, Class<T> type);
@@ -71,6 +73,10 @@ public interface AtreusSession {
 	public byte[] readColumnAsBytes(Object colName);
 
 	public byte[] readColumnAsBytes(Object colName, Object subColName);
+
+	public AtreusColumnMap readColumns();
+
+	public AtreusColumnMap readColumns(String colFamily, Object rowKey);
 
 	public void setBatchWriting(boolean batchWriting);
 
