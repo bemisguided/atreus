@@ -24,6 +24,74 @@
 
 package org.atreus.support.spring;
 
-public class SpringAtreusSessionFactory {
+import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusSession;
+import org.atreus.AtreusSessionFactory;
+import org.atreus.AtreusSessionFactoryBuilder;
+import org.atreus.impl.utils.AssertUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+public final class SpringAtreusSessionFactory implements InitializingBean, DisposableBean {
+
+	private static final Logger logger = LoggerFactory.getLogger(SpringAtreusSessionFactory.class);
+
+	private AtreusConfiguration config;
+
+	private AtreusSessionFactory sessionFactory;
+
+	public SpringAtreusSessionFactory() {
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		AssertUtils.notNull(config, "Atreus Configuration property is not set");
+		sessionFactory = AtreusSessionFactoryBuilder.buildFactory(config);
+	}
+
+	private void attachSessionToTransaction(AtreusSession session) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Attaching session to transaction - Thread [" + Thread.currentThread().getId() + "]");
+		}
+		AtreusTransactionSynchronization transactionSynchronization = new AtreusTransactionSynchronization(session, sessionFactory);
+		transactionSynchronization.bindSession();
+	}
+
+	private AtreusSession createSession() {
+		AtreusSession session = sessionFactory.openSession();
+		attachSessionToTransaction(session);
+		return session;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		sessionFactory.disconnect();
+	}
+
+	public AtreusConfiguration getConfiguration() {
+		return config;
+	}
+
+	public AtreusSession getCurrentSession() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Call getSession() - Thread [" + Thread.currentThread().getId() + "]");
+		}
+		if (TransactionSynchronizationManager.hasResource(this)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Session exists for the current thread/transaction context - Thread [" + Thread.currentThread().getId() + "]");
+			}
+			return (AtreusSession) TransactionSynchronizationManager.getResource(this);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Session does not exist for the current thread/transaction context - Thread [" + Thread.currentThread().getId() + "]");
+		}
+		return createSession();
+	}
+
+	public void setConfiguration(AtreusConfiguration config) {
+		this.config = config;
+	}
 }
