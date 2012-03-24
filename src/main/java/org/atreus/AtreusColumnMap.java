@@ -40,7 +40,11 @@ public interface AtreusColumnMap {
 
 	public boolean existsValue(Object value);
 
+	public AtreusColumnMap get(byte[] columnName);
+
 	public <T> T get(byte[] columnName, Class<T> type);
+
+	public AtreusColumnMap get(Object columnName);
 
 	public <T> T get(Object columnName, Class<T> type);
 
@@ -52,11 +56,27 @@ public interface AtreusColumnMap {
 
 	public void put(byte[] columnName, byte[] value);
 
+	public void put(byte[] columnName, byte[] subColumnName, byte[] value);
+
+	public void put(byte[] columnName, byte[] subColumnName, Object value);
+
 	public void put(byte[] columnName, Object value);
+
+	public void put(byte[] columnName, Object subColumnName, byte[] value);
+
+	public void put(byte[] columnName, Object subColumnName, Object value);
 
 	public void put(Object columnName, byte[] value);
 
+	public void put(Object columnName, byte[] subColumnName, byte[] value);
+
+	public void put(Object columnName, byte[] subColumnName, Object value);
+
 	public void put(Object columnName, Object value);
+
+	public void put(Object columnName, Object subColumnName, byte[] value);
+
+	public void put(Object columnName, Object subColumnName, Object value);
 
 	public int size();
 

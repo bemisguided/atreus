@@ -33,15 +33,19 @@ import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
+import org.apache.cassandra.thrift.SuperColumn;
+import org.atreus.AtreusColumnMap;
 import org.atreus.impl.AtreusColumnMapImpl;
+import org.atreus.impl.AtreusSuperColumnMapImpl;
+import org.atreus.impl.converters.TypeConverterRegistry;
 
 public class ReadMultipleColumnsCommand extends ColumnCommandBase implements ReadCommand {
 
-	private final AtreusColumnMapImpl result;
+	private final TypeConverterRegistry typeRegistry;
 
-	public ReadMultipleColumnsCommand(AtreusColumnMapImpl result, String columnFamily, byte[] rowKey, ConsistencyLevel consistencyLevel) {
+	public ReadMultipleColumnsCommand(TypeConverterRegistry typeRegistry, String columnFamily, byte[] rowKey, ConsistencyLevel consistencyLevel) {
 		super(columnFamily, rowKey, null, null, consistencyLevel);
-		this.result = result;
+		this.typeRegistry = typeRegistry;
 	}
 
 	@Override
@@ -55,9 +59,20 @@ public class ReadMultipleColumnsCommand extends ColumnCommandBase implements Rea
 		predicate.setSlice_range(range);
 		List<ColumnOrSuperColumn> list = client.get_slice(getRowKey(), parent, predicate, getConsistencyLevel());
 
+		AtreusColumnMap result = new AtreusColumnMapImpl(typeRegistry);
+		if (list.size() > 0 && list.get(0).isSetSuper_column()) {
+			result = new AtreusSuperColumnMapImpl(typeRegistry);
+		}
 		for (ColumnOrSuperColumn colOrSuper : list) {
-			Column col = colOrSuper.getColumn();
-			result.put(col.getName(), col.getValue());
+			if (colOrSuper.isSetSuper_column()) {
+				SuperColumn superColumn = colOrSuper.getSuper_column();
+				for (Column column : superColumn.getColumns()) {
+					result.put(superColumn.getName(), column.getName(), column.getValue());
+				}
+			} else {
+				Column column = colOrSuper.getColumn();
+				result.put(column.getName(), column.getValue());
+			}
 		}
 		return result;
 	}

@@ -66,6 +66,8 @@ public interface AtreusSession {
 
 	public AtreusColumnMap newColumnMap();
 
+	public AtreusColumnMap newColumnMap(boolean superColumns);
+
 	public <T> T readColumn(Object colName, Class<T> type);
 
 	public <T> T readColumn(Object colName, Object subColName, Class<T> type);

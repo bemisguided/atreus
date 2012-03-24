@@ -202,12 +202,35 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.writeColumn("col2", col2);
 		s.writeColumn("col3", col3);
 
+		// Write data to SuperColFamily
+		s.setFamilyAndKey("SuperColumnTest1", rowKey);
+		s.writeColumn("col1", "subCol1", col1);
+		s.writeColumn("col1", "subCol2", col2);
+		s.writeColumn("col1", "subCol3", col3);
+		s.writeColumn("col2", "subCol1", col1);
+		s.writeColumn("col2", "subCol2", col2);
+		s.writeColumn("col2", "subCol3", col3);
+
+		// Assert ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
 		AtreusColumnMap map = s.readColumns();
 
 		Assert.assertEquals(col1, map.get("col1", String.class));
 		Assert.assertEquals(Integer.valueOf(col2), map.get("col2", Integer.class));
 		Assert.assertEquals(col3, map.get("col3", Calendar.class));
 		Assert.assertNull(map.get("no-exist", String.class));
+
+		// Assert SuperColFamily
+		s.setFamilyAndKey("SuperColumnTest1", rowKey);
+		map = s.readColumns();
+
+		Assert.assertEquals(col1, map.get("col1").get("subCol1", String.class));
+		Assert.assertEquals(Integer.valueOf(col2), map.get("col1").get("subCol2", Integer.class));
+		Assert.assertEquals(col3, map.get("col1").get("subCol3", Calendar.class));
+		Assert.assertEquals(col1, map.get("col2").get("subCol1", String.class));
+		Assert.assertEquals(Integer.valueOf(col2), map.get("col2").get("subCol2", Integer.class));
+		Assert.assertEquals(col3, map.get("col2").get("subCol3", Calendar.class));
+
 	}
 
 	@Test

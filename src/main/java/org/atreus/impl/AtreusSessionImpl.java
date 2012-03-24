@@ -41,6 +41,7 @@ import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.commands.WriteCommand;
 import org.atreus.impl.connection.Connection;
 import org.atreus.impl.connection.ConnectionManager;
+import org.atreus.impl.converters.TypeConverterRegistry;
 import org.atreus.impl.utils.AssertUtils;
 
 public class AtreusSessionImpl implements AtreusSession {
@@ -219,6 +220,10 @@ public class AtreusSessionImpl implements AtreusSession {
 		return rowKey;
 	}
 
+	protected TypeConverterRegistry getTypeRegistry() {
+		return sessionFactory.getTypeRegistry();
+	}
+
 	@Override
 	public ConsistencyLevel getWriteConsistencyLevel() {
 		return writeConsistencyLevel;
@@ -246,7 +251,15 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public AtreusColumnMap newColumnMap() {
-		return new AtreusColumnMapImpl(sessionFactory.getTypeRegistry());
+		return newColumnMap(false);
+	}
+
+	@Override
+	public AtreusColumnMap newColumnMap(boolean superColumns) {
+		if (superColumns) {
+			return new AtreusSuperColumnMapImpl(getTypeRegistry());
+		}
+		return new AtreusColumnMapImpl(getTypeRegistry());
 	}
 
 	@Override
@@ -299,8 +312,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
 
 		byte[] rowKeyBytes = toBytes(rowKey);
-		AtreusColumnMapImpl result = new AtreusColumnMapImpl(sessionFactory.getTypeRegistry());
-		return (AtreusColumnMap) execute(new ReadMultipleColumnsCommand(result, colFamily, rowKeyBytes, getReadConsistencyLevel()));
+		return (AtreusColumnMap) execute(new ReadMultipleColumnsCommand(sessionFactory.getTypeRegistry(), colFamily, rowKeyBytes, getReadConsistencyLevel()));
 	}
 
 	@Override

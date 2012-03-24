@@ -31,52 +31,60 @@ import java.util.Map;
 import org.atreus.AtreusColumnMap;
 import org.atreus.impl.converters.TypeConverterRegistry;
 
-public class AtreusColumnMapImpl extends AtreusColumnMapBase {
+public class AtreusSuperColumnMapImpl extends AtreusColumnMapBase {
 
-	private final Map<ByteBuffer, ByteBuffer> map;
+	private final Map<ByteBuffer, AtreusColumnMap> map;
 
-	public AtreusColumnMapImpl(TypeConverterRegistry typeRegistry) {
+	public AtreusSuperColumnMapImpl(TypeConverterRegistry typeRegistry) {
 		super(typeRegistry);
-		this.map = new HashMap<ByteBuffer, ByteBuffer>();
+		this.map = new HashMap<ByteBuffer, AtreusColumnMap>();
 	}
 
 	@Override
-	public boolean existsValue(byte[] value) {
-		return map.containsValue(ByteBuffer.wrap(value));
+	public boolean existsValue(byte[] columnName) {
+		throw exceptionNotSupported();
+	}
+
+	@Override
+	public AtreusColumnMap get(byte[] columnName) {
+		ByteBuffer columnNameBuff = ByteBuffer.wrap(columnName);
+		AtreusColumnMap result = map.get(columnNameBuff);
+		if (result != null) {
+			return result;
+		}
+		if (isImmutable()) {
+			return null;
+		}
+		result = new AtreusColumnMapImpl(getTypeRegistry());
+		map.put(columnNameBuff, result);
+		return result;
 	}
 
 	@Override
 	public byte[] getAsBytes(byte[] columnName) {
-		ByteBuffer buffer = map.get(ByteBuffer.wrap(columnName));
-		if (buffer == null) {
-			return null;
-		}
-		return buffer.array();
+		throw exceptionNotSupported();
 	}
 
+	@Override
 	protected Map<ByteBuffer, ?> getMap() {
 		return map;
 	}
 
 	@Override
-	public AtreusColumnMap get(byte[] columnName) {
-		throw exceptionNotSupported();
-	}
-
-	@Override
-	public void put(byte[] columnName, byte[] subNameColumn, byte[] value) {
-		throw exceptionNotSupported();
-	}
-
-	@Override
 	public boolean hasSubColumns() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public void put(byte[] columnName, byte[] value) {
+		throw exceptionNotSupported();
+	}
+
+	@Override
+	public void put(byte[] columnName, byte[] subColumnName, byte[] value) {
 		assertMutable();
-		map.put(ByteBuffer.wrap(columnName), ByteBuffer.wrap(value));
+		AtreusColumnMap subColumns = get(columnName);
+		subColumns.put(subColumnName, value);
 	}
 
 }
