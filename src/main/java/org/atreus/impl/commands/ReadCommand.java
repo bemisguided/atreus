@@ -29,5 +29,5 @@ import org.apache.cassandra.thrift.Cassandra.Client;
 public interface ReadCommand {
 
 	public Object execute(Client client) throws Exception;
-	
+
 }

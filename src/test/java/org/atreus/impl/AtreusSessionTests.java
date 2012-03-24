@@ -54,12 +54,83 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		AtreusConfiguration config = new AtreusConfiguration("localhost", 9171, "AtreusSessionTests");
 		sessionFactory = AtreusSessionFactoryBuilder.buildFactory(config);
 		s = (AtreusSessionImpl) sessionFactory.openSession();
+		s.setBatchWriting(false);
 	}
 
 	@After
 	public void teardown() throws Exception {
 		s.close();
 		sessionFactory.disconnect();
+	}
+
+	@Test
+	public void testColumnWriteRead() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Data for ColFamily
+		String col1 = "value1";
+		int col2 = 1234;
+		Calendar col3 = Calendar.getInstance();
+
+		// Write data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col1", col1);
+		s.writeColumn("col2", col2);
+		s.writeColumn("col3", col3);
+
+		// Assert
+		Assert.assertEquals(col1, s.readColumn("col1", col1.getClass()));
+		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col2", Integer.class));
+		Assert.assertEquals(col3, s.readColumn("col3", col3.getClass()));
+	}
+
+	@Test
+	public void testColumnWriteReadTwoColFamilies() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Data for first ColFamily
+		String fam1col1 = "value1";
+		int fam1col2 = 1234;
+		Calendar fam1col3 = Calendar.getInstance();
+
+		// Write to first ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("emptyCol");
+		s.writeColumn("col1", fam1col1);
+		s.writeColumn("col2", fam1col2);
+		s.writeColumn("col3", fam1col3);
+
+		// Data for second ColFamily
+		String fam2col1 = "value2";
+		int fam2col2 = 4312;
+		Calendar fam2col3 = Calendar.getInstance();
+		fam2col3.add(Calendar.DAY_OF_MONTH, 1);
+
+		// Write to second ColFamily
+		s.setFamilyAndKey("ColumnTest2", rowKey);
+		s.writeColumn("emptyCol");
+		s.writeColumn("col1", fam2col1);
+		s.writeColumn("col2", fam2col2);
+		s.writeColumn("col3", fam2col3);
+
+		// Assert
+
+		// Assert First ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		Assert.assertEquals("", s.readColumn("emptyCol", String.class));
+		Assert.assertEquals(fam1col1, s.readColumn("col1", fam1col1.getClass()));
+		Assert.assertEquals(Integer.valueOf(fam1col2), s.readColumn("col2", Integer.class));
+		Assert.assertEquals(fam1col3, s.readColumn("col3", fam1col3.getClass()));
+
+		// Assert Second ColFamily
+		s.setFamilyAndKey("ColumnTest2", rowKey);
+		Assert.assertEquals("", s.readColumn("emptyCol", String.class));
+		Assert.assertEquals(fam2col1, s.readColumn("col1", fam2col1.getClass()));
+		Assert.assertEquals(Integer.valueOf(fam2col2), s.readColumn("col2", Integer.class));
+		Assert.assertEquals(fam2col3, s.readColumn("col3", fam2col3.getClass()));
+
 	}
 
 	@Test
@@ -74,7 +145,6 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey2);
 		s.writeColumn("col1", "val1");
 		s.writeColumn("col2", "val2");
-		s.flush();
 
 		s.deleteRow();
 		s.deleteRow("ColumnTest1", rowKey1);
@@ -101,17 +171,14 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.writeColumn("col1", "subCol1", col1);
 		s.writeColumn("col1", "subCol2", col2);
 		s.writeColumn("col1", "subCol3", col3);
-		s.flush();
 
 		s.writeColumn("col2", "subCol1", col1);
 		s.writeColumn("col2", "subCol2", col2);
 		s.writeColumn("col2", "subCol3", col3);
-		s.flush();
 
 		s.writeColumn("col3", "subCol1", col1);
 		s.writeColumn("col3", "subCol2", col2);
 		s.writeColumn("col3", "subCol3", col3);
-		s.flush();
 
 		// Assert
 		Assert.assertEquals(col1, s.readColumn("col1", "subCol1", String.class));
@@ -123,84 +190,5 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		Assert.assertEquals(col1, s.readColumn("col3", "subCol1", String.class));
 		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col3", "subCol2", Integer.class));
 		Assert.assertEquals(col3, s.readColumn("col3", "subCol3", Calendar.class));
-	}
-
-	@Test
-	public void testColumnWriteRead() throws Exception {
-		// Setup test
-		String rowKey = UUID.randomUUID().toString();
-		AtreusSessionImpl s = (AtreusSessionImpl) sessionFactory.openSession();
-
-		// Data for ColFamily
-		String col1 = "value1";
-		int col2 = 1234;
-		Calendar col3 = Calendar.getInstance();
-
-		// Write data to ColFamily
-		s.setFamilyAndKey("ColumnTest1", rowKey);
-		// s.writeColumn("emptyCol");
-		s.writeColumn("col1", col1);
-		s.writeColumn("col2", col2);
-		s.writeColumn("col3", col3);
-		s.flush();
-
-		// Assert
-
-		// Assert.assertTrue("Expect exists", r.existsColumn("emptyCol"));
-		// Assert.assertFalse("Expect not exist", r.existsColumn("fakeCol"));
-		// Assert.assertEquals("", r.columnValueAsString("emptyCol"));
-		Assert.assertEquals(col1, s.readColumn("col1", col1.getClass()));
-		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col2", Integer.class));
-		Assert.assertEquals(col3, s.readColumn("col3", col3.getClass()));
-	}
-
-	@Test
-	public void testColumnWriteReadTwoColFamilies() throws Exception {
-		// Setup test
-		String rowKey = UUID.randomUUID().toString();
-
-		// Data for first ColFamily
-		String fam1col1 = "value1";
-		int fam1col2 = 1234;
-		Calendar fam1col3 = Calendar.getInstance();
-
-		// Write to first ColFamily
-		s.setFamilyAndKey("ColumnTest1", rowKey);
-		s.writeColumn("emptyCol");
-		s.writeColumn("col1", fam1col1);
-		s.writeColumn("col2", fam1col2);
-		s.writeColumn("col3", fam1col3);
-		s.flush();
-
-		// Data for second ColFamily
-		String fam2col1 = "value2";
-		int fam2col2 = 4312;
-		Calendar fam2col3 = Calendar.getInstance();
-		fam2col3.add(Calendar.DAY_OF_MONTH, 1);
-
-		// Write to second ColFamily
-		s.setFamilyAndKey("ColumnTest2", rowKey);
-		s.writeColumn("emptyCol");
-		s.writeColumn("col1", fam2col1);
-		s.writeColumn("col2", fam2col2);
-		s.writeColumn("col3", fam2col3);
-		s.flush();
-
-		// Assert
-
-		// Assert First ColFamily
-		s.setFamilyAndKey("ColumnTest1", rowKey);
-		Assert.assertEquals("", s.readColumn("emptyCol", String.class));
-		Assert.assertEquals(fam1col1, s.readColumn("col1", fam1col1.getClass()));
-		Assert.assertEquals(Integer.valueOf(fam1col2), s.readColumn("col2", Integer.class));
-		Assert.assertEquals(fam1col3, s.readColumn("col3", fam1col3.getClass()));
-
-		// Assert Second ColFamily
-		s.setFamilyAndKey("ColumnTest2", rowKey);
-		Assert.assertEquals("", s.readColumn("emptyCol", String.class));
-		Assert.assertEquals(fam2col1, s.readColumn("col1", fam2col1.getClass()));
-		Assert.assertEquals(Integer.valueOf(fam2col2), s.readColumn("col2", Integer.class));
-		Assert.assertEquals(fam2col3, s.readColumn("col3", fam2col3.getClass()));
-
 	}
 }

@@ -28,12 +28,12 @@ public class AtreusUnknownException extends AtreusException {
 
 	private static final long serialVersionUID = -6111913440997845665L;
 
-	public AtreusUnknownException(String message, Throwable exception) {
-		super(message, exception);
-	}
-
 	public AtreusUnknownException(String message) {
 		super(message);
+	}
+
+	public AtreusUnknownException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
 	public AtreusUnknownException(Throwable exception) {

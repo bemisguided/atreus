@@ -29,6 +29,10 @@ import org.atreus.impl.utils.ByteUtils;
 
 public class LongTypeConverter implements AtreusTypeConverter {
 
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toLong(bytes);
+	}
+
 	public boolean isSupported(Class<?> type) {
 		return Long.class.isAssignableFrom(type);
 	}
@@ -36,10 +40,6 @@ public class LongTypeConverter implements AtreusTypeConverter {
 	public byte[] toBytes(Object value) {
 		Long longValue = (Long) value;
 		return ByteUtils.toBytes(longValue);
-	}
-
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toLong(bytes);
 	}
 
 }

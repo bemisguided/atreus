@@ -24,16 +24,16 @@
 
 package org.atreus;
 
-public class AtreusNetworkException  extends AtreusException{
+public class AtreusNetworkException extends AtreusException {
 
 	private static final long serialVersionUID = 5828628137181736290L;
 
-	public AtreusNetworkException(String message, Throwable exception) {
-		super(message, exception);
-	}
-
 	public AtreusNetworkException(String message) {
 		super(message);
+	}
+
+	public AtreusNetworkException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
 	public AtreusNetworkException(Throwable exception) {

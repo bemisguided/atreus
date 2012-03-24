@@ -32,6 +32,12 @@ import org.atreus.impl.utils.ByteUtils;
 public class DateTypeConverter implements AtreusTypeConverter {
 
 	@Override
+	public Object fromBytes(byte[] bytes) {
+		long time = ByteUtils.toLong(bytes);
+		return new Date(time);
+	}
+
+	@Override
 	public boolean isSupported(Class<?> type) {
 		return Date.class.isAssignableFrom(type);
 	}
@@ -40,12 +46,6 @@ public class DateTypeConverter implements AtreusTypeConverter {
 	public byte[] toBytes(Object value) {
 		Date date = (Date) value;
 		return ByteUtils.toBytes(date.getTime());
-	}
-
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		long time = ByteUtils.toLong(bytes);
-		return new Date(time);
 	}
 
 }

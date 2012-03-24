@@ -30,6 +30,11 @@ import org.atreus.impl.utils.ByteUtils;
 public class ByteTypeConverter implements AtreusTypeConverter {
 
 	@Override
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toByte(bytes);
+	}
+
+	@Override
 	public boolean isSupported(Class<?> type) {
 		return Byte.class.isAssignableFrom(type);
 	}
@@ -38,11 +43,6 @@ public class ByteTypeConverter implements AtreusTypeConverter {
 	public byte[] toBytes(Object value) {
 		Byte byteVal = (Byte) value;
 		return ByteUtils.toBytes(byteVal);
-	}
-
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toByte(bytes);
 	}
 
 }

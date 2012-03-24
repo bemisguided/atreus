@@ -22,27 +22,22 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.converters;
+package org.atreus;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+public class AtreusIllegalStateException extends AtreusException {
 
-public class BooleanTypeConverter implements AtreusTypeConverter {
+	private static final long serialVersionUID = -789095461203115293L;
 
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toBoolean(bytes);
+	public AtreusIllegalStateException(String message) {
+		super(message);
 	}
 
-	@Override
-	public boolean isSupported(Class<?> type) {
-		return Boolean.class.isAssignableFrom(type);
+	public AtreusIllegalStateException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
-	@Override
-	public byte[] toBytes(Object value) {
-		Boolean bolVal = (Boolean) value;
-		return ByteUtils.toBytes(bolVal);
+	public AtreusIllegalStateException(Throwable exception) {
+		super(exception);
 	}
 
 }

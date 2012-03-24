@@ -71,6 +71,10 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		return typeRegistry.fromBytes(type, bytes);
 	}
 
+	public ConnectionManager getConnectionManager() {
+		return connectionManager;
+	}
+
 	@Override
 	public ConsistencyLevel getDefaultReadConsistencyLevel() {
 		return config.getDefaultReadConsistencyLevel();
@@ -110,10 +114,6 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 		session.setCaching(config.isDefaultCaching());
 		session.setEagerFetching(config.isDefaultEagerFetching());
 		return session;
-	}
-
-	public ConnectionManager getConnectionManager() {
-		return connectionManager;
 	}
 
 	@Override

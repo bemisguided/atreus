@@ -29,6 +29,22 @@ import java.util.Map;
 
 public class ColumnCache {
 
-	private final Map<ColumnReference, byte[]> columnCache = new HashMap<ColumnReference, byte[]>();
+	private final Map<ColumnReference, CacheResult> columnCache = new HashMap<ColumnReference, CacheResult>();
 
+	public ColumnCache() {
+	}
+
+	public CacheResult get(String columnFamily, byte[] rowKey, byte[] columnName) {
+		return get(columnFamily, rowKey, columnName, null);
+	}
+
+	public CacheResult get(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
+		ColumnReference reference = new ColumnReference(columnFamily, rowKey, columnName, subColumnName);
+		return columnCache.get(reference);
+	}
+
+	public void put(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, byte[] value) {
+		ColumnReference reference = new ColumnReference(columnFamily, rowKey, columnName, subColumnName);
+		// columnCache.put(reference, );
+	}
 }

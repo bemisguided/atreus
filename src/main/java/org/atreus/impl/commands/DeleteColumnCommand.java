@@ -27,7 +27,9 @@ package org.atreus.impl.commands;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.Deletion;
 import org.apache.cassandra.thrift.Mutation;
+import org.apache.cassandra.thrift.SlicePredicate;
 
 public class DeleteColumnCommand extends ColumnCommandBase implements WriteCommand {
 
@@ -36,9 +38,15 @@ public class DeleteColumnCommand extends ColumnCommandBase implements WriteComma
 	}
 
 	@Override
-	public Mutation buildMutation() {
-		// TODO Auto-generated method stub
-		return null;
+	public void batch(Batch batch) {
+		Deletion deletion = new Deletion();
+		deletion.setTimestamp(System.currentTimeMillis());
+		SlicePredicate predicate = new SlicePredicate();
+		predicate.addToColumn_names(getColumnName());
+		deletion.setPredicate(predicate);
+		Mutation mutation = new Mutation();
+		mutation.setDeletion(deletion);
+		batch.add(getColumnFamily(), getRowKey(), mutation);
 	}
 
 	@Override

@@ -22,27 +22,10 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.converters;
+package org.atreus.impl.cache;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+public enum CacheResultStatus {
 
-public class BooleanTypeConverter implements AtreusTypeConverter {
-
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toBoolean(bytes);
-	}
-
-	@Override
-	public boolean isSupported(Class<?> type) {
-		return Boolean.class.isAssignableFrom(type);
-	}
-
-	@Override
-	public byte[] toBytes(Object value) {
-		Boolean bolVal = (Boolean) value;
-		return ByteUtils.toBytes(bolVal);
-	}
+	NO_RESULTS;
 
 }

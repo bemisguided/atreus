@@ -26,10 +26,10 @@ package org.atreus;
 
 public interface AtreusTypeConverter {
 
+	public Object fromBytes(byte[] bytes);
+
 	public boolean isSupported(Class<?> type);
 
 	public byte[] toBytes(Object value);
-
-	public Object fromBytes(byte[] bytes);
 
 }

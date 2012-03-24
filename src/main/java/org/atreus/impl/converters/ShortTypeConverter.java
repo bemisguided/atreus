@@ -30,6 +30,11 @@ import org.atreus.impl.utils.ByteUtils;
 public class ShortTypeConverter implements AtreusTypeConverter {
 
 	@Override
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toShort(bytes);
+	}
+
+	@Override
 	public boolean isSupported(Class<?> type) {
 		return Short.class.isAssignableFrom(type);
 	}
@@ -38,11 +43,6 @@ public class ShortTypeConverter implements AtreusTypeConverter {
 	public byte[] toBytes(Object value) {
 		Short shortVal = (Short) value;
 		return ByteUtils.toBytes(shortVal);
-	}
-
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toShort(bytes);
 	}
 
 }

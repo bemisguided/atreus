@@ -28,12 +28,12 @@ public abstract class AtreusException extends RuntimeException {
 
 	private static final long serialVersionUID = -1052296005339247902L;
 
-	protected AtreusException(String message, Throwable exception) {
-		super(message, exception);
-	}
-
 	protected AtreusException(String message) {
 		super(message);
+	}
+
+	protected AtreusException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
 	protected AtreusException(Throwable exception) {

@@ -48,9 +48,9 @@ public class AtreusConfiguration {
 
 	private int poolMaximumIdleSize = 2;
 
-	private int port;
-
 	private long poolValidationFrequency = 60000;
+
+	private int port;
 
 	public AtreusConfiguration() {
 	}

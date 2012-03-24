@@ -55,10 +55,6 @@ public class TypeConverterRegistry {
 		converters.add(new DateTypeConverter());
 	}
 
-	public void removeConverter(AtreusTypeConverter converter) {
-		converters.remove(converter);
-	}
-
 	public AtreusTypeConverter findConverter(Class<?> type) {
 		Assert.notNull(type, "Class cannot be null");
 		AtreusTypeConverter converter = converterCache.get(type);
@@ -85,6 +81,10 @@ public class TypeConverterRegistry {
 
 	public List<AtreusTypeConverter> getConverters() {
 		return converters;
+	}
+
+	public void removeConverter(AtreusTypeConverter converter) {
+		converters.remove(converter);
 	}
 
 	private AtreusTypeConverter resolve(Class<?> type) {

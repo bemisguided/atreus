@@ -29,6 +29,10 @@ import org.atreus.impl.utils.ByteUtils;
 
 public class IntegerTypeConverter implements AtreusTypeConverter {
 
+	public Object fromBytes(byte[] bytes) {
+		return ByteUtils.toInt(bytes);
+	}
+
 	public boolean isSupported(Class<?> type) {
 		return Integer.class.isAssignableFrom(type);
 	}
@@ -36,10 +40,6 @@ public class IntegerTypeConverter implements AtreusTypeConverter {
 	public byte[] toBytes(Object value) {
 		Integer intValue = (Integer) value;
 		return ByteUtils.toBytes(intValue);
-	}
-
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toInt(bytes);
 	}
 
 }

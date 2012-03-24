@@ -90,15 +90,20 @@ final class AtreusTransactionSynchronization extends TransactionSynchronizationA
 			logger.debug("Called flush() - Thread [" + Thread.currentThread().getId() + "]");
 		}
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Before AtreusSession.flush() - Thread [" + Thread.currentThread().getId() + "]");
+		if (session.isBatchWriting()) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Session is set to batch write - Thread [" + Thread.currentThread().getId() + "]");
+				logger.debug("Before AtreusSession.flush() - Thread [" + Thread.currentThread().getId() + "]");
+			}
+
+			session.flush();
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("After AtreusSession.flush() - Thread [" + Thread.currentThread().getId() + "]");
+			}
 		}
 
-		session.flush();
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("After AtreusSession.flush() - Thread [" + Thread.currentThread().getId() + "]");
-		}
 	}
 
 }

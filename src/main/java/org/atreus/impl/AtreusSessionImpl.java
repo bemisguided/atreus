@@ -26,8 +26,11 @@ package org.atreus.impl;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.atreus.AtreusDisconnectedException;
+import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
+import org.atreus.impl.commands.Batch;
+import org.atreus.impl.commands.BatchMutationCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
@@ -41,6 +44,8 @@ import org.atreus.impl.utils.AssertUtils;
 public class AtreusSessionImpl implements AtreusSession {
 
 	private String columnFamily;
+
+	private Batch batch;
 
 	private boolean batchWriting;
 
@@ -60,6 +65,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory) {
 		this.sessionFactory = sessionFactory;
+		this.batch = new Batch();
 	}
 
 	private void assertFamilyAndKey() {
@@ -121,7 +127,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
 
 		byte[] rowKeyBytes = toBytes(rowKey);
-		execute(new DeleteRowCommand(getColumnFamily(), rowKeyBytes, getWriteConsistencyLevel()));
+		executeOrBatch(new DeleteRowCommand(getColumnFamily(), rowKeyBytes, getWriteConsistencyLevel()));
 	}
 
 	protected Object execute(ReadCommand command) {
@@ -140,6 +146,14 @@ public class AtreusSessionImpl implements AtreusSession {
 		} finally {
 			getConnectionManager().returnConnection(conn);
 		}
+	}
+
+	protected void executeOrBatch(WriteCommand command) {
+		if (isBatchWriting()) {
+			command.batch(batch);
+			return;
+		}
+		execute(command);
 	}
 
 	@Override
@@ -173,6 +187,11 @@ public class AtreusSessionImpl implements AtreusSession {
 	@Override
 	public void flush() {
 		assertIsReady();
+		if (!isBatchWriting()) {
+			throw new AtreusIllegalStateException("Session is not set to batch writing");
+		}
+		execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
+		batch = new Batch();
 	}
 
 	protected <T> T fromBytes(Class<T> type, byte[] bytes) {
@@ -263,6 +282,9 @@ public class AtreusSessionImpl implements AtreusSession {
 	public void setBatchWriting(boolean batchWriting) {
 		assertIsReady();
 
+		if (batch.isOpen() && !batchWriting) {
+			throw new AtreusIllegalStateException("Session has an open batch that must be flushed before turning off batch write");
+		}
 		this.batchWriting = batchWriting;
 	}
 
@@ -328,7 +350,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] colNameBytes = toBytes(colName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		execute(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value, getWriteConsistencyLevel()));
+		executeOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value, getWriteConsistencyLevel()));
 	}
 
 	@Override
@@ -348,7 +370,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] subColNameBytes = toBytes(subColName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		execute(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value, getWriteConsistencyLevel()));
+		executeOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value, getWriteConsistencyLevel()));
 	}
 
 	@Override

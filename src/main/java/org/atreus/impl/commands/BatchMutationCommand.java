@@ -22,27 +22,29 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.converters;
+package org.atreus.impl.commands;
 
-import org.atreus.AtreusTypeConverter;
-import org.atreus.impl.utils.ByteUtils;
+import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 
-public class BooleanTypeConverter implements AtreusTypeConverter {
+public class BatchMutationCommand implements WriteCommand {
 
-	@Override
-	public Object fromBytes(byte[] bytes) {
-		return ByteUtils.toBoolean(bytes);
+	private final Batch batch;
+
+	private final ConsistencyLevel consistencyLevel;
+
+	public BatchMutationCommand(Batch batch, ConsistencyLevel consistencyLevel) {
+		this.batch = batch;
+		this.consistencyLevel = consistencyLevel;
 	}
 
 	@Override
-	public boolean isSupported(Class<?> type) {
-		return Boolean.class.isAssignableFrom(type);
+	public void batch(Batch batch) {
+
 	}
 
 	@Override
-	public byte[] toBytes(Object value) {
-		Boolean bolVal = (Boolean) value;
-		return ByteUtils.toBytes(bolVal);
+	public void execute(Client client) throws Exception {
+		client.batch_mutate(batch.getMutations(), consistencyLevel);
 	}
-
 }

@@ -24,31 +24,52 @@
 
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ColumnPath;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.Deletion;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.cassandra.thrift.Mutation;
 
-public class DeleteRowCommand extends ColumnCommandBase implements WriteCommand {
+public class Batch {
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey, ConsistencyLevel consistencyLevel) {
-		super(columnFamily, rowKey, null, null, consistencyLevel);
+	private Map<ByteBuffer, Map<String, List<Mutation>>> mutations = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+
+	private boolean open = false;
+
+	public void add(String columnFamily, ByteBuffer rowKey, Mutation mutation) {
+		Map<String, List<Mutation>> map = getRowKey(rowKey);
+		List<Mutation> list = getColumnFamily(columnFamily, map);
+		list.add(mutation);
+		open = true;
 	}
 
-	@Override
-	public void batch(Batch batch) {
-		Deletion deletion = new Deletion();
-		deletion.setTimestamp(System.currentTimeMillis());
-		Mutation mutation = new Mutation();
-		mutation.setDeletion(deletion);
-		batch.add(getColumnFamily(), getRowKey(), mutation);
+	private List<Mutation> getColumnFamily(String columnFamily, Map<String, List<Mutation>> map) {
+		List<Mutation> result = map.get(columnFamily);
+		if (result != null) {
+			return result;
+		}
+		result = new LinkedList<Mutation>();
+		map.put(columnFamily, result);
+		return result;
 	}
 
-	@Override
-	public void execute(Client client) throws Exception {
-		ColumnPath path = new ColumnPath(getColumnFamily());
-		client.remove(getRowKey(), path, System.currentTimeMillis(), getConsistencyLevel());
+	protected Map<ByteBuffer, Map<String, List<Mutation>>> getMutations() {
+		return mutations;
 	}
 
+	private Map<String, List<Mutation>> getRowKey(ByteBuffer rowKey) {
+		Map<String, List<Mutation>> result = mutations.get(rowKey);
+		if (result != null) {
+			return result;
+		}
+		result = new HashMap<String, List<Mutation>>();
+		mutations.put(rowKey, result);
+		return result;
+	}
+
+	public boolean isOpen() {
+		return open;
+	}
 }

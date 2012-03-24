@@ -25,11 +25,11 @@
 package org.atreus.impl.commands;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.Mutation;
 
 public interface WriteCommand {
 
-	public Mutation buildMutation();
+	public void batch(Batch batch);
 
 	public void execute(Client client) throws Exception;
+	
 }
