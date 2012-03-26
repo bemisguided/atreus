@@ -65,17 +65,12 @@ public class ConnectionManager {
 		configureHosts();
 	}
 
-	public void addHost(String host) {
-		AssertUtils.hasText(host, "Host is a required parameter");
-		nodeManager.nodeAvailable(host);
-	}
-
 	protected void configureHosts() {
 		for (String host : config.getHosts()) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Adding host [" + host + "] to the  Cassandra cluster host list");
 			}
-			addHost(host);
+			makeNodeAvailable(host);
 		}
 	}
 
@@ -199,6 +194,22 @@ public class ConnectionManager {
 		}
 	}
 
+	public void makeNodeAvailable(String host) {
+		AssertUtils.hasText(host, "Host is a required parameter");
+		makeNodeAvailable(host, false);
+	}
+
+	public void makeNodeAvailable(String host, boolean seed) {
+		AssertUtils.hasText(host, "Host is a required parameter");
+		nodeManager.nodeAvailable(host);
+		nodeManager.nodeMarkSeed(host);
+	}
+
+	public void makeNodeUnavailable(String host) {
+		AssertUtils.hasText(host, "Host is a required parameter");
+		nodeManager.nodeUnavailable(host);
+	}
+
 	protected Connection openConnection() {
 		String host = nodeManager.nextHost();
 		Exception cause = null;
@@ -223,7 +234,7 @@ public class ConnectionManager {
 
 	@SuppressWarnings("unchecked")
 	public void refreshHostList() {
-		Set<String> hosts = nodeManager.getHosts();
+		Set<String> currentHostList = nodeManager.getHosts();
 		Map<String, List<String>> result = (Map<String, List<String>>) execute(new DescribeSchemaVersionsCommand());
 		for (String schema : result.keySet()) {
 			if ("UNREACHABLE".equals(schema)) {
@@ -231,30 +242,25 @@ public class ConnectionManager {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Node host [" + host + "] is unreachable");
 					}
-					nodeManager.nodeUnavailable(host);
-					hosts.remove(host);
+					makeNodeUnavailable(host);
+					currentHostList.remove(host);
 				}
 			} else {
 				for (String host : result.get(schema)) {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Node host [" + host + "] is available for schema [" + schema + "]");
 					}
-					nodeManager.nodeAvailable(host);
-					hosts.remove(host);
+					makeNodeAvailable(host);
+					currentHostList.remove(host);
 				}
 			}
 		}
-		for (String host : hosts) {
+		for (String host : currentHostList) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Node host [" + host + "] not on schema list, assuming sis unreachable");
 			}
-			nodeManager.nodeUnavailable(host);
+			makeNodeUnavailable(host);
 		}
-	}
-
-	public void removeHost(String host) {
-		AssertUtils.hasText(host, "Host is a required parameter");
-		nodeManager.nodeUnavailable(host);
 	}
 
 	protected Connection retreiveConnection() {

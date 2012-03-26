@@ -42,7 +42,7 @@ import org.atreus.AtreusUnknownException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Connection {
+class Connection {
 
 	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 

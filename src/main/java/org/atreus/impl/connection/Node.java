@@ -24,20 +24,24 @@
 
 package org.atreus.impl.connection;
 
-public class Node {
+class Node {
 
 	private boolean available;
 
 	private final String host;
 
-	public Node(boolean available, String host) {
-		this.available = available;
-		this.host = host;
-	}
+	private boolean seed;
 
 	public Node(String host) {
 		this.host = host;
 		this.available = true;
+		this.seed = false;
+	}
+
+	public Node(String host, boolean seed, boolean available) {
+		this.available = available;
+		this.host = host;
+		this.seed = seed;
 	}
 
 	@Override
@@ -73,13 +77,21 @@ public class Node {
 		return available;
 	}
 
+	public boolean isSeed() {
+		return seed;
+	}
+
 	public void setAvailable(boolean available) {
 		this.available = available;
 	}
 
+	public void setSeed(boolean seed) {
+		this.seed = seed;
+	}
+
 	@Override
 	public String toString() {
-		return "Node [host=" + host + ", available=" + available + "]";
+		return "Node {host=" + host + ", seed=" + seed + ", available=" + available + "}";
 	}
 
 }

@@ -34,13 +34,25 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NodeManager {
+class NodeManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
+
+	private int countUnavailable = 0;
 
 	private final Queue<Node> queue = new LinkedBlockingQueue<Node>();
 
 	private final Map<String, Node> nodes = new HashMap<String, Node>();
+
+	private synchronized boolean allUnavailable() {
+		return countUnavailable == nodes.size();
+	}
+
+	private synchronized void decrementUnavailable() {
+		if (countUnavailable > 0) {
+			countUnavailable--;
+		}
+	}
 
 	public synchronized Set<String> getHosts() {
 		Set<String> result = new HashSet<String>();
@@ -48,6 +60,12 @@ public class NodeManager {
 			result.add(host);
 		}
 		return result;
+	}
+
+	private synchronized void incrementUnavailable() {
+		if (countUnavailable < nodes.size()) {
+			countUnavailable++;
+		}
 	}
 
 	public boolean isNodeAvailable(String host) {
@@ -68,7 +86,7 @@ public class NodeManager {
 		while (first || !node.equals(startNode)) {
 			first = false;
 			queue.add(node);
-			if (node.isAvailable()) {
+			if (node.isAvailable() || (node.isSeed() && allUnavailable())) {
 				return node.getHost();
 			}
 			node = queue.poll();
@@ -78,38 +96,60 @@ public class NodeManager {
 
 	public void nodeAvailable(String host) {
 		Node node;
+		decrementUnavailable();
 		if (nodes.containsKey(host)) {
 			node = nodes.get(host);
 			if (logger.isInfoEnabled() && !node.isAvailable()) {
-				logger.info("Host [" + host + "] is marked available");
+				logger.info("Host [" + host + "] seed [" + node.isSeed() + "] is marked available");
 			}
 			node.setAvailable(true);
 			return;
 		}
 		if (logger.isInfoEnabled()) {
-			logger.info("Host [" + host + "] is marked available");
+			logger.info("Host [" + host + "] seed [false] is marked available");
 		}
-		node = new Node(true, host);
+		node = new Node(host, false, true);
 		queue.add(node);
 		nodes.put(host, node);
 	}
 
+	public void nodeMarkSeed(String host) {
+		if (nodes.containsKey(host)) {
+			Node node = nodes.get(host);
+			if (logger.isInfoEnabled() && !node.isSeed()) {
+				logger.info("Host [" + host + "] is marked as a seed");
+			}
+			node.setSeed(true);
+		}
+	}
+
 	public void nodeUnavailable(String host) {
 		Node node;
+		incrementUnavailable();
 		if (nodes.containsKey(host)) {
 			node = nodes.get(host);
 			if (logger.isInfoEnabled() && node.isAvailable()) {
-				logger.info("Host [" + host + "] is marked unavailable");
+				logger.info("Host [" + host + "] seed [" + node.isSeed() + "] is marked available");
 			}
 			node.setAvailable(false);
 			return;
 		}
 		if (logger.isInfoEnabled()) {
-			logger.info("Host [" + host + "] is marked unavailable");
+			logger.info("Host [" + host + "] seed [false] is marked unavailable");
 		}
-		node = new Node(false, host);
+		node = new Node(host, false, false);
 		queue.add(node);
 		nodes.put(host, node);
+	}
+
+	public void nodeUnmarkSeed(String host) {
+		if (nodes.containsKey(host)) {
+			Node node = nodes.get(host);
+			if (logger.isInfoEnabled() && node.isSeed()) {
+				logger.info("Host [" + host + "] is unmarked as a seed");
+			}
+			node.setSeed(false);
+		}
 	}
 
 }
