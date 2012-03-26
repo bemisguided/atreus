@@ -2,13 +2,13 @@
 
 Atreus is a high-level client for the [Apache Cassandra](http://cassandra.apache.org/ "Apache Cassandra") NoSQL database. The goal of Atreus is to provide a client with an intuitive API that reduces the difficulty of adopting Cassandra. 
 
-Atreus is still under development and should be considered _alpha_ at the moment.
+Atreus is still under development and should be considered _alpha_ at the moment. The official web site can be found at [atreus.bemisguided.com](http://atreus.bemisguided.com/).
 
 ## Features
 
 Atreus has the following features:
 
-* Uses a session-based abstract layer similar to ORM tools such as Hibernate
+* Uses a session-based abstraction layer similar to ORM tools such as Hibernate
 * Type converters to handle serialization of Objects and primitives to and from Cassandra
 * Configurable to perform writes in batch or immediately against a Cassandra Cluster
 * Configurable to read rows and columns eagerly or lazily
