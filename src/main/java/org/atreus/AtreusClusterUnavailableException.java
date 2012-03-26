@@ -22,21 +22,22 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.commands;
+package org.atreus;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
+public class AtreusClusterUnavailableException extends AtreusException {
 
-public class DescribeRingCommand implements ReadCommand {
+	private static final long serialVersionUID = -7242734970099462453L;
 
-	private final String keyspace;
-
-	public DescribeRingCommand(String keyspace) {
-		this.keyspace = keyspace;
+	public AtreusClusterUnavailableException(String message) {
+		super(message);
 	}
 
-	@Override
-	public Object execute(Client client) throws Exception {
-		return client.describe_ring(keyspace);
+	public AtreusClusterUnavailableException(String message, Throwable exception) {
+		super(message, exception);
+	}
+
+	public AtreusClusterUnavailableException(Throwable exception) {
+		super(exception);
 	}
 
 }

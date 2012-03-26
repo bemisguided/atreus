@@ -22,61 +22,64 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl;
+package org.atreus.impl.connection;
 
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
+public class Node {
 
-import org.atreus.AtreusColumnMap;
-import org.atreus.impl.converters.TypeConverterRegistry;
+	private boolean available;
 
-public class AtreusColumnMapImpl extends AtreusColumnMapBase {
+	private final String host;
 
-	private final Map<ByteBuffer, ByteBuffer> map;
+	public Node(boolean available, String host) {
+		this.available = available;
+		this.host = host;
+	}
 
-	public AtreusColumnMapImpl(TypeConverterRegistry typeRegistry) {
-		super(typeRegistry);
-		this.map = new HashMap<ByteBuffer, ByteBuffer>();
+	public Node(String host) {
+		this.host = host;
+		this.available = true;
 	}
 
 	@Override
-	public boolean existsValue(byte[] value) {
-		return map.containsValue(ByteBuffer.wrap(value));
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Node other = (Node) obj;
+		if (host == null) {
+			if (other.host != null)
+				return false;
+		} else if (!host.equals(other.host))
+			return false;
+		return true;
+	}
+
+	public String getHost() {
+		return host;
 	}
 
 	@Override
-	public AtreusColumnMap get(byte[] columnName) {
-		throw exceptionNotSupported();
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((host == null) ? 0 : host.hashCode());
+		return result;
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
 	}
 
 	@Override
-	public byte[] getAsBytes(byte[] columnName) {
-		ByteBuffer buffer = map.get(ByteBuffer.wrap(columnName));
-		if (buffer == null) {
-			return null;
-		}
-		return buffer.array();
-	}
-
-	protected Map<ByteBuffer, ?> getMap() {
-		return map;
-	}
-
-	@Override
-	public boolean hasSubColumns() {
-		return false;
-	}
-
-	@Override
-	public void put(byte[] columnName, byte[] value) {
-		assertMutable();
-		map.put(ByteBuffer.wrap(columnName), ByteBuffer.wrap(value));
-	}
-
-	@Override
-	public void put(byte[] columnName, byte[] subNameColumn, byte[] value) {
-		throw exceptionNotSupported();
+	public String toString() {
+		return "Node [host=" + host + ", available=" + available + "]";
 	}
 
 }

@@ -22,41 +22,18 @@
  * THE SOFTWARE.
  */
 
-package org.atreus.impl.connection;
+package org.atreus.impl.commands;
 
-import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.cassandra.thrift.Cassandra.Client;
 
-class ConnectionFactory implements PoolableObjectFactory<Connection> {
+public class DescribeSchemaVersionsCommand implements ReadCommand {
 
-	private final ConnectionManager manager;
-
-	ConnectionFactory(ConnectionManager manager) {
-		this.manager = manager;
+	public DescribeSchemaVersionsCommand() {
 	}
 
 	@Override
-	public void activateObject(Connection connection) throws Exception {
-
-	}
-
-	@Override
-	public void destroyObject(Connection connection) throws Exception {
-		connection.close();
-	}
-
-	@Override
-	public Connection makeObject() throws Exception {
-		return manager.openConnection();
-	}
-
-	@Override
-	public void passivateObject(Connection connection) throws Exception {
-
-	}
-
-	@Override
-	public boolean validateObject(Connection connection) {
-		return manager.validateConnection(connection);
+	public Object execute(Client client) throws Exception {
+		return client.describe_schema_versions();
 	}
 
 }

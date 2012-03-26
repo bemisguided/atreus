@@ -35,11 +35,10 @@ import org.atreus.impl.commands.BatchMutationCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
-import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.ReadCommand;
+import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.commands.WriteCommand;
-import org.atreus.impl.connection.Connection;
 import org.atreus.impl.connection.ConnectionManager;
 import org.atreus.impl.converters.TypeConverterRegistry;
 import org.atreus.impl.utils.AssertUtils;
@@ -134,21 +133,11 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	protected Object execute(ReadCommand command) {
-		Connection conn = getConnectionManager().getConnection();
-		try {
-			return conn.execute(command);
-		} finally {
-			getConnectionManager().returnConnection(conn);
-		}
+		return getConnectionManager().execute(command);
 	}
 
 	protected void execute(WriteCommand command) {
-		Connection conn = getConnectionManager().getConnection();
-		try {
-			conn.execute(command);
-		} finally {
-			getConnectionManager().returnConnection(conn);
-		}
+		getConnectionManager().execute(command);
 	}
 
 	protected void executeOrBatch(WriteCommand command) {

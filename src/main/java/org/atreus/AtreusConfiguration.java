@@ -28,7 +28,9 @@ import org.apache.cassandra.thrift.ConsistencyLevel;
 
 public class AtreusConfiguration {
 
-	private int connectionTimeout = 5000;
+	private int clusterPollFrequency = 2 * 60 * 1000;
+
+	private int connectionTimeout = 5 * 1000;
 
 	private boolean defaultBatchWriting = true;
 
@@ -46,9 +48,9 @@ public class AtreusConfiguration {
 
 	private int poolMaxiumumSize = 5;
 
-	private int poolMaximumIdleSize = 2;
+	private int poolMinimumIdleSize = 2;
 
-	private long poolValidationFrequency = 60000;
+	private long poolValidationFrequency = 1 * 60 * 1000;
 
 	private int port;
 
@@ -65,6 +67,10 @@ public class AtreusConfiguration {
 		this.hosts = hosts;
 		this.port = port;
 		this.keyspace = keyspace;
+	}
+
+	public int getClusterPollFrequency() {
+		return clusterPollFrequency;
 	}
 
 	public int getConnectionTimeout() {
@@ -87,12 +93,12 @@ public class AtreusConfiguration {
 		return keyspace;
 	}
 
-	public int getPoolMaximumIdleSize() {
-		return poolMaximumIdleSize;
-	}
-
 	public int getPoolMaxiumumSize() {
 		return poolMaxiumumSize;
+	}
+
+	public int getPoolMinimumIdleSize() {
+		return poolMinimumIdleSize;
 	}
 
 	public long getPoolValidationFrequency() {
@@ -113,6 +119,10 @@ public class AtreusConfiguration {
 
 	public boolean isDefaultEagerFetching() {
 		return defaultEagerFetching;
+	}
+
+	public void setClusterPollFrequency(int clusterPollFrequency) {
+		this.clusterPollFrequency = clusterPollFrequency;
 	}
 
 	public void setConnectionTimeout(int connectionTimeout) {
@@ -147,12 +157,12 @@ public class AtreusConfiguration {
 		this.keyspace = keyspace;
 	}
 
-	public void setPoolMaximumIdleSize(int poolMaximumIdleSize) {
-		this.poolMaximumIdleSize = poolMaximumIdleSize;
-	}
-
 	public void setPoolMaxiumumSize(int poolMaxiumumSize) {
 		this.poolMaxiumumSize = poolMaxiumumSize;
+	}
+
+	public void setPoolMinimumIdleSize(int poolMaximumIdleSize) {
+		this.poolMinimumIdleSize = poolMaximumIdleSize;
 	}
 
 	public void setPoolValidationFrequency(long poolValidationFrequency) {

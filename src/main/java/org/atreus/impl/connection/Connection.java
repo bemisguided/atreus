@@ -24,11 +24,11 @@
 
 package org.atreus.impl.connection;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -36,14 +36,19 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConnectionException;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
-import org.atreus.impl.commands.ReadCommand;
-import org.atreus.impl.commands.WriteCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Connection {
+
+	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+
+	private static final AtomicLong counter = new AtomicLong();
+
+	private final long id;
 
 	private final Client client;
 
@@ -57,8 +62,9 @@ public class Connection {
 
 	private final TTransport transport;
 
-	Connection(String host, int port, String keyspace) {
-		this.transport = new TFramedTransport(new TSocket(host, port, 1500));
+	Connection(String host, int port, String keyspace, int timeout) {
+		this.id = counter.incrementAndGet();
+		this.transport = new TFramedTransport(new TSocket(host, port, timeout));
 		TProtocol protocol = new TBinaryProtocol(transport);
 		this.client = new Cassandra.Client(protocol);
 		this.host = host;
@@ -69,37 +75,12 @@ public class Connection {
 	public void close() {
 		open = false;
 		transport.close();
-	}
-
-	public Object execute(ReadCommand command) {
-		try {
-			return command.execute(getClient());
-		} catch (InvalidRequestException e) {
-			throw new AtreusCommandException("Read command supplied was invalid [" + command + "]", e);
-		} catch (UnavailableException e) {
-			throw new AtreusNetworkException("Cassandra cluster unavailableto execute read command [" + command + "]", e);
-		} catch (TimedOutException e) {
-			throw new AtreusNetworkException("Timeout while executing read command [" + command + "]", e);
-		} catch (Exception e) {
-			throw new AtreusUnknownException("Exception while executing read command [" + command + "]", e);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Connection [" + id + "] for host [" + host + "] closed");
 		}
 	}
 
-	public void execute(WriteCommand command) {
-		try {
-			command.execute(getClient());
-		} catch (InvalidRequestException e) {
-			throw new AtreusCommandException("Write command supplied was invalid [" + command + "]", e);
-		} catch (UnavailableException e) {
-			throw new AtreusNetworkException("Cassandra cluster unavailableto execute write command [" + command + "]", e);
-		} catch (TimedOutException e) {
-			throw new AtreusNetworkException("Timeout while executing write command [" + command + "]", e);
-		} catch (Exception e) {
-			throw new AtreusUnknownException("Exception while executing write command [" + command + "]", e);
-		}
-	}
-
-	protected Client getClient() {
+	public Client getClient() {
 		return client;
 	}
 
@@ -124,6 +105,9 @@ public class Connection {
 			getClient().describe_cluster_name();
 			return true;
 		} catch (TException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Connection [" + id + "] for host [" + host + "] failed validation", e);
+			}
 			open = false;
 			return false;
 		}
@@ -137,8 +121,13 @@ public class Connection {
 		}
 		try {
 			client.set_keyspace(keyspace);
-		} catch (Exception e) {
+		} catch (InvalidRequestException e) {
 			throw new AtreusConnectionException("Unable to connect to Cassandra cluster keyspace [" + keyspace + "]", e);
+		} catch (TException e) {
+			throw new AtreusUnknownException("Unable to connect to Cassandra cluster keyspace  [" + keyspace + "]", e);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Connection [" + id + "] for host [" + host + "] opened and connected to keyspace [" + keyspace + "]");
 		}
 	}
 }
