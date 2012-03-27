@@ -111,7 +111,7 @@ public class ConnectionManager {
 	}
 
 	public Object execute(ReadCommand command) {
-		Connection conn = retreiveConnection();
+		Connection conn = retrieveConnection();
 		String host = conn.getHost();
 		boolean killConnection = false;
 		try {
@@ -139,7 +139,7 @@ public class ConnectionManager {
 	}
 
 	public void execute(WriteCommand command) {
-		Connection conn = retreiveConnection();
+		Connection conn = retrieveConnection();
 		String host = conn.getHost();
 		boolean killConnection = false;
 		try {
@@ -211,15 +211,19 @@ public class ConnectionManager {
 	}
 
 	protected Connection openConnection() {
-		String host = nodeManager.nextHost();
+		int hostCount = nodeManager.getHosts().size();
 		Exception cause = null;
-		while (host != null) {
+		for (int i = 0; i < hostCount; i++) {
+			String host = nodeManager.nextHost();
 			Connection conn = new Connection(host, getPort(), getKeyspace(), getConnectionTimeout());
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Attemping to open connection to host [" + host + "]");
 				}
 				conn.open();
+				if (logger.isDebugEnabled()) {
+					logger.debug("Successully opened connection to host [" + host + "]");
+				}
 				return conn;
 			} catch (AtreusConnectionException e) {
 				throw e;
@@ -227,7 +231,6 @@ public class ConnectionManager {
 				cause = e;
 				nodeManager.nodeUnavailable(host);
 			}
-			host = nodeManager.nextHost();
 		}
 		throw new AtreusConnectionException("No Cassandra cluster hosts available", cause);
 	}
@@ -263,17 +266,17 @@ public class ConnectionManager {
 		}
 	}
 
-	protected Connection retreiveConnection() {
+	protected Connection retrieveConnection() {
 		try {
 			return pool.borrowObject();
 		} catch (Exception e) {
 			if (e instanceof NoSuchElementException) {
-				throw new AtreusConnectionException("Connection pool exhausted");
+				throw new AtreusConnectionException("Connection pool exhausted", e);
 			}
 			if (e instanceof AtreusException) {
 				throw (AtreusException) e;
 			}
-			throw new AtreusUnknownException("Unexpected exception on disconnect", e);
+			throw new AtreusUnknownException("Unexpected exception on attempting to retrieve a Connection", e);
 		}
 	}
 
@@ -289,7 +292,7 @@ public class ConnectionManager {
 	}
 
 	public void testConnectivity() {
-		returnConnection(retreiveConnection());
+		returnConnection(retrieveConnection());
 	}
 
 	protected boolean validateConnection(Connection connection) {

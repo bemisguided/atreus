@@ -117,13 +117,16 @@ class Connection {
 		try {
 			transport.open();
 		} catch (TTransportException e) {
+			counter.decrementAndGet();
 			throw new AtreusNetworkException("Unable to open transport to Cassandra cluster", e);
 		}
 		try {
 			client.set_keyspace(keyspace);
 		} catch (InvalidRequestException e) {
+			counter.decrementAndGet();
 			throw new AtreusConnectionException("Unable to connect to Cassandra cluster keyspace [" + keyspace + "]", e);
 		} catch (TException e) {
+			counter.decrementAndGet();
 			throw new AtreusUnknownException("Unable to connect to Cassandra cluster keyspace  [" + keyspace + "]", e);
 		}
 		if (logger.isDebugEnabled()) {

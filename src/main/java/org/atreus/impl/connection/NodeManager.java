@@ -87,6 +87,7 @@ class NodeManager {
 			first = false;
 			queue.add(node);
 			if (node.isAvailable() || (node.isSeed() && allUnavailable())) {
+				node.setAvailable(true);
 				return node.getHost();
 			}
 			node = queue.poll();
