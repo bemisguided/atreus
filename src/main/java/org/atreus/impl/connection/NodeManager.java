@@ -87,7 +87,6 @@ class NodeManager {
 			first = false;
 			queue.add(node);
 			if (node.isAvailable() || (node.isSeed() && allUnavailable())) {
-				node.setAvailable(true);
 				return node.getHost();
 			}
 			node = queue.poll();
@@ -130,7 +129,7 @@ class NodeManager {
 		if (nodes.containsKey(host)) {
 			node = nodes.get(host);
 			if (logger.isInfoEnabled() && node.isAvailable()) {
-				logger.info("Host [" + host + "] seed [" + node.isSeed() + "] is marked available");
+				logger.info("Host [" + host + "] seed [" + node.isSeed() + "] is marked unavailable");
 			}
 			node.setAvailable(false);
 			return;

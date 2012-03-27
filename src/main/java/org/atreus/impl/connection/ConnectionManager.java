@@ -224,6 +224,7 @@ public class ConnectionManager {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Successully opened connection to host [" + host + "]");
 				}
+				makeNodeAvailable(host);
 				return conn;
 			} catch (AtreusConnectionException e) {
 				throw e;
@@ -260,7 +261,7 @@ public class ConnectionManager {
 		}
 		for (String host : currentHostList) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Node host [" + host + "] not on schema list, assuming sis unreachable");
+				logger.debug("Node host [" + host + "] not on schema list, assuming it is unreachable");
 			}
 			makeNodeUnavailable(host);
 		}
