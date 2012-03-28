@@ -1,4 +1,4 @@
-/*
+/**
  * The MIT License
  *
  * Copyright (c) 2012 Martin Crawford and contributors.
@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.atreus.impl.converters;
 
 import java.util.Date;

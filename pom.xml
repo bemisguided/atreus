@@ -4,6 +4,7 @@
 	<groupId>atreus</groupId>
 	<artifactId>atreus-core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<inceptionYear>2012</inceptionYear>
 
 	<properties>
 		<java-version>1.6</java-version>
@@ -23,7 +24,7 @@
 			<artifactId>spring-core</artifactId>
 			<version>${org.springframework.version}</version>
 			<scope>provided</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
@@ -48,13 +49,13 @@
 			<artifactId>commons-pool</artifactId>
 			<version>${org.apache.commons.pool-version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-thrift</artifactId>
 			<version>${cassandra-thrift-version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.cassandraunit</groupId>
 			<artifactId>cassandra-unit</artifactId>
@@ -68,7 +69,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -94,9 +95,42 @@
 				</configuration>
 				<version>2.7.2</version>
 			</plugin>
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<version>1.9.0</version>
+				<configuration>
+					<basedir>${basedir}</basedir>
+					<header>${basedir}/LICENSE.txt</header>
+					<quiet>false</quiet>
+					<failIfMissing>true</failIfMissing>
+					<aggregate>false</aggregate>
+					<strictCheck>true</strictCheck>
+					<excludes>
+						<exclude>target/**</exclude>
+						<exclude>*.markdown</exclude>
+						<exclude>*.gitignore</exclude>
+					</excludes>
+					<useDefaultExcludes>true</useDefaultExcludes>
+					<useDefaultMapping>true</useDefaultMapping>
+					<properties>
+						<year>${project.inceptionYear}</year>
+					</properties>
+					<encoding>UTF-8</encoding>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
-	
+
 	<repositories>
 		<repository>
 			<id>maven.scale7.org</id>
