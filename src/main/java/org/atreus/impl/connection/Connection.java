@@ -23,113 +23,22 @@
  */
 package org.atreus.impl.connection;
 
-import java.util.concurrent.atomic.AtomicLong;
+public interface Connection {
 
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusConnectionException;
-import org.atreus.AtreusNetworkException;
-import org.atreus.AtreusUnknownException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+	public void close();
 
-class Connection {
+	public long getId();
 
-	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+	public String getHost();
 
-	private static final AtomicLong counter = new AtomicLong();
+	public String getKeyspace();
 
-	private final long id;
+	public int getPort();
 
-	private final Client client;
+	public boolean isOpen();
 
-	private final String host;
+	public boolean isValid();
 
-	private final String keyspace;
+	public void open();
 
-	private boolean open = true;
-
-	private final int port;
-
-	private final TTransport transport;
-
-	Connection(String host, int port, String keyspace, int timeout) {
-		this.id = counter.incrementAndGet();
-		this.transport = new TFramedTransport(new TSocket(host, port, timeout));
-		TProtocol protocol = new TBinaryProtocol(transport);
-		this.client = new Cassandra.Client(protocol);
-		this.host = host;
-		this.port = port;
-		this.keyspace = keyspace;
-	}
-
-	public void close() {
-		open = false;
-		transport.close();
-		if (logger.isDebugEnabled()) {
-			logger.debug("Connection [" + id + "] for host [" + host + "] closed");
-		}
-	}
-
-	public Client getClient() {
-		return client;
-	}
-
-	public String getHost() {
-		return host;
-	}
-
-	public String getKeyspace() {
-		return keyspace;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public boolean isOpen() {
-		return open;
-	}
-
-	public boolean isValid() {
-		try {
-			getClient().describe_cluster_name();
-			return true;
-		} catch (TException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Connection [" + id + "] for host [" + host + "] failed validation", e);
-			}
-			open = false;
-			return false;
-		}
-	}
-
-	public void open() {
-		try {
-			transport.open();
-		} catch (TTransportException e) {
-			counter.decrementAndGet();
-			throw new AtreusNetworkException("Unable to open transport to Cassandra cluster", e);
-		}
-		try {
-			client.set_keyspace(keyspace);
-		} catch (InvalidRequestException e) {
-			counter.decrementAndGet();
-			throw new AtreusConnectionException("Unable to connect to Cassandra cluster keyspace [" + keyspace + "]", e);
-		} catch (TException e) {
-			counter.decrementAndGet();
-			throw new AtreusUnknownException("Unable to connect to Cassandra cluster keyspace  [" + keyspace + "]", e);
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Connection [" + id + "] for host [" + host + "] opened and connected to keyspace [" + keyspace + "]");
-		}
-	}
 }

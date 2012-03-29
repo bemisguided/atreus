@@ -30,14 +30,12 @@ import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
 import org.atreus.impl.commands.Batch;
-import org.atreus.impl.commands.BatchMutationCommand;
+import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
-import org.atreus.impl.commands.ReadCommand;
 import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
-import org.atreus.impl.commands.WriteCommand;
 import org.atreus.impl.connection.ConnectionManager;
 import org.atreus.impl.converters.TypeConverterRegistry;
 import org.atreus.impl.utils.AssertUtils;
@@ -131,19 +129,15 @@ public class AtreusSessionImpl implements AtreusSession {
 		executeOrBatch(new DeleteRowCommand(getColumnFamily(), rowKeyBytes, getWriteConsistencyLevel()));
 	}
 
-	protected Object execute(ReadCommand command) {
+	protected Object execute(Command command) {
 		return getConnectionManager().execute(command);
 	}
 
-	protected void execute(WriteCommand command) {
-		getConnectionManager().execute(command);
-	}
-
-	protected void executeOrBatch(WriteCommand command) {
-		if (isBatchWriting()) {
-			command.batch(batch);
-			return;
-		}
+	protected void executeOrBatch(Command command) {
+//		if (isBatchWriting()) {
+//			command.batch(batch);
+//			return;
+//		}
 		execute(command);
 	}
 
@@ -181,7 +175,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		if (!isBatchWriting()) {
 			throw new AtreusIllegalStateException("Session is not set to batch writing");
 		}
-		execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
+//		execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
 		batch = new Batch();
 	}
 

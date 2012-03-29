@@ -23,16 +23,7 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
 
-public class DescribeSchemaVersionsCommand implements ReadCommand {
-
-	public DescribeSchemaVersionsCommand() {
-	}
-
-	@Override
-	public Object execute(Client client) throws Exception {
-		return client.describe_schema_versions();
-	}
+public interface Command {
 
 }

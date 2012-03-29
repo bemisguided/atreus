@@ -21,14 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.impl.connection;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.commons.pool.PoolableObjectFactory;
 
-public interface WriteCommand {
+class ConnectionPoolableObjectFactory implements PoolableObjectFactory<Connection> {
 
-	public void batch(Batch batch);
+	private final ConnectionManager manager;
 
-	public void execute(Client client) throws Exception;
+	ConnectionPoolableObjectFactory(ConnectionManager manager) {
+		this.manager = manager;
+	}
+
+	@Override
+	public void activateObject(Connection connection) throws Exception {
+
+	}
+
+	@Override
+	public void destroyObject(Connection connection) throws Exception {
+		connection.close();
+	}
+
+	@Override
+	public Connection makeObject() throws Exception {
+		return manager.openConnection();
+	}
+
+	@Override
+	public void passivateObject(Connection connection) throws Exception {
+
+	}
+
+	@Override
+	public boolean validateObject(Connection connection) {
+		return manager.validateConnection(connection);
+	}
 
 }

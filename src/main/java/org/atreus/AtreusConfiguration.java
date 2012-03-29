@@ -24,10 +24,13 @@
 package org.atreus;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.atreus.impl.connection.thrift.ThriftConnectionProvider;
 
 public class AtreusConfiguration {
 
 	private int clusterPollFrequency = 2 * 60 * 1000;
+
+	private Class<?> connectionProvider = ThriftConnectionProvider.class;
 
 	private int connectionTimeout = 5 * 1000;
 
@@ -70,6 +73,10 @@ public class AtreusConfiguration {
 
 	public int getClusterPollFrequency() {
 		return clusterPollFrequency;
+	}
+
+	public Class<?> getConnectionProvider() {
+		return connectionProvider;
 	}
 
 	public int getConnectionTimeout() {
@@ -122,6 +129,10 @@ public class AtreusConfiguration {
 
 	public void setClusterPollFrequency(int clusterPollFrequency) {
 		this.clusterPollFrequency = clusterPollFrequency;
+	}
+
+	public void setConnectionProvider(Class<?> connectionProvider) {
+		this.connectionProvider = connectionProvider;
 	}
 
 	public void setConnectionTimeout(int connectionTimeout) {

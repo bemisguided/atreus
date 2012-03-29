@@ -23,34 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
-import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.NotFoundException;
 
-public class ReadColumnCommand extends ColumnCommandBase implements ReadCommand {
+public class ReadColumnCommand extends ColumnCommandBase implements Command {
 
 	public ReadColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, ConsistencyLevel consistencyLevel) {
 		super(columnFamily, rowKey, columnName, subColumnName, consistencyLevel);
-	}
-
-	@Override
-	public Object execute(Client client) throws Exception {
-		ColumnPath path = new ColumnPath(getColumnFamily());
-		if (getSubColumnName() == null) {
-			path.setColumn(getColumnName());
-		} else {
-			path.setSuper_column(getColumnName());
-			path.setColumn(getSubColumnName());
-		}
-		try {
-			ColumnOrSuperColumn result = client.get(getRowKey(), path, getConsistencyLevel());
-			return result.getColumn().getValue();
-		} catch (NotFoundException e) {
-			// Not found for now return null
-		}
-		return null;
 	}
 
 }

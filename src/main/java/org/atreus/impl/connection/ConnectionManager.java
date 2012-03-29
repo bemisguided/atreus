@@ -23,28 +23,17 @@
  */
 package org.atreus.impl.connection;
 
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusClusterUnavailableException;
-import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusConnectionException;
 import org.atreus.AtreusException;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
-import org.atreus.impl.commands.DescribeSchemaVersionsCommand;
-import org.atreus.impl.commands.ReadCommand;
-import org.atreus.impl.commands.WriteCommand;
+import org.atreus.impl.commands.Command;
 import org.atreus.impl.utils.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +44,19 @@ public class ConnectionManager {
 
 	private final AtreusConfiguration config;
 
+	private final ConnectionProvider connectionProvider;
+
 	private final NodeManager nodeManager = new NodeManager();
 
 	private GenericObjectPool<Connection> pool;
 
 	public ConnectionManager(AtreusConfiguration config) {
 		this.config = config;
+		try {
+			this.connectionProvider = (ConnectionProvider) config.getConnectionProvider().newInstance();
+		} catch (Exception e) {
+			throw new AtreusConnectionException("Cannot create Connection Provider", e);
+		}
 		configureHosts();
 	}
 
@@ -74,7 +70,7 @@ public class ConnectionManager {
 	}
 
 	public void connect() {
-		pool = new GenericObjectPool<Connection>(new ConnectionFactory(this));
+		pool = new GenericObjectPool<Connection>(new ConnectionPoolableObjectFactory(this));
 		pool.setTestWhileIdle(true);
 		pool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_BLOCK);
 		pool.setTestOnBorrow(true);
@@ -109,52 +105,14 @@ public class ConnectionManager {
 		}
 	}
 
-	public Object execute(ReadCommand command) {
+	public Object execute(Command command) {
 		Connection conn = retrieveConnection();
-		String host = conn.getHost();
 		boolean killConnection = false;
 		try {
-			Object result = command.execute(conn.getClient());
-			return result;
-		} catch (InvalidRequestException e) {
-			throw new AtreusCommandException("Read command supplied was invalid [" + command + "]", e);
-		} catch (TTransportException e) {
+			return connectionProvider.execute(command, conn);
+		} catch (AtreusNetworkException e) {
 			killConnection = true;
-			throw new AtreusNetworkException("Transport exception on host [" + host + "] while executing read command [" + command + "]", e);
-		} catch (UnavailableException e) {
-			throw new AtreusClusterUnavailableException("Cassandra cluster unavailable to execute read command [" + command + "] (review Consitency Level)", e);
-		} catch (TimedOutException e) {
-			killConnection = true;
-			throw new AtreusNetworkException("Timeout on host [" + host + "] while executing read command [" + command + "]", e);
-		} catch (Exception e) {
-			throw new AtreusUnknownException("Exception while executing read command [" + command + "]", e);
-		} finally {
-			if (killConnection) {
-				killConnection(conn);
-			} else {
-				returnConnection(conn);
-			}
-		}
-	}
-
-	public void execute(WriteCommand command) {
-		Connection conn = retrieveConnection();
-		String host = conn.getHost();
-		boolean killConnection = false;
-		try {
-			command.execute(conn.getClient());
-		} catch (InvalidRequestException e) {
-			throw new AtreusCommandException("Write command supplied was invalid [" + command + "]", e);
-		} catch (TTransportException e) {
-			killConnection = true;
-			throw new AtreusNetworkException("Transport exception on host [" + host + "] while executing write command [" + command + "]", e);
-		} catch (UnavailableException e) {
-			throw new AtreusClusterUnavailableException("Cassandra cluster unavailable to execute write command [" + command + "] (review Consitency Level)", e);
-		} catch (TimedOutException e) {
-			killConnection = true;
-			throw new AtreusNetworkException("Timeout on host [" + host + "] while executing write command [" + command + "]", e);
-		} catch (Exception e) {
-			throw new AtreusUnknownException("Exception while executing write command [" + command + "]", e);
+			throw new AtreusNetworkException(e);
 		} finally {
 			if (killConnection) {
 				killConnection(conn);
@@ -214,7 +172,7 @@ public class ConnectionManager {
 		Exception cause = null;
 		for (int i = 0; i < hostCount; i++) {
 			String host = nodeManager.nextHost();
-			Connection conn = new Connection(host, getPort(), getKeyspace(), getConnectionTimeout());
+			Connection conn = connectionProvider.newConnection(host, getPort(), getKeyspace(), config);
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Attemping to open connection to host [" + host + "]");
@@ -235,35 +193,8 @@ public class ConnectionManager {
 		throw new AtreusConnectionException("No Cassandra cluster hosts available", cause);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void refreshHostList() {
-		Set<String> currentHostList = nodeManager.getHosts();
-		Map<String, List<String>> result = (Map<String, List<String>>) execute(new DescribeSchemaVersionsCommand());
-		for (String schema : result.keySet()) {
-			if ("UNREACHABLE".equals(schema)) {
-				for (String host : result.get(schema)) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Node host [" + host + "] is unreachable");
-					}
-					makeNodeUnavailable(host);
-					currentHostList.remove(host);
-				}
-			} else {
-				for (String host : result.get(schema)) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Node host [" + host + "] is available for schema [" + schema + "]");
-					}
-					makeNodeAvailable(host);
-					currentHostList.remove(host);
-				}
-			}
-		}
-		for (String host : currentHostList) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Node host [" + host + "] not on schema list, assuming it is unreachable");
-			}
-			makeNodeUnavailable(host);
-		}
+		connectionProvider.newClusterDetector().scanCluster(this, nodeManager);
 	}
 
 	protected Connection retrieveConnection() {

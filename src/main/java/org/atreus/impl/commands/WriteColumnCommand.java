@@ -23,15 +23,9 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
-import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.Mutation;
-import org.apache.cassandra.thrift.SuperColumn;
 
-public class WriteColumnCommand extends ColumnCommandBase implements WriteCommand {
+public class WriteColumnCommand extends ColumnCommandBase implements Command {
 
 	private final byte[] value;
 
@@ -40,47 +34,8 @@ public class WriteColumnCommand extends ColumnCommandBase implements WriteComman
 		this.value = value;
 	}
 
-	@Override
-	public void batch(Batch batch) {
-		ColumnOrSuperColumn colOrSup = new ColumnOrSuperColumn();
-		if (getSubColumnName() != null) {
-			SuperColumn supCol = new SuperColumn();
-			supCol.setName(getColumnName());
-			supCol.addToColumns(buildColumn());
-			colOrSup.setSuper_column(supCol);
-		} else {
-			colOrSup.setColumn(buildColumn());
-		}
-		Mutation mutation = new Mutation();
-		mutation.setColumn_or_supercolumn(colOrSup);
-		batch.add(getColumnFamily(), getRowKey(), mutation);
-	}
-
-	private Column buildColumn() {
-		Column column;
-		if (getSubColumnName() != null) {
-			column = new Column(getSubColumnName());
-		} else {
-			column = new Column(getColumnName());
-		}
-		column.setValue(value);
-		column.setTimestamp(System.currentTimeMillis());
-		return column;
-	}
-
-	private ColumnParent buildColumnParent() {
-		ColumnParent parent = new ColumnParent(getColumnFamily());
-		if (getSubColumnName() != null) {
-			parent.setSuper_column(getColumnName());
-		}
-		return parent;
-	}
-
-	@Override
-	public void execute(Client client) throws Exception {
-		ColumnParent parent = buildColumnParent();
-		Column column = buildColumn();
-		client.insert(getRowKey(), parent, column, getConsistencyLevel());
+	public byte[] getValue() {
+		return value;
 	}
 
 }

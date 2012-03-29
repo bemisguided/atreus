@@ -23,31 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.Deletion;
-import org.apache.cassandra.thrift.Mutation;
 
-public class DeleteRowCommand extends ColumnCommandBase implements WriteCommand {
+public class DeleteRowCommand extends ColumnCommandBase implements Command {
 
 	public DeleteRowCommand(String columnFamily, byte[] rowKey, ConsistencyLevel consistencyLevel) {
 		super(columnFamily, rowKey, null, null, consistencyLevel);
-	}
-
-	@Override
-	public void batch(Batch batch) {
-		Deletion deletion = new Deletion();
-		deletion.setTimestamp(System.currentTimeMillis());
-		Mutation mutation = new Mutation();
-		mutation.setDeletion(deletion);
-		batch.add(getColumnFamily(), getRowKey(), mutation);
-	}
-
-	@Override
-	public void execute(Client client) throws Exception {
-		ColumnPath path = new ColumnPath(getColumnFamily());
-		client.remove(getRowKey(), path, System.currentTimeMillis(), getConsistencyLevel());
 	}
 
 }

@@ -23,41 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.Deletion;
-import org.apache.cassandra.thrift.Mutation;
-import org.apache.cassandra.thrift.SlicePredicate;
 
-public class DeleteColumnCommand extends ColumnCommandBase implements WriteCommand {
+public class DeleteColumnCommand extends ColumnCommandBase implements Command {
 
 	public DeleteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, ConsistencyLevel consistencyLevel) {
 		super(columnFamily, rowKey, columnName, subColumnName, consistencyLevel);
-	}
-
-	@Override
-	public void batch(Batch batch) {
-		Deletion deletion = new Deletion();
-		deletion.setTimestamp(System.currentTimeMillis());
-		SlicePredicate predicate = new SlicePredicate();
-		predicate.addToColumn_names(getColumnName());
-		deletion.setPredicate(predicate);
-		Mutation mutation = new Mutation();
-		mutation.setDeletion(deletion);
-		batch.add(getColumnFamily(), getRowKey(), mutation);
-	}
-
-	@Override
-	public void execute(Client client) throws Exception {
-		ColumnPath path = new ColumnPath(getColumnFamily());
-		if (getSubColumnName() != null) {
-			path.setSuper_column(getColumnName());
-			path.setColumn(getSubColumnName());
-		} else {
-			path.setColumn(getColumnName());
-		}
-		client.remove(getRowKey(), path, System.currentTimeMillis(), getConsistencyLevel());
 	}
 
 }
