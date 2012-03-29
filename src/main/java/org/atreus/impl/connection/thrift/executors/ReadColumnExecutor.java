@@ -21,23 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.ReadColumnCommand;
 
-public class DescribeSchemaExecutor implements ThriftCommandExecutor {
+public class ReadColumnExecutor implements ThriftCommandExecutor {
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
-		return client.describe_schema_versions();
+		ReadColumnCommand readColumn = (ReadColumnCommand) command;
+
+		ColumnPath path = new ColumnPath(readColumn.getColumnFamily());
+		if (readColumn.getSubColumnName() == null) {
+			path.setColumn(readColumn.getColumnName());
+		} else {
+			path.setSuper_column(readColumn.getColumnName());
+			path.setColumn(readColumn.getSubColumnName());
+		}
+		try {
+			ColumnOrSuperColumn result = client.get(readColumn.getRowKey(), path, consistencyLevel);
+			return result.getColumn().getValue();
+		} catch (NotFoundException e) {
+			// Not found for now return null
+		}
+		return null;
 	}
 
 }

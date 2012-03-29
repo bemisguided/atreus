@@ -29,7 +29,8 @@ import org.atreus.AtreusDisconnectedException;
 import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
-import org.atreus.impl.commands.Batch;
+import org.atreus.impl.commands.CommandBatch;
+import org.atreus.impl.commands.BatchableCommand;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
@@ -44,9 +45,9 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	private String columnFamily;
 
-	private Batch batch;
-
 	private boolean batchWriting;
+
+	private CommandBatch commandBatch;
 
 	private boolean caching;
 
@@ -64,7 +65,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory) {
 		this.sessionFactory = sessionFactory;
-		this.batch = new Batch();
+		this.commandBatch = new CommandBatch();
 	}
 
 	private void assertFamilyAndKey() {
@@ -133,11 +134,11 @@ public class AtreusSessionImpl implements AtreusSession {
 		return getConnectionManager().execute(command, consistencyLevel);
 	}
 
-	protected void executeOrBatch(Command command, AtreusConsistencyLevel consistencyLevel) {
-		// if (isBatchWriting()) {
-		// command.batch(batch);
-		// return;
-		// }
+	protected void executeOrBatch(BatchableCommand command, AtreusConsistencyLevel consistencyLevel) {
+		if (isBatchWriting()) {
+			commandBatch.addCommand(command);
+			return;
+		}
 		execute(command, consistencyLevel);
 	}
 
@@ -176,7 +177,7 @@ public class AtreusSessionImpl implements AtreusSession {
 			throw new AtreusIllegalStateException("Session is not set to batch writing");
 		}
 		// execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
-		batch = new Batch();
+		commandBatch = new CommandBatch();
 	}
 
 	protected <T> T fromBytes(Class<T> type, byte[] bytes) {
@@ -301,7 +302,7 @@ public class AtreusSessionImpl implements AtreusSession {
 	public void setBatchWriting(boolean batchWriting) {
 		assertIsReady();
 
-		if (batch.isOpen() && !batchWriting) {
+		if (commandBatch.isOpen() && !batchWriting) {
 			throw new AtreusIllegalStateException("Session has an open batch that must be flushed before turning off batch write");
 		}
 		this.batchWriting = batchWriting;

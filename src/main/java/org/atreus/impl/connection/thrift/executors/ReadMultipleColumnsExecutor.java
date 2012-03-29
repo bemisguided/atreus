@@ -21,42 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
+
+import java.util.List;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
-import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.NotFoundException;
+import org.apache.cassandra.thrift.SlicePredicate;
+import org.apache.cassandra.thrift.SliceRange;
+import org.apache.cassandra.thrift.SuperColumn;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
+import org.atreus.AtreusColumnMap;
+import org.atreus.impl.AtreusColumnMapImpl;
+import org.atreus.impl.AtreusSuperColumnMapImpl;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.ReadColumnCommand;
+import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 
-public class ReadColumnExecutor implements ThriftCommandExecutor {
+public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
-		ReadColumnCommand readColumn = (ReadColumnCommand) command;
+		ReadMultipleColumnsCommand readMultipleColumns = (ReadMultipleColumnsCommand) command;
+		ColumnParent parent = new ColumnParent();
+		parent.setColumn_family(readMultipleColumns.getColumnFamily());
+		SlicePredicate predicate = new SlicePredicate();
+		SliceRange range = new SliceRange();
+		range.setStart(new byte[0]);
+		range.setFinish(new byte[0]);
+		predicate.setSlice_range(range);
+		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, consistencyLevel);
 
-		ColumnPath path = new ColumnPath(readColumn.getColumnFamily());
-		if (readColumn.getSubColumnName() == null) {
-			path.setColumn(readColumn.getColumnName());
-		} else {
-			path.setSuper_column(readColumn.getColumnName());
-			path.setColumn(readColumn.getSubColumnName());
+		AtreusColumnMap result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
+		if (list.size() > 0 && list.get(0).isSetSuper_column()) {
+			result = new AtreusSuperColumnMapImpl(readMultipleColumns.getTypeRegistry());
 		}
-		try {
-			ColumnOrSuperColumn result = client.get(readColumn.getRowKey(), path, consistencyLevel);
-			return result.getColumn().getValue();
-		} catch (NotFoundException e) {
-			// Not found for now return null
+		for (ColumnOrSuperColumn colOrSuper : list) {
+			if (colOrSuper.isSetSuper_column()) {
+				SuperColumn superColumn = colOrSuper.getSuper_column();
+				for (Column column : superColumn.getColumns()) {
+					result.put(superColumn.getName(), column.getName(), column.getValue());
+				}
+			} else {
+				Column column = colOrSuper.getColumn();
+				result.put(column.getName(), column.getValue());
+			}
 		}
-		return null;
+		return result;
 	}
 
 }

@@ -21,18 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.impl.connection.thrift.executors;
 
-import java.nio.ByteBuffer;
+import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
+import org.atreus.impl.commands.Command;
 
-public interface ColumnCommand extends Command {
+public class DescribeSchemaExecutor implements ThriftCommandExecutor {
 
-	public String getColumnFamily();
-
-	public ByteBuffer getColumnName();
-
-	public ByteBuffer getRowKey();
-
-	public ByteBuffer getSubColumnName();
+	@Override
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
+		return client.describe_schema_versions();
+	}
 
 }

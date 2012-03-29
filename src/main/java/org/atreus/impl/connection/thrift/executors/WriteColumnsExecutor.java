@@ -21,60 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
 
-import java.util.List;
-
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.SlicePredicate;
-import org.apache.cassandra.thrift.SliceRange;
-import org.apache.cassandra.thrift.SuperColumn;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
+import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusColumnMap;
-import org.atreus.impl.AtreusColumnMapImpl;
-import org.atreus.impl.AtreusSuperColumnMapImpl;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.ReadMultipleColumnsCommand;
+import org.atreus.impl.commands.WriteColumnCommand;
 
-public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
+public class WriteColumnsExecutor implements ThriftCommandExecutor {
+
+	private Column buildColumn(WriteColumnCommand writeColumn) {
+		Column column;
+		if (writeColumn.getSubColumnName() != null) {
+			column = new Column(writeColumn.getSubColumnName());
+		} else {
+			column = new Column(writeColumn.getColumnName());
+		}
+		column.setValue(writeColumn.getValue());
+		column.setTimestamp(System.currentTimeMillis());
+		return column;
+	}
+
+	private ColumnParent buildColumnParent(WriteColumnCommand writeColumn) {
+		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
+		if (writeColumn.getSubColumnName() != null) {
+			parent.setSuper_column(writeColumn.getColumnName());
+		}
+		return parent;
+	}
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
-		ReadMultipleColumnsCommand readMultipleColumns = (ReadMultipleColumnsCommand) command;
-		ColumnParent parent = new ColumnParent();
-		parent.setColumn_family(readMultipleColumns.getColumnFamily());
-		SlicePredicate predicate = new SlicePredicate();
-		SliceRange range = new SliceRange();
-		range.setStart(new byte[0]);
-		range.setFinish(new byte[0]);
-		predicate.setSlice_range(range);
-		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, consistencyLevel);
-
-		AtreusColumnMap result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
-		if (list.size() > 0 && list.get(0).isSetSuper_column()) {
-			result = new AtreusSuperColumnMapImpl(readMultipleColumns.getTypeRegistry());
-		}
-		for (ColumnOrSuperColumn colOrSuper : list) {
-			if (colOrSuper.isSetSuper_column()) {
-				SuperColumn superColumn = colOrSuper.getSuper_column();
-				for (Column column : superColumn.getColumns()) {
-					result.put(superColumn.getName(), column.getName(), column.getValue());
-				}
-			} else {
-				Column column = colOrSuper.getColumn();
-				result.put(column.getName(), column.getValue());
-			}
-		}
-		return result;
+		WriteColumnCommand writeColumn = (WriteColumnCommand) command;
+		ColumnParent parent = buildColumnParent(writeColumn);
+		Column column = buildColumn(writeColumn);
+		client.insert(writeColumn.getRowKey(), parent, column, consistencyLevel);
+		return null;
 	}
 
 }

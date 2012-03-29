@@ -21,20 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
-import org.atreus.impl.commands.Command;
+public class AtreusConnectionPoolCapacityException extends AtreusException {
 
-public interface ThriftCommandExecutor {
+	private static final long serialVersionUID = -3309988498193585175L;
 
-	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevels) throws InvalidRequestException, UnavailableException, TimedOutException,
-			TTransportException, TException;
+	public AtreusConnectionPoolCapacityException(String message) {
+		super(message);
+	}
+
+	public AtreusConnectionPoolCapacityException(String message, Throwable exception) {
+		super(message, exception);
+	}
+
+	public AtreusConnectionPoolCapacityException(Throwable exception) {
+		super(exception);
+	}
 
 }

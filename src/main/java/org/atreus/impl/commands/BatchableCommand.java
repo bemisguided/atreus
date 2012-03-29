@@ -25,7 +25,7 @@ package org.atreus.impl.commands;
 
 import java.nio.ByteBuffer;
 
-public interface BatchableCommand {
+public interface BatchableCommand extends Command {
 
 	public String getColumnFamily();
 

@@ -15,6 +15,7 @@
 		<org.apache.commons.pool-version>1.6</org.apache.commons.pool-version>
 		<cassandra-unit-version>1.0.3.1</cassandra-unit-version>
 		<org.slf4j-version>1.6.4</org.slf4j-version>
+		<org.easymock-version>3.1</org.easymock-version>
 	</properties>
 
 	<dependencies>
@@ -64,10 +65,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-nop</artifactId>
+			<artifactId>slf4j-log4j12</artifactId>
 			<version>${org.slf4j-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>${org.easymock-version}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -131,7 +139,8 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

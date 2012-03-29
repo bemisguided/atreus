@@ -46,6 +46,14 @@ import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.connection.ClusterDetector;
 import org.atreus.impl.connection.Connection;
 import org.atreus.impl.connection.ConnectionProvider;
+import org.atreus.impl.connection.thrift.commands.DescribeSchemaCommand;
+import org.atreus.impl.connection.thrift.executors.DeleteColumnExecutor;
+import org.atreus.impl.connection.thrift.executors.DeleteRowExecutor;
+import org.atreus.impl.connection.thrift.executors.DescribeSchemaExecutor;
+import org.atreus.impl.connection.thrift.executors.ReadColumnExecutor;
+import org.atreus.impl.connection.thrift.executors.ReadMultipleColumnsExecutor;
+import org.atreus.impl.connection.thrift.executors.ThriftCommandExecutor;
+import org.atreus.impl.connection.thrift.executors.WriteColumnsExecutor;
 
 public class ThriftConnectionProvider implements ConnectionProvider {
 

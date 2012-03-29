@@ -57,6 +57,7 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
 	public void connect() {
 		getConnectionManager().connect();
+		getConnectionManager().testConnectivity();
 	}
 
 	@Override

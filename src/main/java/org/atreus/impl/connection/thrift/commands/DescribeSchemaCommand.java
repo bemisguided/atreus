@@ -21,33 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.commands;
 
-import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.ColumnPath;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.thrift.TException;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.DeleteColumnCommand;
 
-public class DeleteColumnExecutor implements ThriftCommandExecutor {
-
-	@Override
-	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException, TException {
-		DeleteColumnCommand deleteColumn = (DeleteColumnCommand) command;
-
-		ColumnPath path = new ColumnPath(deleteColumn.getColumnFamily());
-		if (deleteColumn.getSubColumnName() != null) {
-			path.setSuper_column(deleteColumn.getColumnName());
-			path.setColumn(deleteColumn.getSubColumnName());
-		} else {
-			path.setColumn(deleteColumn.getColumnName());
-		}
-		client.remove(deleteColumn.getRowKey(), path, System.currentTimeMillis(), consistencyLevel);
-		return null;
-	}
+public class DescribeSchemaCommand implements Command {
 
 }

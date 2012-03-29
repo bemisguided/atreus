@@ -29,8 +29,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.atreus.AtreusClusterUnavailableException;
 import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusConnectionException;
+import org.atreus.AtreusConnectionPoolCapacityException;
 import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusException;
 import org.atreus.AtreusNetworkException;
@@ -46,20 +48,32 @@ public class ConnectionManager {
 
 	private final AtreusConfiguration config;
 
-	private final ConnectionProvider connectionProvider;
+	private final ConnectionProvider provider;
 
 	private final NodeManager nodeManager = new NodeManager();
 
 	private GenericObjectPool<Connection> pool;
 
+	ConnectionManager(AtreusConfiguration config, ConnectionProvider provider) {
+		this.config = config;
+		this.provider = provider;
+		configureHosts();
+	}
+
 	public ConnectionManager(AtreusConfiguration config) {
 		this.config = config;
 		try {
-			this.connectionProvider = (ConnectionProvider) config.getConnectionProvider().newInstance();
+			this.provider = (ConnectionProvider) config.getConnectionProvider().newInstance();
 		} catch (Exception e) {
-			throw new AtreusConnectionException("Cannot create Connection Provider", e);
+			throw new AtreusConnectionException("Connection Provider could not be instantiated", e);
 		}
 		configureHosts();
+	}
+
+	private void assertConnected() {
+		if (!isConnected()) {
+			throw new AtreusConnectionException("Connection manager is in a disconnected state");
+		}
 	}
 
 	protected void configureHosts() {
@@ -96,7 +110,6 @@ public class ConnectionManager {
 				}
 			}
 		}, config.getClusterPollFrequency(), config.getClusterPollFrequency());
-		testConnectivity();
 	}
 
 	public void disconnect() {
@@ -108,10 +121,11 @@ public class ConnectionManager {
 	}
 
 	public Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
+		assertConnected();
 		Connection conn = retrieveConnection();
 		boolean killConnection = false;
 		try {
-			return connectionProvider.execute(command, conn, consistencyLevel);
+			return provider.execute(command, conn, consistencyLevel);
 		} catch (AtreusNetworkException e) {
 			killConnection = true;
 			throw new AtreusNetworkException(e);
@@ -174,7 +188,7 @@ public class ConnectionManager {
 		Exception cause = null;
 		for (int i = 0; i < hostCount; i++) {
 			String host = nodeManager.nextHost();
-			Connection conn = connectionProvider.newConnection(host, getPort(), getKeyspace(), config);
+			Connection conn = provider.newConnection(host, getPort(), getKeyspace(), config);
 			try {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Attemping to open connection to host [" + host + "]");
@@ -186,13 +200,17 @@ public class ConnectionManager {
 				makeNodeAvailable(host);
 				return conn;
 			} catch (AtreusConnectionException e) {
+				if (logger.isErrorEnabled()) {
+					logger.error("Unrecovered connection exception occured, shutting down the Connection Manager", e);
+				}
+				disconnect();
 				throw e;
 			} catch (Exception e) {
 				cause = e;
-				nodeManager.nodeUnavailable(host);
+				makeNodeUnavailable(host);
 			}
 		}
-		throw new AtreusConnectionException("No Cassandra cluster hosts available", cause);
+		throw new AtreusClusterUnavailableException("No Cassandra cluster hosts available", cause);
 	}
 
 	protected Connection retrieveConnection() {
@@ -200,7 +218,7 @@ public class ConnectionManager {
 			return pool.borrowObject();
 		} catch (Exception e) {
 			if (e instanceof NoSuchElementException) {
-				throw new AtreusConnectionException("Connection pool exhausted", e);
+				throw new AtreusConnectionPoolCapacityException("Connection pool exhausted", e);
 			}
 			if (e instanceof AtreusException) {
 				throw (AtreusException) e;
@@ -221,7 +239,7 @@ public class ConnectionManager {
 	}
 
 	public void scanCluster() {
-		connectionProvider.newClusterDetector().scanCluster(this);
+		provider.newClusterDetector().scanCluster(this);
 	}
 
 	public void testConnectivity() {

@@ -21,10 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
 
+import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
+import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.DeleteRowCommand;
 
-public class DescribeSchemaCommand implements Command {
+public class DeleteRowExecutor implements ThriftCommandExecutor {
+
+	@Override
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
+		DeleteRowCommand deleteRow = (DeleteRowCommand) command;
+		ColumnPath path = new ColumnPath(deleteRow.getColumnFamily());
+		client.remove(deleteRow.getRowKey(), path, System.currentTimeMillis(), consistencyLevel);
+		return null;
+	}
 
 }

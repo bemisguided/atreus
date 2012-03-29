@@ -21,49 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
 
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.DeleteColumnCommand;
 
-public class WriteColumnsExecutor implements ThriftCommandExecutor {
-
-	private Column buildColumn(WriteColumnCommand writeColumn) {
-		Column column;
-		if (writeColumn.getSubColumnName() != null) {
-			column = new Column(writeColumn.getSubColumnName());
-		} else {
-			column = new Column(writeColumn.getColumnName());
-		}
-		column.setValue(writeColumn.getValue());
-		column.setTimestamp(System.currentTimeMillis());
-		return column;
-	}
-
-	private ColumnParent buildColumnParent(WriteColumnCommand writeColumn) {
-		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
-		if (writeColumn.getSubColumnName() != null) {
-			parent.setSuper_column(writeColumn.getColumnName());
-		}
-		return parent;
-	}
+public class DeleteColumnExecutor implements ThriftCommandExecutor {
 
 	@Override
-	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
-			TTransportException, TException {
-		WriteColumnCommand writeColumn = (WriteColumnCommand) command;
-		ColumnParent parent = buildColumnParent(writeColumn);
-		Column column = buildColumn(writeColumn);
-		client.insert(writeColumn.getRowKey(), parent, column, consistencyLevel);
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException, TException {
+		DeleteColumnCommand deleteColumn = (DeleteColumnCommand) command;
+
+		ColumnPath path = new ColumnPath(deleteColumn.getColumnFamily());
+		if (deleteColumn.getSubColumnName() != null) {
+			path.setSuper_column(deleteColumn.getColumnName());
+			path.setColumn(deleteColumn.getSubColumnName());
+		} else {
+			path.setColumn(deleteColumn.getColumnName());
+		}
+		client.remove(deleteColumn.getRowKey(), path, System.currentTimeMillis(), consistencyLevel);
 		return null;
 	}
 

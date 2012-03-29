@@ -28,7 +28,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Batch {
+public class CommandBatch {
 
 	private List<BatchableCommand> batchList = new LinkedList<BatchableCommand>();
 
