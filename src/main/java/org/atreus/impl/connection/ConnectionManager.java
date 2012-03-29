@@ -54,12 +54,6 @@ public class ConnectionManager {
 
 	private GenericObjectPool<Connection> pool;
 
-	ConnectionManager(AtreusConfiguration config, ConnectionProvider provider) {
-		this.config = config;
-		this.provider = provider;
-		configureHosts();
-	}
-
 	public ConnectionManager(AtreusConfiguration config) {
 		this.config = config;
 		try {
@@ -67,6 +61,12 @@ public class ConnectionManager {
 		} catch (Exception e) {
 			throw new AtreusConnectionException("Connection Provider could not be instantiated", e);
 		}
+		configureHosts();
+	}
+
+	ConnectionManager(AtreusConfiguration config, ConnectionProvider provider) {
+		this.config = config;
+		this.provider = provider;
 		configureHosts();
 	}
 
@@ -138,12 +138,28 @@ public class ConnectionManager {
 		}
 	}
 
+	public int getConnectionsActive() {
+		return pool.getNumActive();
+	}
+
+	public int getConnectionsIdle() {
+		return pool.getNumIdle();
+	}
+
 	public String getKeyspace() {
 		return config.getKeyspace();
 	}
 
 	public Set<String> getNodeList() {
 		return nodeManager.getHosts();
+	}
+
+	NodeManager getNodeManager() {
+		return nodeManager;
+	}
+
+	GenericObjectPool<Connection> getPool() {
+		return pool;
 	}
 
 	public int getPort() {
