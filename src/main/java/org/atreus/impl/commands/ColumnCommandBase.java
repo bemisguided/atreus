@@ -25,21 +25,17 @@ package org.atreus.impl.commands;
 
 import java.nio.ByteBuffer;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
-
 public abstract class ColumnCommandBase {
 
 	private final String columnFamily;
 
 	private final ByteBuffer columnName;
 
-	private final ConsistencyLevel consistencyLevel;
-
 	private final ByteBuffer rowKey;
 
 	private final ByteBuffer subColumnName;
 
-	public ColumnCommandBase(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, ConsistencyLevel consistencyLevel) {
+	public ColumnCommandBase(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
 		this.columnFamily = columnFamily;
 		if (rowKey != null) {
 			this.rowKey = ByteBuffer.wrap(rowKey);
@@ -56,7 +52,6 @@ public abstract class ColumnCommandBase {
 		} else {
 			this.subColumnName = null;
 		}
-		this.consistencyLevel = consistencyLevel;
 	}
 
 	public String getColumnFamily() {
@@ -65,10 +60,6 @@ public abstract class ColumnCommandBase {
 
 	public ByteBuffer getColumnName() {
 		return columnName;
-	}
-
-	public ConsistencyLevel getConsistencyLevel() {
-		return consistencyLevel;
 	}
 
 	public ByteBuffer getRowKey() {

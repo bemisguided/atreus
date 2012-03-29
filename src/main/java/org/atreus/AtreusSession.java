@@ -23,7 +23,6 @@
  */
 package org.atreus;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 
 public interface AtreusSession {
 
@@ -49,11 +48,11 @@ public interface AtreusSession {
 
 	public String getColumnFamily();
 
-	public ConsistencyLevel getReadConsistencyLevel();
+	public AtreusConsistencyLevel getReadConsistencyLevel();
 
 	public Object getRowKey();
 
-	public ConsistencyLevel getWriteConsistencyLevel();
+	public AtreusConsistencyLevel getWriteConsistencyLevel();
 
 	public boolean isBatchWriting();
 
@@ -89,11 +88,11 @@ public interface AtreusSession {
 
 	public void setFamilyAndKey(String colFamily, Object rowKey);
 
-	public void setReadConsistencyLevel(ConsistencyLevel readConsistencyLevel);
+	public void setReadConsistencyLevel(AtreusConsistencyLevel readConsistencyLevel);
 
 	public void setRowKey(Object rowKey);
 
-	public void setWriteConsistencyLevel(ConsistencyLevel writeConsistencyLevel);
+	public void setWriteConsistencyLevel(AtreusConsistencyLevel writeConsistencyLevel);
 
 	public void writeColumn(Object colName);
 

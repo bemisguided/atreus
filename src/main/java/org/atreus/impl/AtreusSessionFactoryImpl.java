@@ -23,8 +23,8 @@
  */
 package org.atreus.impl;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusTypeConverter;
@@ -75,12 +75,12 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 	}
 
 	@Override
-	public ConsistencyLevel getDefaultReadConsistencyLevel() {
+	public AtreusConsistencyLevel getDefaultReadConsistencyLevel() {
 		return config.getDefaultReadConsistencyLevel();
 	}
 
 	@Override
-	public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+	public AtreusConsistencyLevel getDefaultWriteConsistencyLevel() {
 		return config.getDefaultWriteConsistencyLevel();
 	}
 

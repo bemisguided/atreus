@@ -23,7 +23,6 @@
  */
 package org.atreus;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 
 public interface AtreusSessionFactory {
 
@@ -31,9 +30,9 @@ public interface AtreusSessionFactory {
 
 	public void disconnect();
 
-	public ConsistencyLevel getDefaultReadConsistencyLevel();
+	public AtreusConsistencyLevel getDefaultReadConsistencyLevel();
 
-	public ConsistencyLevel getDefaultWriteConsistencyLevel();
+	public AtreusConsistencyLevel getDefaultWriteConsistencyLevel();
 
 	public String getHost();
 

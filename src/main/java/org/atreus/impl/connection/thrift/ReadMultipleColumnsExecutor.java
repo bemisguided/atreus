@@ -25,16 +25,17 @@ package org.atreus.impl.connection.thrift;
 
 import java.util.List;
 
+import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.SuperColumn;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.AtreusColumnMap;
@@ -46,7 +47,8 @@ import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 
 	@Override
-	public Object execute(Client client, Command command) throws InvalidRequestException, UnavailableException, TimedOutException, TTransportException, TException {
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
 		ReadMultipleColumnsCommand readMultipleColumns = (ReadMultipleColumnsCommand) command;
 		ColumnParent parent = new ColumnParent();
 		parent.setColumn_family(readMultipleColumns.getColumnFamily());
@@ -55,7 +57,7 @@ public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 		range.setStart(new byte[0]);
 		range.setFinish(new byte[0]);
 		predicate.setSlice_range(range);
-		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, readMultipleColumns.getConsistencyLevel());
+		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, consistencyLevel);
 
 		AtreusColumnMap result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
 		if (list.size() > 0 && list.get(0).isSetSuper_column()) {

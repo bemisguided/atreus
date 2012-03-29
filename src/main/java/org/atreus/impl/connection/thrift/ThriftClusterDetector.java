@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.atreus.AtreusConsistencyLevel;
 import org.atreus.impl.connection.ClusterDetector;
 import org.atreus.impl.connection.ConnectionManager;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class ThriftClusterDetector implements ClusterDetector {
 	@Override
 	public void scanCluster(ConnectionManager connectionManager) {
 		Set<String> currentHostList = connectionManager.getNodeList();
-		Map<String, List<String>> result = (Map<String, List<String>>) connectionManager.execute(new DescribeSchemaCommand());
+		Map<String, List<String>> result = (Map<String, List<String>>) connectionManager.execute(new DescribeSchemaCommand(), AtreusConsistencyLevel.ANY);
 		for (String schema : result.keySet()) {
 			if ("UNREACHABLE".equals(schema)) {
 				for (String host : result.get(schema)) {

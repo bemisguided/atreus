@@ -23,12 +23,10 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
-
 public class ReadColumnCommand extends ColumnCommandBase implements Command {
 
-	public ReadColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, ConsistencyLevel consistencyLevel) {
-		super(columnFamily, rowKey, columnName, subColumnName, consistencyLevel);
+	public ReadColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
+		super(columnFamily, rowKey, columnName, subColumnName);
 	}
 
 }

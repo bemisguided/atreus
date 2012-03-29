@@ -31,6 +31,7 @@ import java.util.TimerTask;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusConnectionException;
+import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusException;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
@@ -106,11 +107,11 @@ public class ConnectionManager {
 		}
 	}
 
-	public Object execute(Command command) {
+	public Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
 		Connection conn = retrieveConnection();
 		boolean killConnection = false;
 		try {
-			return connectionProvider.execute(command, conn);
+			return connectionProvider.execute(command, conn, consistencyLevel);
 		} catch (AtreusNetworkException e) {
 			killConnection = true;
 			throw new AtreusNetworkException(e);

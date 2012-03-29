@@ -26,13 +26,15 @@ package org.atreus.impl.connection;
 import org.atreus.AtreusClusterUnavailableException;
 import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
 
 public interface ConnectionProvider {
 
-	public Object execute(Command command, Connection connection) throws AtreusCommandException, AtreusClusterUnavailableException, AtreusNetworkException, AtreusUnknownException;
+	public Object execute(Command command, Connection connection, AtreusConsistencyLevel consistencyLevels) throws AtreusCommandException, AtreusClusterUnavailableException,
+			AtreusNetworkException, AtreusUnknownException;
 
 	public ClusterDetector newClusterDetector();
 

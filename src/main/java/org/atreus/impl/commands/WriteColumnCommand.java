@@ -23,14 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
-
 public class WriteColumnCommand extends ColumnCommandBase implements Command {
 
 	private final byte[] value;
 
-	public WriteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, byte[] value, ConsistencyLevel consistencyLevel) {
-		super(columnFamily, rowKey, columnName, subColumnName, consistencyLevel);
+	public WriteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, byte[] value) {
+		super(columnFamily, rowKey, columnName, subColumnName);
 		this.value = value;
 	}
 

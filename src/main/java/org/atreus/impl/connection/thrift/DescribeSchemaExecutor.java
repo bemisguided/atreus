@@ -23,10 +23,11 @@
  */
 package org.atreus.impl.connection.thrift;
 
+import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
@@ -34,7 +35,8 @@ import org.atreus.impl.commands.Command;
 public class DescribeSchemaExecutor implements ThriftCommandExecutor {
 
 	@Override
-	public Object execute(Client client, Command command) throws InvalidRequestException, UnavailableException, TimedOutException, TTransportException, TException {
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
 		return client.describe_schema_versions();
 	}
 

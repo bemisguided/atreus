@@ -24,6 +24,7 @@
 package org.atreus.impl.connection.thrift;
 
 import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
@@ -36,10 +37,11 @@ import org.atreus.impl.commands.DeleteRowCommand;
 public class DeleteRowExecutor implements ThriftCommandExecutor {
 
 	@Override
-	public Object execute(Client client, Command command) throws InvalidRequestException, UnavailableException, TimedOutException, TTransportException, TException {
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
 		DeleteRowCommand deleteRow = (DeleteRowCommand) command;
 		ColumnPath path = new ColumnPath(deleteRow.getColumnFamily());
-		client.remove(deleteRow.getRowKey(), path, System.currentTimeMillis(), deleteRow.getConsistencyLevel());
+		client.remove(deleteRow.getRowKey(), path, System.currentTimeMillis(), consistencyLevel);
 		return null;
 	}
 

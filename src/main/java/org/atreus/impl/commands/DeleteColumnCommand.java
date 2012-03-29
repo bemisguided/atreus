@@ -23,12 +23,10 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
-
 public class DeleteColumnCommand extends ColumnCommandBase implements Command {
 
-	public DeleteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, ConsistencyLevel consistencyLevel) {
-		super(columnFamily, rowKey, columnName, subColumnName, consistencyLevel);
+	public DeleteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
+		super(columnFamily, rowKey, columnName, subColumnName);
 	}
 
 }

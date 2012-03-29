@@ -23,15 +23,14 @@
  */
 package org.atreus.impl.commands;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.atreus.impl.converters.TypeConverterRegistry;
 
 public class ReadMultipleColumnsCommand extends ColumnCommandBase implements Command {
 
 	private final TypeConverterRegistry typeRegistry;
 
-	public ReadMultipleColumnsCommand(TypeConverterRegistry typeRegistry, String columnFamily, byte[] rowKey, ConsistencyLevel consistencyLevel) {
-		super(columnFamily, rowKey, null, null, consistencyLevel);
+	public ReadMultipleColumnsCommand(TypeConverterRegistry typeRegistry, String columnFamily, byte[] rowKey) {
+		super(columnFamily, rowKey, null, null);
 		this.typeRegistry = typeRegistry;
 	}
 

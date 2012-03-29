@@ -26,6 +26,7 @@ package org.atreus.impl.connection.thrift;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
@@ -33,6 +34,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.atreus.AtreusClusterUnavailableException;
 import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
@@ -59,11 +61,12 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 	}
 
 	@Override
-	public Object execute(Command command, Connection connection) {
+	public Object execute(Command command, Connection connection, AtreusConsistencyLevel consistencyLevel) {
 		ThriftConnection thriftConn = (ThriftConnection) connection;
+		ConsistencyLevel thriftLevel = ConsistencyLevel.valueOf(consistencyLevel.toString());
 		try {
 			ThriftCommandExecutor executor = getExecutor(command);
-			return executor.execute(thriftConn.getClient(), command);
+			return executor.execute(thriftConn.getClient(), command, thriftLevel);
 		} catch (InvalidRequestException e) {
 			throw new AtreusCommandException("Read command supplied was invalid [" + command + "]", e);
 		} catch (TTransportException e) {

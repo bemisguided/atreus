@@ -23,7 +23,6 @@
  */
 package org.atreus;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.atreus.impl.connection.thrift.ThriftConnectionProvider;
 
 public class AtreusConfiguration {
@@ -40,9 +39,9 @@ public class AtreusConfiguration {
 
 	private boolean defaultEagerFetching = false;
 
-	private ConsistencyLevel defaultReadConsistencyLevel = ConsistencyLevel.ONE;
+	private AtreusConsistencyLevel defaultReadConsistencyLevel = AtreusConsistencyLevel.ONE;
 
-	private ConsistencyLevel defaultWriteConsistencyLevel = ConsistencyLevel.ANY;
+	private AtreusConsistencyLevel defaultWriteConsistencyLevel = AtreusConsistencyLevel.ANY;
 
 	private String[] hosts;
 
@@ -83,11 +82,11 @@ public class AtreusConfiguration {
 		return connectionTimeout;
 	}
 
-	public ConsistencyLevel getDefaultReadConsistencyLevel() {
+	public AtreusConsistencyLevel getDefaultReadConsistencyLevel() {
 		return defaultReadConsistencyLevel;
 	}
 
-	public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+	public AtreusConsistencyLevel getDefaultWriteConsistencyLevel() {
 		return defaultWriteConsistencyLevel;
 	}
 
@@ -151,11 +150,11 @@ public class AtreusConfiguration {
 		this.defaultEagerFetching = defaultEagerFetching;
 	}
 
-	public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+	public void setDefaultReadConsistencyLevel(AtreusConsistencyLevel defaultReadConsistencyLevel) {
 		this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
 	}
 
-	public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+	public void setDefaultWriteConsistencyLevel(AtreusConsistencyLevel defaultWriteConsistencyLevel) {
 		this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
 	}
 

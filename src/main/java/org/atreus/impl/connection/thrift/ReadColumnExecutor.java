@@ -26,6 +26,7 @@ package org.atreus.impl.connection.thrift;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.TimedOutException;
@@ -38,7 +39,8 @@ import org.atreus.impl.commands.ReadColumnCommand;
 public class ReadColumnExecutor implements ThriftCommandExecutor {
 
 	@Override
-	public Object execute(Client client, Command command) throws InvalidRequestException, UnavailableException, TimedOutException, TTransportException, TException {
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+			TTransportException, TException {
 		ReadColumnCommand readColumn = (ReadColumnCommand) command;
 
 		ColumnPath path = new ColumnPath(readColumn.getColumnFamily());
@@ -49,7 +51,7 @@ public class ReadColumnExecutor implements ThriftCommandExecutor {
 			path.setColumn(readColumn.getSubColumnName());
 		}
 		try {
-			ColumnOrSuperColumn result = client.get(readColumn.getRowKey(), path, readColumn.getConsistencyLevel());
+			ColumnOrSuperColumn result = client.get(readColumn.getRowKey(), path, consistencyLevel);
 			return result.getColumn().getValue();
 		} catch (NotFoundException e) {
 			// Not found for now return null
