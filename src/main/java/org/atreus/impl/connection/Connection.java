@@ -27,9 +27,9 @@ public interface Connection {
 
 	public void close();
 
-	public long getId();
-
 	public String getHost();
+
+	public long getId();
 
 	public String getKeyspace();
 

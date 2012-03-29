@@ -25,6 +25,6 @@ package org.atreus.impl.connection;
 
 public interface ClusterDetector {
 
-	public void scanCluster(ConnectionManager connectionManager, NodeManager nodeManager);
+	public void scanCluster(ConnectionManager connectionManager);
 
 }

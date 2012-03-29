@@ -23,7 +23,6 @@
  */
 package org.atreus.impl.commands;
 
-
 public interface Command {
 
 }

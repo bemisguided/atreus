@@ -33,7 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NodeManager {
+class NodeManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
 

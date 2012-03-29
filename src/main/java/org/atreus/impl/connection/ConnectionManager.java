@@ -24,6 +24,7 @@
 package org.atreus.impl.connection;
 
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -88,7 +89,7 @@ public class ConnectionManager {
 				}
 				try {
 					logger.debug("Refreshing Cassandra cluster host list");
-					refreshHostList();
+					scanCluster();
 				} catch (Exception e) {
 					logger.warn("Exception while attempting to refresh Cassandra cluster host list", e);
 				}
@@ -122,12 +123,12 @@ public class ConnectionManager {
 		}
 	}
 
-	public int getConnectionTimeout() {
-		return config.getConnectionTimeout();
-	}
-
 	public String getKeyspace() {
 		return config.getKeyspace();
+	}
+
+	public Set<String> getNodeList() {
+		return nodeManager.getHosts();
 	}
 
 	public int getPort() {
@@ -193,10 +194,6 @@ public class ConnectionManager {
 		throw new AtreusConnectionException("No Cassandra cluster hosts available", cause);
 	}
 
-	public void refreshHostList() {
-		connectionProvider.newClusterDetector().scanCluster(this, nodeManager);
-	}
-
 	protected Connection retrieveConnection() {
 		try {
 			return pool.borrowObject();
@@ -220,6 +217,10 @@ public class ConnectionManager {
 			}
 			throw new AtreusUnknownException("Unexpected exception on disconnect", e);
 		}
+	}
+
+	public void scanCluster() {
+		connectionProvider.newClusterDetector().scanCluster(this);
 	}
 
 	public void testConnectivity() {

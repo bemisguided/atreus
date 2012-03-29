@@ -59,20 +59,6 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 	}
 
 	@Override
-	public ClusterDetector newClusterDetector() {
-		return new ThriftClusterDetector();
-	}
-
-	private ThriftCommandExecutor getExecutor(Command command) {
-		return executors.get(command.getClass());
-	}
-
-	@Override
-	public Connection newConnection(String host, int port, String keyspace, AtreusConfiguration config) {
-		return new ThriftConnection(host, port, keyspace, config);
-	}
-
-	@Override
 	public Object execute(Command command, Connection connection) {
 		ThriftConnection thriftConn = (ThriftConnection) connection;
 		try {
@@ -89,6 +75,20 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 		} catch (Exception e) {
 			throw new AtreusUnknownException("Exception while executing command [" + command + "]", e);
 		}
+	}
+
+	private ThriftCommandExecutor getExecutor(Command command) {
+		return executors.get(command.getClass());
+	}
+
+	@Override
+	public ClusterDetector newClusterDetector() {
+		return new ThriftClusterDetector();
+	}
+
+	@Override
+	public Connection newConnection(String host, int port, String keyspace, AtreusConfiguration config) {
+		return new ThriftConnection(host, port, keyspace, config);
 	}
 
 }

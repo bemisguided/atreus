@@ -37,9 +37,9 @@ import org.atreus.AtreusConfiguration;
 import org.atreus.impl.connection.ConnectionBase;
 
 class ThriftConnection extends ConnectionBase {
-	
+
 	private final Client client;
-	
+
 	protected final TTransport transport;
 
 	ThriftConnection(String host, int port, String keyspace, AtreusConfiguration config) {
@@ -52,10 +52,6 @@ class ThriftConnection extends ConnectionBase {
 	@Override
 	protected void doClose() {
 		transport.close();
-	}
-
-	public Client getClient() {
-		return client;
 	}
 
 	@Override
@@ -87,6 +83,10 @@ class ThriftConnection extends ConnectionBase {
 			setLastException(e);
 			return false;
 		}
+	}
+
+	public Client getClient() {
+		return client;
 	}
 
 }

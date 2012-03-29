@@ -35,7 +35,7 @@ public interface ConnectionProvider {
 	public Object execute(Command command, Connection connection) throws AtreusCommandException, AtreusClusterUnavailableException, AtreusNetworkException, AtreusUnknownException;
 
 	public ClusterDetector newClusterDetector();
-	
+
 	public Connection newConnection(String host, int port, String keyspace, AtreusConfiguration config);
 
 }

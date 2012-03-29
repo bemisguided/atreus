@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.atreus.impl.connection.ClusterDetector;
 import org.atreus.impl.connection.ConnectionManager;
-import org.atreus.impl.connection.NodeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +37,8 @@ public class ThriftClusterDetector implements ClusterDetector {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void scanCluster(ConnectionManager connectionManager, NodeManager nodeManager) {
-		Set<String> currentHostList = nodeManager.getHosts();
+	public void scanCluster(ConnectionManager connectionManager) {
+		Set<String> currentHostList = connectionManager.getNodeList();
 		Map<String, List<String>> result = (Map<String, List<String>>) connectionManager.execute(new DescribeSchemaCommand());
 		for (String schema : result.keySet()) {
 			if ("UNREACHABLE".equals(schema)) {
@@ -47,7 +46,7 @@ public class ThriftClusterDetector implements ClusterDetector {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Node host [" + host + "] is unreachable");
 					}
-					nodeManager.nodeUnavailable(host);
+					connectionManager.makeNodeUnavailable(host);
 					currentHostList.remove(host);
 				}
 			} else {
@@ -55,7 +54,7 @@ public class ThriftClusterDetector implements ClusterDetector {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Node host [" + host + "] is available for schema [" + schema + "]");
 					}
-					nodeManager.nodeAvailable(host);
+					connectionManager.makeNodeAvailable(host);
 					currentHostList.remove(host);
 				}
 			}
@@ -64,7 +63,7 @@ public class ThriftClusterDetector implements ClusterDetector {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Node host [" + host + "] not on schema list, assuming it is unreachable");
 			}
-			nodeManager.nodeUnavailable(host);
+			connectionManager.makeNodeUnavailable(host);
 		}
 	}
 

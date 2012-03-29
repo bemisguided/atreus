@@ -134,10 +134,10 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	protected void executeOrBatch(Command command) {
-//		if (isBatchWriting()) {
-//			command.batch(batch);
-//			return;
-//		}
+		// if (isBatchWriting()) {
+		// command.batch(batch);
+		// return;
+		// }
 		execute(command);
 	}
 
@@ -175,7 +175,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		if (!isBatchWriting()) {
 			throw new AtreusIllegalStateException("Session is not set to batch writing");
 		}
-//		execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
+		// execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
 		batch = new Batch();
 	}
 
