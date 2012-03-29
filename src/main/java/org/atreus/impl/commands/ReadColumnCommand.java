@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.commands;
 
-public class ReadColumnCommand extends ColumnCommandBase implements Command {
+public class ReadColumnCommand extends ColumnCommandBase {
 
 	public ReadColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
 		super(columnFamily, rowKey, columnName, subColumnName);

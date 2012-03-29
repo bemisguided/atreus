@@ -21,38 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.impl.connection.thrift;
 
-import java.util.Collections;
-import java.util.Comparator;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-public class Batch {
+import org.apache.cassandra.thrift.Mutation;
 
-	private List<BatchableCommand> batchList = new LinkedList<BatchableCommand>();
+public class ThriftMutations {
 
-	private boolean open = false;
-
-	public void addCommand(BatchableCommand command) {
-		batchList.add(command);
-		open = true;
+	private Map<ByteBuffer, Map<String, List<Mutation>>> mutations = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+	
+	public void add(String columnFamily, ByteBuffer rowKey, Mutation mutation) {
+		Map<String, List<Mutation>> map = getRowKey(rowKey);
+		List<Mutation> list = getColumnFamily(columnFamily, map);
+		list.add(mutation);
 	}
 
-	public List<BatchableCommand> getBatchList() {
-		Collections.sort(batchList, new Comparator<BatchableCommand>() {
-			public int compare(BatchableCommand o1, BatchableCommand o2) {
-				int result = o1.getColumnFamily().compareTo(o2.getColumnFamily());
-				if (result == 0) {
-					result = o1.getRowKey().compareTo(o2.getRowKey());
-				}
-				return result;
-			}
-		});
-		return batchList;
+	private List<Mutation> getColumnFamily(String columnFamily, Map<String, List<Mutation>> map) {
+		List<Mutation> result = map.get(columnFamily);
+		if (result != null) {
+			return result;
+		}
+		result = new LinkedList<Mutation>();
+		map.put(columnFamily, result);
+		return result;
 	}
 
-	public boolean isOpen() {
-		return open;
+	protected Map<ByteBuffer, Map<String, List<Mutation>>> getMutations() {
+		return mutations;
+	}
+
+	private Map<String, List<Mutation>> getRowKey(ByteBuffer rowKey) {
+		Map<String, List<Mutation>> result = mutations.get(rowKey);
+		if (result != null) {
+			return result;
+		}
+		result = new HashMap<String, List<Mutation>>();
+		mutations.put(rowKey, result);
+		return result;
 	}
 }
