@@ -25,7 +25,7 @@ package org.atreus.impl.commands;
 
 import java.nio.ByteBuffer;
 
-public abstract class ColumnCommandBase implements ColumnCommand {
+public abstract class ColumnCommandBase {
 
 	private final String columnFamily;
 
