@@ -25,7 +25,7 @@ package org.atreus.impl.commands;
 
 import org.atreus.impl.converters.TypeConverterRegistry;
 
-public class ReadMultipleColumnsCommand extends ColumnCommandBase implements Command {
+public class ReadMultipleColumnsCommand extends ColumnCommandBase {
 
 	private final TypeConverterRegistry typeRegistry;
 
