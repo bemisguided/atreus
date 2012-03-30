@@ -30,10 +30,14 @@ import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.CommandBatch;
 
 public interface ConnectionProvider {
 
-	public Object execute(Command command, Connection connection, AtreusConsistencyLevel consistencyLevels) throws AtreusCommandException, AtreusClusterUnavailableException,
+	public Object execute(Command command, Connection connection, AtreusConsistencyLevel consistencyLevel) throws AtreusCommandException, AtreusClusterUnavailableException,
+			AtreusNetworkException, AtreusUnknownException;
+
+	public void executeBatch(CommandBatch batch, Connection connection, AtreusConsistencyLevel consistencyLevel) throws AtreusCommandException, AtreusClusterUnavailableException,
 			AtreusNetworkException, AtreusUnknownException;
 
 	public ClusterDetector newClusterDetector();

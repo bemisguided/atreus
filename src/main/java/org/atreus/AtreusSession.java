@@ -23,7 +23,6 @@
  */
 package org.atreus;
 
-
 public interface AtreusSession {
 
 	public void close();

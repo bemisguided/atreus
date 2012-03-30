@@ -69,4 +69,9 @@ public abstract class ColumnCommandBase implements ColumnCommand {
 	public ByteBuffer getSubColumnName() {
 		return subColumnName;
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " [columnFamily=" + columnFamily + ", columnName=" + columnName + ", rowKey=" + rowKey + ", subColumnName=" + subColumnName + "]";
+	}
 }

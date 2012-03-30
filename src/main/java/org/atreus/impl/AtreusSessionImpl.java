@@ -96,7 +96,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] colNameBytes = toBytes(colName);
-		execute(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getWriteConsistencyLevel());
+		executeOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] colNameBytes = toBytes(colName);
 		byte[] subColNameBytes = toBytes(subColName);
-		execute(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getWriteConsistencyLevel());
+		executeOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -132,6 +132,10 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	protected Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
 		return getConnectionManager().execute(command, consistencyLevel);
+	}
+
+	protected void executeBatch(CommandBatch batch, AtreusConsistencyLevel consistencyLevel) {
+		getConnectionManager().executeBatch(batch, consistencyLevel);
 	}
 
 	protected void executeOrBatch(BatchableCommand command, AtreusConsistencyLevel consistencyLevel) {
@@ -176,7 +180,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		if (!isBatchWriting()) {
 			throw new AtreusIllegalStateException("Session is not set to batch writing");
 		}
-		// execute(new BatchMutationCommand(batch, getWriteConsistencyLevel()));
+		executeBatch(commandBatch, getWriteConsistencyLevel());
 		commandBatch = new CommandBatch();
 	}
 

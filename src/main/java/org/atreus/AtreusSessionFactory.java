@@ -23,7 +23,6 @@
  */
 package org.atreus;
 
-
 public interface AtreusSessionFactory {
 
 	public void addConverter(AtreusTypeConverter converter);

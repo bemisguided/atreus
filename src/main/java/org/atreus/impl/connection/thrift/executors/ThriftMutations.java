@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift;
+package org.atreus.impl.connection.thrift.executors;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ import org.apache.cassandra.thrift.Mutation;
 public class ThriftMutations {
 
 	private Map<ByteBuffer, Map<String, List<Mutation>>> mutations = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
-	
+
 	public void add(String columnFamily, ByteBuffer rowKey, Mutation mutation) {
 		Map<String, List<Mutation>> map = getRowKey(rowKey);
 		List<Mutation> list = getColumnFamily(columnFamily, map);
