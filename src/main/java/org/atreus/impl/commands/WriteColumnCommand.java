@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.commands;
 
-public class WriteColumnCommand extends ColumnCommandBase implements BatchableCommand {
+public class WriteColumnCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
 
 	private final byte[] value;
 

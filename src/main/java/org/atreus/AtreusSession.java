@@ -73,6 +73,10 @@ public interface AtreusSession {
 
 	public byte[] readColumnAsBytes(Object colName, Object subColName);
 
+	public void execute(String cql);
+
+	public AtreusRowList query(String cql);
+
 	public AtreusColumnMap readColumns();
 
 	public AtreusColumnMap readColumns(String colFamily, Object rowKey);

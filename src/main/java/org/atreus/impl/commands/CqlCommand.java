@@ -23,10 +23,20 @@
  */
 package org.atreus.impl.commands;
 
-public class DeleteRowCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+import java.nio.ByteBuffer;
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
+import org.atreus.impl.utils.ByteUtils;
+
+public class CqlCommand implements Command {
+
+	private final ByteBuffer originalCql;
+
+	public CqlCommand(String cql) {
+		this.originalCql = ByteBuffer.wrap(ByteUtils.toBytes(cql));
+	}
+
+	public ByteBuffer getOriginalCql() {
+		return originalCql;
 	}
 
 }

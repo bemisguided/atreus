@@ -38,7 +38,7 @@ import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusColumnMap;
+import org.atreus.impl.AtreusColumnMapBase;
 import org.atreus.impl.AtreusColumnMapImpl;
 import org.atreus.impl.AtreusSuperColumnMapImpl;
 import org.atreus.impl.commands.Command;
@@ -59,7 +59,7 @@ public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 		predicate.setSlice_range(range);
 		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, consistencyLevel);
 
-		AtreusColumnMap result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
+		AtreusColumnMapBase result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
 		if (list.size() > 0 && list.get(0).isSetSuper_column()) {
 			result = new AtreusSuperColumnMapImpl(readMultipleColumns.getTypeRegistry());
 		}
@@ -74,6 +74,8 @@ public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 				result.put(column.getName(), column.getValue());
 			}
 		}
+		result.setRowKey(readMultipleColumns.getRowKey().array());
+		result.setImmutable(true);
 		return result;
 	}
 

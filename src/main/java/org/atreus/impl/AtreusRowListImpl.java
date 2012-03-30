@@ -21,12 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.impl;
 
-public class DeleteRowCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
+import org.atreus.AtreusColumnMap;
+import org.atreus.AtreusRowList;
+
+public class AtreusRowListImpl implements AtreusRowList {
+
+	private final List<AtreusColumnMap> list;
+
+	public AtreusRowListImpl(int size) {
+		this.list = new ArrayList<AtreusColumnMap>(size);
+	}
+
+	@Override
+	public Iterator<AtreusColumnMap> iterator() {
+		return list.iterator();
+	}
+
+	@Override
+	public boolean hasRows() {
+		return size() > 0;
+	}
+
+	@Override
+	public int size() {
+		return list.size();
+	}
+
+	public void addColumnMap(AtreusColumnMap columnMap) {
+		list.add(columnMap);
 	}
 
 }

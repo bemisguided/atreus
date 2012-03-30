@@ -23,10 +23,19 @@
  */
 package org.atreus.impl.commands;
 
-public class DeleteRowCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+import org.atreus.impl.converters.TypeConverterRegistry;
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
+public class CqlQueryCommand extends CqlCommand {
+
+	private final TypeConverterRegistry typeRegistry;
+
+	public CqlQueryCommand(String cql, TypeConverterRegistry typeRegistry) {
+		super(cql);
+		this.typeRegistry = typeRegistry;
+	}
+
+	public TypeConverterRegistry getTypeRegistry() {
+		return typeRegistry;
 	}
 
 }

@@ -358,6 +358,7 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey);
 		AtreusColumnMap map = s.readColumns();
 
+		Assert.assertEquals(rowKey, map.getRowKey(String.class));
 		Assert.assertEquals(col1, map.get("col1", String.class));
 		Assert.assertEquals(Integer.valueOf(col2), map.get("col2", Integer.class));
 		Assert.assertEquals(col3, map.get("col3", Calendar.class));

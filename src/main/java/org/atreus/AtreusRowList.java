@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus;
 
-public class DeleteRowCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+public interface AtreusRowList extends Iterable<AtreusColumnMap> {
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
-	}
-
+	public boolean hasRows();
+	
+	public int size();
+	
 }

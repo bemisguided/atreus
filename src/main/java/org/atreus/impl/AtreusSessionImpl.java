@@ -27,6 +27,7 @@ import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusDisconnectedException;
 import org.atreus.AtreusIllegalStateException;
+import org.atreus.AtreusRowList;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
 import org.atreus.impl.commands.BatchableCommand;
@@ -96,7 +97,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] colNameBytes = toBytes(colName);
-		executeOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getWriteConsistencyLevel());
+		doExecuteOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] colNameBytes = toBytes(colName);
 		byte[] subColNameBytes = toBytes(subColName);
-		executeOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getWriteConsistencyLevel());
+		doExecuteOrBatch(new DeleteColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -126,23 +127,31 @@ public class AtreusSessionImpl implements AtreusSession {
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
 
 		byte[] rowKeyBytes = toBytes(rowKey);
-		executeOrBatch(new DeleteRowCommand(colFamily, rowKeyBytes), getWriteConsistencyLevel());
+		doExecuteOrBatch(new DeleteRowCommand(colFamily, rowKeyBytes), getWriteConsistencyLevel());
 	}
 
-	protected Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
+	protected Object doExecute(Command command, AtreusConsistencyLevel consistencyLevel) {
 		return getConnectionManager().execute(command, consistencyLevel);
 	}
 
-	protected void executeBatch(CommandBatch batch, AtreusConsistencyLevel consistencyLevel) {
+	protected void doExecuteBatch(CommandBatch batch, AtreusConsistencyLevel consistencyLevel) {
 		getConnectionManager().executeBatch(batch, consistencyLevel);
 	}
 
-	protected void executeOrBatch(BatchableCommand command, AtreusConsistencyLevel consistencyLevel) {
+	protected void doExecuteOrBatch(BatchableCommand command, AtreusConsistencyLevel consistencyLevel) {
 		if (isBatchWriting()) {
 			commandBatch.addCommand(command);
 			return;
 		}
-		execute(command, consistencyLevel);
+		doExecute(command, consistencyLevel);
+	}
+
+	@Override
+	public void execute(String cql) {
+		assertIsReady();
+		AssertUtils.hasText(cql, "CQL parameter is required");
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -179,7 +188,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		if (!isBatchWriting()) {
 			return;
 		}
-		executeBatch(commandBatch, getWriteConsistencyLevel());
+		doExecuteBatch(commandBatch, getWriteConsistencyLevel());
 		commandBatch = new CommandBatch();
 	}
 
@@ -249,6 +258,14 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	@Override
+	public AtreusRowList query(String cql) {
+		assertIsReady();
+		AssertUtils.hasText(cql, "CQL parameter is required");
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public <T> T readColumn(Object colName, Class<T> type) {
 		AssertUtils.notNull(type, "Type is a required parameter");
 		byte[] value = readColumnAsBytes(colName);
@@ -268,7 +285,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 		byte[] colNameBytes = toBytes(colName);
 		byte[] rowKey = toBytes(getRowKey());
-		return (byte[]) execute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getReadConsistencyLevel());
+		return (byte[]) doExecute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, null), getReadConsistencyLevel());
 	}
 
 	@Override
@@ -281,7 +298,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] colNameBytes = toBytes(colName);
 		byte[] rowKey = toBytes(getRowKey());
 		byte[] subColNameBytes = toBytes(subColName);
-		return (byte[]) execute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getReadConsistencyLevel());
+		return (byte[]) doExecute(new ReadColumnCommand(getColumnFamily(), rowKey, colNameBytes, subColNameBytes), getReadConsistencyLevel());
 	}
 
 	@Override
@@ -298,7 +315,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
 
 		byte[] rowKeyBytes = toBytes(rowKey);
-		return (AtreusColumnMap) execute(new ReadMultipleColumnsCommand(sessionFactory.getTypeRegistry(), colFamily, rowKeyBytes), getReadConsistencyLevel());
+		return (AtreusColumnMap) doExecute(new ReadMultipleColumnsCommand(sessionFactory.getTypeRegistry(), colFamily, rowKeyBytes), getReadConsistencyLevel());
 	}
 
 	@Override
@@ -374,7 +391,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] colNameBytes = toBytes(colName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		executeOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value), getWriteConsistencyLevel());
+		doExecuteOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -399,7 +416,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] subColNameBytes = toBytes(subColName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		executeOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value), getWriteConsistencyLevel());
+		doExecuteOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value), getWriteConsistencyLevel());
 	}
 
 	@Override

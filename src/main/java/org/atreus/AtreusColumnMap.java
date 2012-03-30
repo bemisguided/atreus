@@ -43,6 +43,8 @@ public interface AtreusColumnMap {
 
 	public byte[] getAsBytes(Object columnName);
 
+	public <T> T getRowKey(Class<T> type);
+
 	public boolean hasSubColumns();
 
 	public void put(Object columnName, byte[] value);
@@ -52,6 +54,8 @@ public interface AtreusColumnMap {
 	public void put(Object columnName, Object subColumnName, byte[] value);
 
 	public void put(Object columnName, Object subColumnName, Object value);
+
+	public void setRowKey(Object rowKey);
 
 	public int size();
 

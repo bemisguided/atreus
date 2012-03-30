@@ -36,6 +36,8 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 
 	private boolean immutable;
 
+	private byte[] rowKey;
+
 	private final TypeConverterRegistry typeRegistry;
 
 	protected AtreusColumnMapBase(TypeConverterRegistry typeRegistry) {
@@ -126,6 +128,11 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 
 	protected abstract Map<ByteBuffer, ?> getMap();
 
+	@Override
+	public <T> T getRowKey(Class<T> type) {
+		return fromBytes(type, rowKey);
+	}
+
 	protected TypeConverterRegistry getTypeRegistry() {
 		return typeRegistry;
 	}
@@ -169,6 +176,12 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 
 	public final void setImmutable(boolean immutable) {
 		this.immutable = immutable;
+	}
+
+	@Override
+	public void setRowKey(Object rowKey) {
+		assertMutable();
+		this.rowKey = toBytes(rowKey);
 	}
 
 	@Override
