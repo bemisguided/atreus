@@ -99,11 +99,6 @@ public class CommandBatch {
 		open = true;
 	}
 
-	@Override
-	public String toString() {
-		return "CommandBatch [batchList=" + batchList + ", open=" + open + "]";
-	}
-
 	public List<List<BatchableCommand>> getBatchList() {
 		List<List<BatchableCommand>> result = new LinkedList<List<BatchableCommand>>();
 		for (List<BatchableCommand> list : batchList.values()) {
@@ -114,5 +109,10 @@ public class CommandBatch {
 
 	public boolean isOpen() {
 		return open;
+	}
+
+	@Override
+	public String toString() {
+		return "CommandBatch [batchList=" + batchList + ", open=" + open + "]";
 	}
 }

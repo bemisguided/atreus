@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusConfiguration;
+import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusSessionFactoryBuilder;
 import org.cassandraunit.AbstractCassandraUnit4TestCase;
@@ -61,6 +62,40 @@ public class AtreusSessionBatchTests extends AbstractCassandraUnit4TestCase {
 	public void teardown() throws Exception {
 		s.close();
 		sessionFactory.disconnect();
+	}
+
+	@Test
+	public void testBatchModeSwitching() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Turn off batch mode
+		s.setBatchWriting(false);
+
+		// Write and assert data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col1", "value1");
+		Assert.assertEquals("value1", s.readColumn("col1", String.class));
+
+		// Turn on batch mode
+		s.setBatchWriting(true);
+
+		// Write and assert data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col2", "value2");
+		Assert.assertFalse("col2 should not exist", s.existsColumn("col2"));
+		s.flush();
+		Assert.assertEquals("value2", s.readColumn("col2", String.class));
+
+		// Attempt to turn off batch mode mid-batch
+		try {
+			s.setFamilyAndKey("ColumnTest1", rowKey);
+			s.writeColumn("col2", "value2");
+			s.setBatchWriting(false);
+			Assert.fail("Expect AtreusIllegalStateException");
+		} catch (AtreusIllegalStateException e) {
+
+		}
 	}
 
 	@Test
@@ -148,10 +183,10 @@ public class AtreusSessionBatchTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey1);
 		s.writeColumn("col1", "val1");
 		s.writeColumn("col2", "val2");
-		
+
 		s.setFamilyAndKey("SuperColumnTest1", rowKey2);
-		s.writeColumn("col1", "subCol1", "val1");
-		s.writeColumn("col2", "subCol2", "val2");
+		s.writeSubColumn("col1", "subCol1", "val1");
+		s.writeSubColumn("col2", "subCol2", "val2");
 
 		// Flush the batch
 		s.flush();
@@ -221,12 +256,12 @@ public class AtreusSessionBatchTests extends AbstractCassandraUnit4TestCase {
 
 		// Write data to SuperColFamily
 		s.setFamilyAndKey("SuperColumnTest1", rowKey);
-		s.writeColumn("col1", "subCol1", col1);
-		s.writeColumn("col1", "subCol2", col2);
-		s.writeColumn("col1", "subCol3", col3);
-		s.writeColumn("col2", "subCol1", col1);
-		s.writeColumn("col2", "subCol2", col2);
-		s.writeColumn("col2", "subCol3", col3);
+		s.writeSubColumn("col1", "subCol1", col1);
+		s.writeSubColumn("col1", "subCol2", col2);
+		s.writeSubColumn("col1", "subCol3", col3);
+		s.writeSubColumn("col2", "subCol1", col1);
+		s.writeSubColumn("col2", "subCol2", col2);
+		s.writeSubColumn("col2", "subCol3", col3);
 
 		// Flush the batch
 		s.flush();
@@ -279,17 +314,17 @@ public class AtreusSessionBatchTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("SuperColumnTest1", rowKey);
 
 		// Write data to ColFamily
-		s.writeColumn("col1", "subCol1", col1);
-		s.writeColumn("col1", "subCol2", col2);
-		s.writeColumn("col1", "subCol3", col3);
+		s.writeSubColumn("col1", "subCol1", col1);
+		s.writeSubColumn("col1", "subCol2", col2);
+		s.writeSubColumn("col1", "subCol3", col3);
 
-		s.writeColumn("col2", "subCol1", col1);
-		s.writeColumn("col2", "subCol2", col2);
-		s.writeColumn("col2", "subCol3", col3);
+		s.writeSubColumn("col2", "subCol1", col1);
+		s.writeSubColumn("col2", "subCol2", col2);
+		s.writeSubColumn("col2", "subCol3", col3);
 
-		s.writeColumn("col3", "subCol1", col1);
-		s.writeColumn("col3", "subCol2", col2);
-		s.writeColumn("col3", "subCol3", col3);
+		s.writeSubColumn("col3", "subCol1", col1);
+		s.writeSubColumn("col3", "subCol2", col2);
+		s.writeSubColumn("col3", "subCol3", col3);
 
 		// Flush the batch
 		s.flush();

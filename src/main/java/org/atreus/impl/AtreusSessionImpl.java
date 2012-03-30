@@ -29,9 +29,9 @@ import org.atreus.AtreusDisconnectedException;
 import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
-import org.atreus.impl.commands.CommandBatch;
 import org.atreus.impl.commands.BatchableCommand;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.CommandBatch;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
@@ -114,7 +114,6 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public void deleteRow() {
-		assertIsReady();
 		assertFamilyAndKey();
 
 		deleteRow(getColumnFamily(), getRowKey());
@@ -178,7 +177,7 @@ public class AtreusSessionImpl implements AtreusSession {
 	public void flush() {
 		assertIsReady();
 		if (!isBatchWriting()) {
-			throw new AtreusIllegalStateException("Session is not set to batch writing");
+			return;
 		}
 		executeBatch(commandBatch, getWriteConsistencyLevel());
 		commandBatch = new CommandBatch();
@@ -321,6 +320,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	@Override
 	public void setColumnFamily(String colFamily) {
+		assertIsReady();
 		this.columnFamily = colFamily;
 	}
 
@@ -384,7 +384,12 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	@Override
-	public void writeColumn(Object colName, Object subColName, byte[] value) {
+	public void writeSubColumn(Object colName, Object subColName) {
+		writeSubColumn(colName, subColName, new byte[0]);
+	}
+
+	@Override
+	public void writeSubColumn(Object colName, Object subColName, byte[] value) {
 		assertIsReady();
 		assertFamilyAndKey();
 		AssertUtils.notNull(colName, "Column Name is a required parameter");
@@ -398,9 +403,9 @@ public class AtreusSessionImpl implements AtreusSession {
 	}
 
 	@Override
-	public void writeColumn(Object colName, Object subColName, Object value) {
+	public void writeSubColumn(Object colName, Object subColName, Object value) {
 		byte[] valueBytes = toBytes(value);
-		writeColumn(colName, subColName, valueBytes);
+		writeSubColumn(colName, subColName, valueBytes);
 	}
 
 }

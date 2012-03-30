@@ -99,8 +99,10 @@ public interface AtreusSession {
 
 	public void writeColumn(Object colName, Object value);
 
-	public void writeColumn(Object colName, Object subColName, byte[] value);
+	public void writeSubColumn(Object colName, Object subColName);
 
-	public void writeColumn(Object colName, Object subColName, Object value);
+	public void writeSubColumn(Object colName, Object subColName, byte[] value);
+
+	public void writeSubColumn(Object colName, Object subColName, Object value);
 
 }

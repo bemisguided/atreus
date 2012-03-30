@@ -43,6 +43,7 @@ public class TypeConverterRegistry {
 	}
 
 	public void addDefaultConverters() {
+		converters.add(new ByteArrayTypeConverter());
 		converters.add(new BooleanTypeConverter());
 		converters.add(new ByteTypeConverter());
 		converters.add(new ShortTypeConverter());

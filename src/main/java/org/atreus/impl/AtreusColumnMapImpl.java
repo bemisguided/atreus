@@ -40,17 +40,17 @@ public class AtreusColumnMapImpl extends AtreusColumnMapBase {
 	}
 
 	@Override
-	public boolean existsValue(byte[] value) {
+	protected boolean existsValue(byte[] value) {
 		return map.containsValue(ByteBuffer.wrap(value));
 	}
 
 	@Override
-	public AtreusColumnMap get(byte[] columnName) {
+	protected AtreusColumnMap get(byte[] columnName) {
 		throw exceptionNotSupported();
 	}
 
 	@Override
-	public byte[] getAsBytes(byte[] columnName) {
+	protected byte[] getAsBytes(byte[] columnName) {
 		ByteBuffer buffer = map.get(ByteBuffer.wrap(columnName));
 		if (buffer == null) {
 			return null;
@@ -68,13 +68,13 @@ public class AtreusColumnMapImpl extends AtreusColumnMapBase {
 	}
 
 	@Override
-	public void put(byte[] columnName, byte[] value) {
+	protected void put(byte[] columnName, byte[] value) {
 		assertMutable();
 		map.put(ByteBuffer.wrap(columnName), ByteBuffer.wrap(value));
 	}
 
 	@Override
-	public void put(byte[] columnName, byte[] subNameColumn, byte[] value) {
+	protected void put(byte[] columnName, byte[] subNameColumn, byte[] value) {
 		throw exceptionNotSupported();
 	}
 

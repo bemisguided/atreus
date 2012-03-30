@@ -172,7 +172,7 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		try {
 			// Attempt to write a super column to a standard column
 			s.setFamilyAndKey("ColumnTest1", rowKey);
-			s.writeColumn("col1", "subcol1", "value1");
+			s.writeSubColumn("col1", "subcol1", "value1");
 			Assert.fail("Expect Atreus Command Exception");
 		} catch (AtreusCommandException e) {
 
@@ -261,8 +261,8 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.writeColumn("col2", "val2");
 
 		s.setFamilyAndKey("SuperColumnTest1", rowKey2);
-		s.writeColumn("col1", "subCol1", "val1");
-		s.writeColumn("col2", "subCol2", "val2");
+		s.writeSubColumn("col1", "subCol1", "val1");
+		s.writeSubColumn("col2", "subCol2", "val2");
 
 		s.setFamilyAndKey("ColumnTest1", rowKey1);
 		s.deleteColumn("col1");
@@ -302,6 +302,33 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 	}
 
 	@Test
+	public void testExistsColumn() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Write data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col1", "value1");
+		s.writeColumn("col2");
+
+		// Write data to SubColFamily
+		s.setFamilyAndKey("SuperColumnTest1", rowKey);
+		s.writeSubColumn("col1", "subcol1", "value1");
+		s.writeSubColumn("col1", "subcol2");
+
+		// Assert
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		Assert.assertTrue("col1 should exist", s.existsColumn("col1"));
+		Assert.assertTrue("col2 should exist", s.existsColumn("col2"));
+		Assert.assertFalse("col3 should not exist", s.existsColumn("col3"));
+
+		s.setFamilyAndKey("SuperColumnTest1", rowKey);
+		Assert.assertTrue("subcol1 should exist", s.existsColumn("col1", "subcol1"));
+		Assert.assertTrue("subcol2 should exist", s.existsColumn("col1", "subcol2"));
+		Assert.assertFalse("subcol3 should not exist", s.existsColumn("col1", "subcol3"));
+	}
+
+	@Test
 	public void testReadMultipleColumns() throws Exception {
 
 		// Setup test
@@ -320,12 +347,12 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 
 		// Write data to SuperColFamily
 		s.setFamilyAndKey("SuperColumnTest1", rowKey);
-		s.writeColumn("col1", "subCol1", col1);
-		s.writeColumn("col1", "subCol2", col2);
-		s.writeColumn("col1", "subCol3", col3);
-		s.writeColumn("col2", "subCol1", col1);
-		s.writeColumn("col2", "subCol2", col2);
-		s.writeColumn("col2", "subCol3", col3);
+		s.writeSubColumn("col1", "subCol1", col1);
+		s.writeSubColumn("col1", "subCol2", col2);
+		s.writeSubColumn("col1", "subCol3", col3);
+		s.writeSubColumn("col2", "subCol1", col1);
+		s.writeSubColumn("col2", "subCol2", col2);
+		s.writeSubColumn("col2", "subCol3", col3);
 
 		// Assert ColFamily
 		s.setFamilyAndKey("ColumnTest1", rowKey);
@@ -387,22 +414,24 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("SuperColumnTest1", rowKey);
 
 		// Write data to ColFamily
-		s.writeColumn("col1", "subCol1", col1);
-		s.writeColumn("col1", "subCol2", col2);
-		s.writeColumn("col1", "subCol3", col3);
+		s.writeSubColumn("col1", "subCol1", col1);
+		s.writeSubColumn("col1", "subCol2", col2);
+		s.writeSubColumn("col1", "subCol3", col3);
+		s.writeSubColumn("col1", "subCol4");
 
-		s.writeColumn("col2", "subCol1", col1);
-		s.writeColumn("col2", "subCol2", col2);
-		s.writeColumn("col2", "subCol3", col3);
+		s.writeSubColumn("col2", "subCol1", col1);
+		s.writeSubColumn("col2", "subCol2", col2);
+		s.writeSubColumn("col2", "subCol3", col3);
 
-		s.writeColumn("col3", "subCol1", col1);
-		s.writeColumn("col3", "subCol2", col2);
-		s.writeColumn("col3", "subCol3", col3);
+		s.writeSubColumn("col3", "subCol1", col1);
+		s.writeSubColumn("col3", "subCol2", col2);
+		s.writeSubColumn("col3", "subCol3", col3);
 
 		// Assert
 		Assert.assertEquals(col1, s.readColumn("col1", "subCol1", String.class));
 		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col1", "subCol2", Integer.class));
 		Assert.assertEquals(col3, s.readColumn("col1", "subCol3", Calendar.class));
+		Assert.assertEquals("", s.readColumn("col1", "subCol4", String.class));
 		Assert.assertEquals(col1, s.readColumn("col2", "subCol1", String.class));
 		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col2", "subCol2", Integer.class));
 		Assert.assertEquals(col3, s.readColumn("col2", "subCol3", Calendar.class));

@@ -21,38 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus;
+package org.atreus.impl.converters;
 
-import java.util.Set;
+import org.atreus.AtreusTypeConverter;
 
-public interface AtreusColumnMap {
+public class ByteArrayTypeConverter implements AtreusTypeConverter {
 
-	public Set<byte[]> columnNameSet();
+	@Override
+	public Object fromBytes(byte[] bytes) {
+		return bytes;
+	}
 
-	public <T> Set<T> columnNameSet(Class<T> type);
+	@Override
+	public boolean isSupported(Class<?> type) {
+		return byte[].class.isAssignableFrom(type);
+	}
 
-	public boolean existsColumn(Object columnName);
-
-	public boolean existsValue(Object value);
-
-	public <T> T get(byte[] columnName, Class<T> type);
-
-	public AtreusColumnMap get(Object columnName);
-
-	public <T> T get(Object columnName, Class<T> type);
-
-	public byte[] getAsBytes(Object columnName);
-
-	public boolean hasSubColumns();
-
-	public void put(Object columnName, byte[] value);
-
-	public void put(Object columnName, Object value);
-
-	public void put(Object columnName, Object subColumnName, byte[] value);
-
-	public void put(Object columnName, Object subColumnName, Object value);
-
-	public int size();
+	@Override
+	public byte[] toBytes(Object value) {
+		byte[] byteArray = (byte[]) value;
+		return byteArray;
+	}
 
 }

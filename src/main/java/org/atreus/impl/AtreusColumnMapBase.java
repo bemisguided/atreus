@@ -74,8 +74,7 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 		return new AtreusIllegalStateException("Method not supported for an Atreus Column Map without Super Columns");
 	}
 
-	@Override
-	public final boolean existsColumn(byte[] columnName) {
+	protected final boolean existsColumn(byte[] columnName) {
 		return getMap().containsKey(ByteBuffer.wrap(columnName));
 	}
 
@@ -84,6 +83,8 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 		byte[] byteColumnName = toBytes(columnName);
 		return existsColumn(byteColumnName);
 	}
+
+	protected abstract boolean existsValue(byte[] value);
 
 	@Override
 	public final boolean existsValue(Object value) {
@@ -94,6 +95,8 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 	protected final <T> T fromBytes(Class<T> type, byte[] bytes) {
 		return typeRegistry.fromBytes(type, bytes);
 	}
+
+	protected abstract AtreusColumnMap get(byte[] columnName);
 
 	@Override
 	public final <T> T get(byte[] columnName, Class<T> type) {
@@ -113,6 +116,8 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 		return get(byteColumnName, type);
 	}
 
+	protected abstract byte[] getAsBytes(byte[] columnName);
+
 	@Override
 	public final byte[] getAsBytes(Object columnName) {
 		byte[] byteColumnName = toBytes(columnName);
@@ -129,49 +134,15 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 		return immutable;
 	}
 
-	@Override
-	public final void put(byte[] columnName, byte[] subColumnName, Object value) {
-		byte[] byteValue = toBytes(value);
-		put(columnName, subColumnName, byteValue);
-	}
+	protected abstract void put(byte[] columnName, byte[] value);
 
-	@Override
-	public final void put(byte[] columnName, Object value) {
-		byte[] byteValue = toBytes(value);
-		put(columnName, byteValue);
-	}
-
-	@Override
-	public final void put(byte[] columnName, Object subColumnName, byte[] value) {
-		byte[] byteSubColumn = toBytes(subColumnName);
-		put(columnName, byteSubColumn, value);
-	}
-
-	@Override
-	public final void put(byte[] columnName, Object subColumnName, Object value) {
-		byte[] byteValue = toBytes(value);
-		byte[] byteSubColumn = toBytes(subColumnName);
-		put(columnName, byteSubColumn, byteValue);
-	}
+	protected abstract void put(byte[] columnName, byte[] subColumnName, byte[] value);
 
 	@Override
 	public final void put(Object columnName, byte[] value) {
 		byte[] byteValue = toBytes(value);
 		byte[] byteColumnName = toBytes(columnName);
 		put(byteColumnName, byteValue);
-	}
-
-	@Override
-	public final void put(Object columnName, byte[] subColumnName, byte[] value) {
-		byte[] byteColumn = toBytes(columnName);
-		put(byteColumn, subColumnName, value);
-	}
-
-	@Override
-	public final void put(Object columnName, byte[] subColumnName, Object value) {
-		byte[] byteValue = toBytes(value);
-		byte[] byteColumnName = toBytes(columnName);
-		put(byteColumnName, subColumnName, byteValue);
 	}
 
 	@Override

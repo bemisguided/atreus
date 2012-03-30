@@ -63,7 +63,7 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void executeNotConnectedTest() throws Exception {
+	public void testExecuteNotConnected() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
 		Command command = controller.createMock(Command.class);
@@ -81,7 +81,30 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void executionNetworkExceptionTest() throws Exception {
+	public void testExecution() throws Exception {
+		IMocksControl controller = createNiceControl();
+		buildSingleHostMocks(controller);
+		Command command = controller.createMock(Command.class);
+		expect(connection.getHost()).andReturn(SINGLE_HOST).anyTimes();
+		expect(connection.isValid()).andReturn(true).anyTimes();
+		connection.open();
+		String result = "RESULT";
+		expect(provider.execute(command, connection, AtreusConsistencyLevel.EACH_QUORUM)).andReturn(result);
+
+		controller.replay();
+
+		ConnectionManager manager = new ConnectionManager(config, provider);
+		manager.connect();
+		String assertResult = (String) manager.execute(command, AtreusConsistencyLevel.EACH_QUORUM);
+		Assert.assertTrue("SINGLE_HOST should be still marked available", manager.getNodeManager().isNodeAvailable(SINGLE_HOST));
+		Assert.assertEquals(result, assertResult);
+		Assert.assertEquals(0, manager.getConnectionsActive());
+		Assert.assertEquals(1, manager.getConnectionsIdle());
+		controller.verify();
+	}
+
+	@Test
+	public void testExecutionNetworkException() throws Exception {
 		IMocksControl controller = createNiceControl();
 		buildSingleHostMocks(controller);
 		Command command = controller.createMock(Command.class);
@@ -107,30 +130,7 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void executionTest() throws Exception {
-		IMocksControl controller = createNiceControl();
-		buildSingleHostMocks(controller);
-		Command command = controller.createMock(Command.class);
-		expect(connection.getHost()).andReturn(SINGLE_HOST).anyTimes();
-		expect(connection.isValid()).andReturn(true).anyTimes();
-		connection.open();
-		String result = "RESULT";
-		expect(provider.execute(command, connection, AtreusConsistencyLevel.EACH_QUORUM)).andReturn(result);
-
-		controller.replay();
-
-		ConnectionManager manager = new ConnectionManager(config, provider);
-		manager.connect();
-		String assertResult = (String) manager.execute(command, AtreusConsistencyLevel.EACH_QUORUM);
-		Assert.assertTrue("SINGLE_HOST should be still marked available", manager.getNodeManager().isNodeAvailable(SINGLE_HOST));
-		Assert.assertEquals(result, assertResult);
-		Assert.assertEquals(0, manager.getConnectionsActive());
-		Assert.assertEquals(1, manager.getConnectionsIdle());
-		controller.verify();
-	}
-
-	@Test
-	public void openConnectionConnectionExceptionTest() throws Exception {
+	public void testOopenConnectionConnectionException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
 		connection.open();
@@ -149,7 +149,22 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void openConnectionNetworkExceptionTest() throws Exception {
+	public void testOpenConnection() throws Exception {
+		IMocksControl controller = createStrictControl();
+		buildSingleHostMocks(controller);
+		connection.open();
+		controller.replay();
+
+		ConnectionManager manager = new ConnectionManager(config, provider);
+		manager.connect();
+		manager.openConnection();
+		Assert.assertTrue("Connection Manager should be connected", manager.isConnected());
+		Assert.assertTrue("SINGLE_HOST should be still marked available", manager.getNodeManager().isNodeAvailable(SINGLE_HOST));
+		controller.verify();
+	}
+
+	@Test
+	public void testOpenConnectionNetworkException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
 		connection.open();
@@ -171,22 +186,7 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void openConnectionTest() throws Exception {
-		IMocksControl controller = createStrictControl();
-		buildSingleHostMocks(controller);
-		connection.open();
-		controller.replay();
-
-		ConnectionManager manager = new ConnectionManager(config, provider);
-		manager.connect();
-		manager.openConnection();
-		Assert.assertTrue("Connection Manager should be connected", manager.isConnected());
-		Assert.assertTrue("SINGLE_HOST should be still marked available", manager.getNodeManager().isNodeAvailable(SINGLE_HOST));
-		controller.verify();
-	}
-
-	@Test
-	public void openConnectionUnknownExceptionTest() throws Exception {
+	public void testOpenConnectionUnknownException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
 		connection.open();
@@ -208,7 +208,7 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
-	public void validateConnectionTest() throws Exception {
+	public void testValidateConnection() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
 		connection.open();
