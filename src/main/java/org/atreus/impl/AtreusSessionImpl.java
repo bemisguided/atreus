@@ -127,7 +127,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		AssertUtils.notNull(rowKey, "Row key is a required parameter");
 
 		byte[] rowKeyBytes = toBytes(rowKey);
-		executeOrBatch(new DeleteRowCommand(getColumnFamily(), rowKeyBytes), getWriteConsistencyLevel());
+		executeOrBatch(new DeleteRowCommand(colFamily, rowKeyBytes), getWriteConsistencyLevel());
 	}
 
 	protected Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {

@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.UUID;
 
 import org.atreus.AtreusColumnMap;
+import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusSessionFactoryBuilder;
@@ -65,6 +66,75 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 	}
 
 	@Test
+	public void testColumnDeleteColumnNegativeMissingFamilyKey() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		try {
+			// Attempt to delete a row without a column family and row key set
+			s.deleteColumn("col1");
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
+
+		try {
+			// Attempt to write without a column family set
+			s.setRowKey(rowKey);
+			s.deleteColumn("col1");
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
+	}
+
+	@Test
+	public void testColumnDeleteColumnNegativeNonExistent() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Attempt to delete a non-existent column
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.deleteColumn("col1");
+
+		// Attempt to delete a non-existent sub column
+		s.setFamilyAndKey("SuperColumnTest1", rowKey);
+		s.deleteColumn("col1", "subcol1");
+	}
+
+	@Test
+	public void testColumnDeleteRowNegativeMissingFamilyKey() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		try {
+			// Attempt to delete a row without a column family and row key set
+			s.deleteRow();
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
+
+		try {
+			// Attempt to write without a column family set
+			s.setRowKey(rowKey);
+			s.deleteRow();
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
+	}
+
+	@Test
+	public void testColumnDeleteRowNegativeNonExistent() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Attempt to delete a non-existent row
+		s.deleteRow("ColumnTest1", rowKey);
+	}
+
+	@Test
 	public void testColumnWriteRead() throws Exception {
 		// Setup test
 		String rowKey = UUID.randomUUID().toString();
@@ -84,6 +154,52 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		Assert.assertEquals(col1, s.readColumn("col1", col1.getClass()));
 		Assert.assertEquals(Integer.valueOf(col2), s.readColumn("col2", Integer.class));
 		Assert.assertEquals(col3, s.readColumn("col3", col3.getClass()));
+	}
+
+	@Test
+	public void testColumnWriteReadNegativeColumnTypes() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+		try {
+			// Attempt to write a standard column to a super column
+			s.setFamilyAndKey("SuperColumnTest1", rowKey);
+			s.writeColumn("col1", "value1");
+			Assert.fail("Expect Atreus Command Exception");
+		} catch (AtreusCommandException e) {
+
+		}
+
+		try {
+			// Attempt to write a super column to a standard column
+			s.setFamilyAndKey("ColumnTest1", rowKey);
+			s.writeColumn("col1", "subcol1", "value1");
+			Assert.fail("Expect Atreus Command Exception");
+		} catch (AtreusCommandException e) {
+
+		}
+	}
+
+	@Test
+	public void testColumnWriteReadNegativeMissingFamilyKey() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		try {
+			// Attempt to write without a column family and row key set
+			s.writeColumn("col1", "value1");
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
+
+		try {
+			// Attempt to write without a column family set
+			s.setRowKey(rowKey);
+			s.writeColumn("col1", "value1");
+			Assert.fail("Expect IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+
+		}
 	}
 
 	@Test
@@ -172,7 +288,7 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey1);
 		s.writeColumn("col1", "val1");
 		s.writeColumn("col2", "val2");
-		s.setFamilyAndKey("ColumnTest1", rowKey2);
+		s.setFamilyAndKey("ColumnTest2", rowKey2);
 		s.writeColumn("col1", "val1");
 		s.writeColumn("col2", "val2");
 
@@ -243,6 +359,18 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey);
 		AtreusColumnMap map = s.readColumns();
 
+		Assert.assertEquals(0, map.size());
+	}
+
+	@Test
+	public void testReadMultipleColumnsNegativeNonExistent() throws Exception {
+
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Read non-existent multi columns
+		s.setFamilyAndKey("ColumnTest2", rowKey);
+		AtreusColumnMap map = s.readColumns();
 		Assert.assertEquals(0, map.size());
 	}
 
