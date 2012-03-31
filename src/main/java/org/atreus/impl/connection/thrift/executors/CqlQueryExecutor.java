@@ -41,16 +41,25 @@ import org.atreus.impl.AtreusColumnMapImpl;
 import org.atreus.impl.AtreusRowListImpl;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.CqlQueryCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CqlQueryExecutor implements ThriftCommandExecutor {
+
+	private static final Logger logger = LoggerFactory.getLogger(CqlQueryExecutor.class);
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevels) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
 		CqlQueryCommand cqlQuery = (CqlQueryCommand) command;
 		try {
-			CqlResult cqlResult = client.execute_cql_query(cqlQuery.getOriginalCql(), Compression.GZIP);
-
+			if (logger.isDebugEnabled()) {
+				logger.debug("Executing CQL [" + new String(cqlQuery.getOriginalCql().array()) + "]");
+			}
+			CqlResult cqlResult = client.execute_cql_query(cqlQuery.getOriginalCql(), Compression.NONE);
+			if (logger.isDebugEnabled()) {
+				logger.debug("CQL result type [" + cqlResult.getType() + "]");
+			}
 			if (!CqlResultType.ROWS.equals(cqlResult.getType())) {
 				return null;
 			}

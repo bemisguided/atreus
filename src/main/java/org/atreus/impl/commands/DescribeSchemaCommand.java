@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.connection.thrift.commands;
+package org.atreus.impl.commands;
 
-import org.atreus.impl.commands.Command;
 
 public class DescribeSchemaCommand implements Command {
 

@@ -23,48 +23,30 @@
  */
 package org.atreus.impl.connection.thrift.executors;
 
+import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.WriteSubColumnCommand;
 
-public class WriteColumnsExecutor implements ThriftCommandExecutor {
-
-	private Column buildColumn(WriteColumnCommand writeColumn) {
-		Column column;
-		if (writeColumn.getSubColumnName() != null) {
-			column = new Column(writeColumn.getSubColumnName());
-		} else {
-			column = new Column(writeColumn.getColumnName());
-		}
-		column.setValue(writeColumn.getValue());
-		column.setTimestamp(System.currentTimeMillis());
-		return column;
-	}
-
-	private ColumnParent buildColumnParent(WriteColumnCommand writeColumn) {
-		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
-		if (writeColumn.getSubColumnName() != null) {
-			parent.setSuper_column(writeColumn.getColumnName());
-		}
-		return parent;
-	}
+public class WriteSubColumnExecutor implements ThriftCommandExecutor {
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
-		WriteColumnCommand writeColumn = (WriteColumnCommand) command;
-		ColumnParent parent = buildColumnParent(writeColumn);
-		Column column = buildColumn(writeColumn);
+		WriteSubColumnCommand writeColumn = (WriteSubColumnCommand) command;
+		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
+		parent.setSuper_column(writeColumn.getColumnName());
+		Column column = new Column(writeColumn.getSubColumnName());
+		column.setValue(writeColumn.getValue());
+		column.setTimestamp(System.currentTimeMillis());
 		client.insert(writeColumn.getRowKey(), parent, column, consistencyLevel);
 		return null;
 	}
-
 }

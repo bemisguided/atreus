@@ -23,12 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-public class WriteColumnCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+public class WriteSubColumnCommand extends ColumnCommandBase implements WriteCommand, BatchableCommand {
 
 	private final byte[] value;
 
-	public WriteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] value) {
-		super(columnFamily, rowKey, columnName, null);
+	public WriteSubColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, byte[] value) {
+		super(columnFamily, rowKey, columnName, subColumnName);
 		this.value = value;
 	}
 

@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class CommandBatch {
+public class BatchCommand implements WriteCommand {
 
 	class BatchReference {
 
@@ -84,9 +84,7 @@ public class CommandBatch {
 
 	}
 
-	private Map<BatchReference, List<BatchableCommand>> batchList = new HashMap<CommandBatch.BatchReference, List<BatchableCommand>>();
-
-	private boolean open = false;
+	private Map<BatchReference, List<BatchableCommand>> batchList = new HashMap<BatchCommand.BatchReference, List<BatchableCommand>>();
 
 	public void addCommand(BatchableCommand command) {
 		BatchReference ref = new BatchReference(command.getColumnFamily(), command.getRowKey(), command.getClass());
@@ -96,7 +94,6 @@ public class CommandBatch {
 			batchList.put(ref, list);
 		}
 		list.add(command);
-		open = true;
 	}
 
 	public List<List<BatchableCommand>> getBatchList() {
@@ -107,12 +104,9 @@ public class CommandBatch {
 		return result;
 	}
 
-	public boolean isOpen() {
-		return open;
-	}
-
 	@Override
 	public String toString() {
-		return "CommandBatch [batchList=" + batchList + ", open=" + open + "]";
+		return "BatchCommand {batchList=" + batchList + "}";
 	}
+
 }

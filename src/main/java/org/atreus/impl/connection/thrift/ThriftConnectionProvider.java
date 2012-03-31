@@ -37,29 +37,31 @@ import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
+import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.CommandBatch;
+import org.atreus.impl.commands.CqlQueryCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
+import org.atreus.impl.commands.DescribeSchemaCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
 import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.WriteSubColumnCommand;
 import org.atreus.impl.connection.ClusterDetector;
 import org.atreus.impl.connection.Connection;
 import org.atreus.impl.connection.ConnectionProvider;
-import org.atreus.impl.connection.thrift.commands.DescribeSchemaCommand;
+import org.atreus.impl.connection.thrift.executors.BatchExecutor;
+import org.atreus.impl.connection.thrift.executors.CqlQueryExecutor;
 import org.atreus.impl.connection.thrift.executors.DeleteColumnExecutor;
 import org.atreus.impl.connection.thrift.executors.DeleteRowExecutor;
 import org.atreus.impl.connection.thrift.executors.DescribeSchemaExecutor;
 import org.atreus.impl.connection.thrift.executors.ReadColumnExecutor;
 import org.atreus.impl.connection.thrift.executors.ReadMultipleColumnsExecutor;
-import org.atreus.impl.connection.thrift.executors.ThriftBatchExecutor;
 import org.atreus.impl.connection.thrift.executors.ThriftCommandExecutor;
-import org.atreus.impl.connection.thrift.executors.WriteColumnsExecutor;
+import org.atreus.impl.connection.thrift.executors.WriteColumnExecutor;
+import org.atreus.impl.connection.thrift.executors.WriteSubColumnExecutor;
 
 public class ThriftConnectionProvider implements ConnectionProvider {
-
-	private static final ThriftBatchExecutor batchExecutor = new ThriftBatchExecutor();
 
 	private final Map<Class<?>, ThriftCommandExecutor> executors = new HashMap<Class<?>, ThriftCommandExecutor>();
 
@@ -68,16 +70,23 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 		executors.put(DeleteRowCommand.class, new DeleteRowExecutor());
 		executors.put(ReadColumnCommand.class, new ReadColumnExecutor());
 		executors.put(ReadMultipleColumnsCommand.class, new ReadMultipleColumnsExecutor());
-		executors.put(WriteColumnCommand.class, new WriteColumnsExecutor());
+		executors.put(WriteColumnCommand.class, new WriteColumnExecutor());
+		executors.put(WriteSubColumnCommand.class, new WriteSubColumnExecutor());
 		executors.put(DescribeSchemaCommand.class, new DescribeSchemaExecutor());
+		executors.put(CqlQueryCommand.class, new CqlQueryExecutor());
+		executors.put(BatchCommand.class, new BatchExecutor());
 	}
 
 	@Override
 	public Object execute(Command command, Connection connection, AtreusConsistencyLevel consistencyLevel) {
 		ThriftConnection thriftConn = (ThriftConnection) connection;
 		ConsistencyLevel thriftLevel = ConsistencyLevel.valueOf(consistencyLevel.toString());
+
+		ThriftCommandExecutor executor = getExecutor(command);
+		if (executor == null) {
+			throw new IllegalArgumentException("Thrift Executor could not be found for command [" + command + "]");
+		}
 		try {
-			ThriftCommandExecutor executor = getExecutor(command);
 			return executor.execute(thriftConn.getClient(), command, thriftLevel);
 		} catch (InvalidRequestException e) {
 			throw new AtreusCommandException("Command supplied was invalid [" + command + "]", e);
@@ -89,26 +98,6 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 			throw new AtreusNetworkException("Timeout on host [" + connection.getHost() + "] while executing command [" + command + "]", e);
 		} catch (Exception e) {
 			throw new AtreusUnknownException("Exception while executing command [" + command + "]", e);
-		}
-	}
-
-	@Override
-	public void executeBatch(CommandBatch batch, Connection connection, AtreusConsistencyLevel consistencyLevel) throws AtreusCommandException, AtreusClusterUnavailableException,
-			AtreusNetworkException, AtreusUnknownException {
-		ThriftConnection thriftConn = (ThriftConnection) connection;
-		ConsistencyLevel thriftLevel = ConsistencyLevel.valueOf(consistencyLevel.toString());
-		try {
-			batchExecutor.executeBatch(batch, thriftConn.getClient(), thriftLevel);
-		} catch (InvalidRequestException e) {
-			throw new AtreusCommandException("Batch supplied was invalid [" + batch + "]", e);
-		} catch (TTransportException e) {
-			throw new AtreusNetworkException("Transport exception on host [" + connection.getHost() + "] while executing batch [" + batch + "]", e);
-		} catch (UnavailableException e) {
-			throw new AtreusClusterUnavailableException("Cassandra cluster unavailable to execute batch [" + batch + "] (review Consitency Level)", e);
-		} catch (TimedOutException e) {
-			throw new AtreusNetworkException("Timeout on host [" + connection.getHost() + "] while executing batch [" + batch + "]", e);
-		} catch (Exception e) {
-			throw new AtreusUnknownException("Exception while executing batch [" + batch + "]", e);
 		}
 	}
 

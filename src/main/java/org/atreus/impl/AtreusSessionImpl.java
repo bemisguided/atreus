@@ -30,14 +30,16 @@ import org.atreus.AtreusIllegalStateException;
 import org.atreus.AtreusRowList;
 import org.atreus.AtreusSession;
 import org.atreus.AtreusSessionClosedException;
+import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.BatchableCommand;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.CommandBatch;
+import org.atreus.impl.commands.CqlQueryCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
 import org.atreus.impl.commands.ReadMultipleColumnsCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.WriteSubColumnCommand;
 import org.atreus.impl.connection.ConnectionManager;
 import org.atreus.impl.converters.TypeConverterRegistry;
 import org.atreus.impl.utils.AssertUtils;
@@ -48,7 +50,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	private boolean batchWriting;
 
-	private CommandBatch commandBatch;
+	private BatchCommand commandBatch;
 
 	private boolean caching;
 
@@ -66,7 +68,6 @@ public class AtreusSessionImpl implements AtreusSession {
 
 	AtreusSessionImpl(AtreusSessionFactoryImpl sessionFactory) {
 		this.sessionFactory = sessionFactory;
-		this.commandBatch = new CommandBatch();
 	}
 
 	private void assertFamilyAndKey() {
@@ -134,12 +135,11 @@ public class AtreusSessionImpl implements AtreusSession {
 		return getConnectionManager().execute(command, consistencyLevel);
 	}
 
-	protected void doExecuteBatch(CommandBatch batch, AtreusConsistencyLevel consistencyLevel) {
-		getConnectionManager().executeBatch(batch, consistencyLevel);
-	}
-
 	protected void doExecuteOrBatch(BatchableCommand command, AtreusConsistencyLevel consistencyLevel) {
 		if (isBatchWriting()) {
+			if (commandBatch == null) {
+				commandBatch = new BatchCommand();
+			}
 			commandBatch.addCommand(command);
 			return;
 		}
@@ -188,8 +188,8 @@ public class AtreusSessionImpl implements AtreusSession {
 		if (!isBatchWriting()) {
 			return;
 		}
-		doExecuteBatch(commandBatch, getWriteConsistencyLevel());
-		commandBatch = new CommandBatch();
+		doExecute(commandBatch, getWriteConsistencyLevel());
+		commandBatch = null;
 	}
 
 	protected <T> T fromBytes(Class<T> type, byte[] bytes) {
@@ -261,8 +261,7 @@ public class AtreusSessionImpl implements AtreusSession {
 	public AtreusRowList query(String cql) {
 		assertIsReady();
 		AssertUtils.hasText(cql, "CQL parameter is required");
-		// TODO Auto-generated method stub
-		return null;
+		return (AtreusRowList) doExecute(new CqlQueryCommand(cql, getTypeRegistry()), getReadConsistencyLevel());
 	}
 
 	@Override
@@ -322,7 +321,7 @@ public class AtreusSessionImpl implements AtreusSession {
 	public void setBatchWriting(boolean batchWriting) {
 		assertIsReady();
 
-		if (commandBatch.isOpen() && !batchWriting) {
+		if (commandBatch != null && !batchWriting) {
 			throw new AtreusIllegalStateException("Session has an open batch that must be flushed before turning off batch write");
 		}
 		this.batchWriting = batchWriting;
@@ -391,7 +390,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] colNameBytes = toBytes(colName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		doExecuteOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, null, value), getWriteConsistencyLevel());
+		doExecuteOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, value), getWriteConsistencyLevel());
 	}
 
 	@Override
@@ -416,7 +415,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		byte[] subColNameBytes = toBytes(subColName);
 		byte[] rowKeyBytes = toBytes(getRowKey());
 
-		doExecuteOrBatch(new WriteColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value), getWriteConsistencyLevel());
+		doExecuteOrBatch(new WriteSubColumnCommand(getColumnFamily(), rowKeyBytes, colNameBytes, subColNameBytes, value), getWriteConsistencyLevel());
 	}
 
 	@Override

@@ -37,22 +37,25 @@ import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SuperColumn;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
+import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.BatchableCommand;
-import org.atreus.impl.commands.CommandBatch;
+import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.WriteColumnCommand;
+import org.atreus.impl.commands.WriteSubColumnCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftBatchExecutor {
-	private static final Logger logger = LoggerFactory.getLogger(ThriftBatchExecutor.class);
+public class BatchExecutor implements ThriftCommandExecutor {
+	private static final Logger logger = LoggerFactory.getLogger(BatchExecutor.class);
 
-	public void executeBatch(CommandBatch batch, Client client, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
+	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
+		BatchCommand batch = (BatchCommand) command;
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("Executing batch [" + batch + "]");
 		}
@@ -65,6 +68,7 @@ public class ThriftBatchExecutor {
 			handleCommands(subBatch, mutations, timeStamp);
 		}
 		client.batch_mutate(mutations.getMutations(), consistencyLevel);
+		return null;
 	}
 
 	private void handleCommands(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
@@ -79,6 +83,10 @@ public class ThriftBatchExecutor {
 		}
 		if (firstCommand instanceof WriteColumnCommand) {
 			handleWriteCommand(batch, mutations, timeStamp);
+			return;
+		}
+		if (firstCommand instanceof WriteSubColumnCommand) {
+			handleWriteSubCommand(batch, mutations, timeStamp);
 			return;
 		}
 		throw new IllegalArgumentException("Unidentified Batchable Command type [" + firstCommand.getClass() + "]");
@@ -122,29 +130,34 @@ public class ThriftBatchExecutor {
 		for (BatchableCommand command : batch) {
 			WriteColumnCommand writeColumn = (WriteColumnCommand) command;
 			ColumnOrSuperColumn colOrSuperCol = new ColumnOrSuperColumn();
-			if (firstCommand.getSubColumnName() == null) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Writing standard column");
-				}
-				Column column = new Column();
-				column.setName(writeColumn.getColumnName());
-				column.setValue(writeColumn.getValue());
-				column.setTimestamp(timeStamp);
-				colOrSuperCol.setColumn(column);
-			} else {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Writing sub column");
-				}
-				SuperColumn superColumn = new SuperColumn();
-				superColumn.setName(writeColumn.getColumnName());
-				Column column = new Column();
-				column.setName(writeColumn.getSubColumnName());
-				column.setValue(writeColumn.getValue());
-				column.setTimestamp(timeStamp);
-				superColumn.addToColumns(column);
-				colOrSuperCol.setSuper_column(superColumn);
-			}
+			Column column = new Column();
+			column.setName(writeColumn.getColumnName());
+			column.setValue(writeColumn.getValue());
+			column.setTimestamp(timeStamp);
+			colOrSuperCol.setColumn(column);
+			Mutation mutation = new Mutation();
+			mutation.setColumn_or_supercolumn(colOrSuperCol);
+			mutations.add(columnFamily, rowKey, mutation);
+		}
 
+	}
+
+	private void handleWriteSubCommand(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
+		WriteSubColumnCommand firstCommand = (WriteSubColumnCommand) batch.get(0);
+		String columnFamily = firstCommand.getColumnFamily();
+		ByteBuffer rowKey = firstCommand.getRowKey();
+
+		for (BatchableCommand command : batch) {
+			WriteSubColumnCommand writeColumn = (WriteSubColumnCommand) command;
+			ColumnOrSuperColumn colOrSuperCol = new ColumnOrSuperColumn();
+			SuperColumn superColumn = new SuperColumn();
+			superColumn.setName(writeColumn.getColumnName());
+			Column column = new Column();
+			column.setName(writeColumn.getSubColumnName());
+			column.setValue(writeColumn.getValue());
+			column.setTimestamp(timeStamp);
+			superColumn.addToColumns(column);
+			colOrSuperCol.setSuper_column(superColumn);
 			Mutation mutation = new Mutation();
 			mutation.setColumn_or_supercolumn(colOrSuperCol);
 			mutations.add(columnFamily, rowKey, mutation);

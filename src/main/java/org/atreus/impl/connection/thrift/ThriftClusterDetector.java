@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.atreus.AtreusConsistencyLevel;
+import org.atreus.impl.commands.DescribeSchemaCommand;
 import org.atreus.impl.connection.ClusterDetector;
 import org.atreus.impl.connection.ConnectionManager;
-import org.atreus.impl.connection.thrift.commands.DescribeSchemaCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

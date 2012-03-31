@@ -38,7 +38,6 @@ import org.atreus.AtreusException;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.CommandBatch;
 import org.atreus.impl.utils.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,24 +126,6 @@ public class ConnectionManager {
 		boolean killConnection = false;
 		try {
 			return provider.execute(command, conn, consistencyLevel);
-		} catch (AtreusNetworkException e) {
-			killConnection = true;
-			throw new AtreusNetworkException(e);
-		} finally {
-			if (killConnection) {
-				killConnection(conn);
-			} else {
-				returnConnection(conn);
-			}
-		}
-	}
-
-	public void executeBatch(CommandBatch batch, AtreusConsistencyLevel consistencyLevel) {
-		assertConnected();
-		Connection conn = retrieveConnection();
-		boolean killConnection = false;
-		try {
-			provider.executeBatch(batch, conn, consistencyLevel);
 		} catch (AtreusNetworkException e) {
 			killConnection = true;
 			throw new AtreusNetworkException(e);
