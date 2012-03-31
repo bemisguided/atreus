@@ -35,6 +35,7 @@ import org.atreus.AtreusConsistencyLevel;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.WriteCommand;
 import org.easymock.IMocksControl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +60,12 @@ public class ConnectionManagerTests {
 		config = new AtreusConfiguration(SINGLE_HOST, SINGLE_PORT, SINGLE_KEYSPACE);
 		config.setPoolMaxiumumSize(1);
 		config.setPoolMinimumIdleSize(1);
-		expect(provider.newConnection(SINGLE_HOST, SINGLE_PORT, SINGLE_KEYSPACE, config)).andReturn(connection);
+	}
+
+	private void recordSingleHostMocks() {
+		expect(provider.newConnection(SINGLE_HOST, SINGLE_PORT, SINGLE_KEYSPACE, config)).andReturn(connection).anyTimes();
+		expect(connection.getHost()).andReturn(SINGLE_HOST).anyTimes();
+		expect(connection.isValid()).andReturn(true).anyTimes();
 	}
 
 	@Test
@@ -85,10 +91,9 @@ public class ConnectionManagerTests {
 		IMocksControl controller = createNiceControl();
 		buildSingleHostMocks(controller);
 		Command command = controller.createMock(Command.class);
-		expect(connection.getHost()).andReturn(SINGLE_HOST).anyTimes();
-		expect(connection.isValid()).andReturn(true).anyTimes();
 		connection.open();
 		String result = "RESULT";
+		recordSingleHostMocks();
 		expect(provider.execute(command, connection, AtreusConsistencyLevel.EACH_QUORUM)).andReturn(result);
 
 		controller.replay();
@@ -104,12 +109,96 @@ public class ConnectionManagerTests {
 	}
 
 	@Test
+	public void testExecutionDegradation() throws Exception {
+		// Common test setup
+		IMocksControl controller = createNiceControl();
+		buildSingleHostMocks(controller);
+		Command readCommand = controller.createMock(Command.class);
+		WriteCommand writeCommand = controller.createMock(WriteCommand.class);
+		Exception throwMe = new AtreusClusterUnavailableException("Test exception");
+		ConnectionManager manager = new ConnectionManager(config, provider);
+
+		// Connection one-time setup
+		connection.open();
+
+		// Read command, fast degradation
+		recordSingleHostMocks();
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.ONE)).andReturn(null);
+		controller.replay();
+
+		// One-time execution
+		manager.connect();
+
+		// Test specific
+		manager.execute(readCommand, AtreusConsistencyLevel.EACH_QUORUM);
+		controller.verify();
+		controller.reset();
+
+		// Write command, fast degradation
+		recordSingleHostMocks();
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.ANY)).andReturn(null);
+		controller.replay();
+
+		manager.execute(writeCommand, AtreusConsistencyLevel.EACH_QUORUM);
+		controller.verify();
+		controller.reset();
+
+		// Read command, gradual degradation
+		recordSingleHostMocks();
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.ALL)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.LOCAL_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.QUORUM)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.TWO)).andThrow(throwMe);
+		expect(provider.execute(readCommand, connection, AtreusConsistencyLevel.ONE)).andReturn(null);
+		controller.replay();
+
+		config.setConsistencyLevelFastDegrade(false);
+		manager.execute(readCommand, AtreusConsistencyLevel.ALL);
+		controller.verify();
+		controller.reset();
+
+		// Write command, gradual degradation
+		recordSingleHostMocks();
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.ALL)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.LOCAL_QUORUM)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.QUORUM)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.TWO)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.ONE)).andThrow(throwMe);
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.ANY)).andReturn(null);
+		controller.replay();
+
+		config.setConsistencyLevelFastDegrade(false);
+		manager.execute(writeCommand, AtreusConsistencyLevel.ALL);
+		controller.verify();
+		controller.reset();
+
+		// No degradation
+		recordSingleHostMocks();
+		expect(provider.execute(writeCommand, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
+		controller.replay();
+
+		config.setConsistencyLevelDegradation(false);
+		try {
+			manager.execute(writeCommand, AtreusConsistencyLevel.EACH_QUORUM);
+			Assert.fail("Expect AtreusClusterUnavailable exception");
+		} catch (AtreusClusterUnavailableException e) {
+
+		}
+		controller.verify();
+		controller.reset();
+
+	}
+
+	@Test
 	public void testExecutionNetworkException() throws Exception {
 		IMocksControl controller = createNiceControl();
 		buildSingleHostMocks(controller);
 		Command command = controller.createMock(Command.class);
-		expect(connection.getHost()).andReturn(SINGLE_HOST).anyTimes();
-		expect(connection.isValid()).andReturn(true).anyTimes();
+		recordSingleHostMocks();
 		connection.open();
 		Exception throwMe = new AtreusNetworkException("Test exception");
 		expect(provider.execute(command, connection, AtreusConsistencyLevel.EACH_QUORUM)).andThrow(throwMe);
@@ -133,6 +222,7 @@ public class ConnectionManagerTests {
 	public void testOopenConnectionConnectionException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
+		recordSingleHostMocks();
 		connection.open();
 		expectLastCall().andThrow(new AtreusConnectionException("Test exception"));
 		controller.replay();
@@ -152,6 +242,7 @@ public class ConnectionManagerTests {
 	public void testOpenConnection() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
+		recordSingleHostMocks();
 		connection.open();
 		controller.replay();
 
@@ -167,6 +258,7 @@ public class ConnectionManagerTests {
 	public void testOpenConnectionNetworkException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
+		recordSingleHostMocks();
 		connection.open();
 		Exception throwMe = new AtreusNetworkException("Test exception");
 		expectLastCall().andThrow(throwMe);
@@ -189,6 +281,7 @@ public class ConnectionManagerTests {
 	public void testOpenConnectionUnknownException() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
+		recordSingleHostMocks();
 		connection.open();
 		Exception throwMe = new AtreusUnknownException("Test exception");
 		expectLastCall().andThrow(throwMe);
@@ -211,6 +304,7 @@ public class ConnectionManagerTests {
 	public void testValidateConnection() throws Exception {
 		IMocksControl controller = createStrictControl();
 		buildSingleHostMocks(controller);
+		recordSingleHostMocks();
 		connection.open();
 		controller.replay();
 

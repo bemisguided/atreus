@@ -33,6 +33,10 @@ public class AtreusConfiguration {
 
 	private int connectionTimeout = 5 * 1000;
 
+	private boolean consistencyLevelDegradation = true;
+
+	private boolean consistencyLevelFastDegrade = true;
+
 	private boolean defaultBatchWriting = true;
 
 	private boolean defaultCaching = false;
@@ -114,6 +118,14 @@ public class AtreusConfiguration {
 		return port;
 	}
 
+	public boolean isConsistencyLevelDegradation() {
+		return consistencyLevelDegradation;
+	}
+
+	public boolean isConsistencyLevelFastDegrade() {
+		return consistencyLevelFastDegrade;
+	}
+
 	public boolean isDefaultBatchWriting() {
 		return defaultBatchWriting;
 	}
@@ -136,6 +148,14 @@ public class AtreusConfiguration {
 
 	public void setConnectionTimeout(int connectionTimeout) {
 		this.connectionTimeout = connectionTimeout;
+	}
+
+	public void setConsistencyLevelDegradation(boolean consistencyLevelDegradation) {
+		this.consistencyLevelDegradation = consistencyLevelDegradation;
+	}
+
+	public void setConsistencyLevelFastDegrade(boolean consistencyLevelFastDegrade) {
+		this.consistencyLevelFastDegrade = consistencyLevelFastDegrade;
 	}
 
 	public void setDefaultBatchWriting(boolean defaultBatchWriting) {

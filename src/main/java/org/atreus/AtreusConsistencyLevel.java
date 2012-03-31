@@ -24,5 +24,229 @@
 package org.atreus;
 
 public enum AtreusConsistencyLevel {
-	ANY, ONE, TWO, THREE, QUORUM, LOCAL_QUORUM, EACH_QUORUM, ALL
+	ANY() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return false;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return false;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			return null;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			return null;
+		}
+
+	},
+	ONE() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return false;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			return null;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			return ANY;
+		}
+
+	},
+	TWO() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			return ONE;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return ONE;
+		}
+
+	},
+	THREE() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			if (fast) {
+				return ONE;
+			}
+			return TWO;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return TWO;
+		}
+
+	},
+	QUORUM() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			if (fast) {
+				return ONE;
+			}
+			return TWO;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return TWO;
+		}
+
+	},
+	LOCAL_QUORUM() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			if (fast) {
+				return ONE;
+			}
+			return QUORUM;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return QUORUM;
+		}
+
+	},
+	EACH_QUORUM() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			if (fast) {
+				return ONE;
+			}
+			return LOCAL_QUORUM;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return LOCAL_QUORUM;
+		}
+
+	},
+	ALL() {
+
+		@Override
+		public boolean isReadDegradable() {
+			return true;
+		}
+
+		@Override
+		public boolean isWriteDegradable() {
+			return true;
+		}
+
+		@Override
+		public AtreusConsistencyLevel readDegrade(boolean fast) {
+			if (fast) {
+				return ONE;
+			}
+			return EACH_QUORUM;
+		}
+
+		@Override
+		public AtreusConsistencyLevel writeDegrade(boolean fast) {
+			if (fast) {
+				return ANY;
+			}
+			return EACH_QUORUM;
+		}
+
+	};
+
+	public abstract boolean isReadDegradable();
+
+	public abstract boolean isWriteDegradable();
+
+	public abstract AtreusConsistencyLevel readDegrade(boolean fast);
+
+	public abstract AtreusConsistencyLevel writeDegrade(boolean fast);
 }

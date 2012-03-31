@@ -38,6 +38,7 @@ import org.atreus.AtreusException;
 import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.WriteCommand;
 import org.atreus.impl.utils.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +113,13 @@ public class ConnectionManager {
 		}, config.getClusterPollFrequency(), config.getClusterPollFrequency());
 	}
 
+	private AtreusConsistencyLevel degradeConsistencyLeveL(Command command, AtreusConsistencyLevel consistencyLevel) {
+		if (command instanceof WriteCommand) {
+			return consistencyLevel.writeDegrade(config.isConsistencyLevelFastDegrade());
+		}
+		return consistencyLevel.readDegrade(config.isConsistencyLevelFastDegrade());
+	}
+
 	public void disconnect() {
 		try {
 			pool.close();
@@ -120,8 +128,7 @@ public class ConnectionManager {
 		}
 	}
 
-	public Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
-		assertConnected();
+	private Object doExecute(Command command, AtreusConsistencyLevel consistencyLevel) {
 		Connection conn = retrieveConnection();
 		boolean killConnection = false;
 		try {
@@ -135,6 +142,26 @@ public class ConnectionManager {
 			} else {
 				returnConnection(conn);
 			}
+		}
+	}
+
+	public Object execute(Command command, AtreusConsistencyLevel consistencyLevel) {
+		assertConnected();
+
+		try {
+			return doExecute(command, consistencyLevel);
+		} catch (AtreusClusterUnavailableException e) {
+			if (config.isConsistencyLevelDegradation()) {
+				AtreusConsistencyLevel newConsistencyLevel = degradeConsistencyLeveL(command, consistencyLevel);
+				if (consistencyLevel != null) {
+					if (logger.isWarnEnabled()) {
+						logger.warn("Cassandra cluster is not fully available, attempting consistency level degradation from [" + consistencyLevel + "] to [" + newConsistencyLevel
+								+ "]");
+					}
+					return execute(command, newConsistencyLevel);
+				}
+			}
+			throw e;
 		}
 	}
 
