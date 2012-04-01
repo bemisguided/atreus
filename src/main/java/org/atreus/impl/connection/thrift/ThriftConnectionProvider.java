@@ -39,6 +39,7 @@ import org.atreus.AtreusNetworkException;
 import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.Command;
+import org.atreus.impl.commands.CqlCommand;
 import org.atreus.impl.commands.CqlQueryCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
@@ -74,7 +75,7 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 		executors.put(WriteColumnCommand.class, new WriteColumnExecutor());
 		executors.put(WriteSubColumnCommand.class, new WriteSubColumnExecutor());
 		executors.put(DescribeSchemaCommand.class, new DescribeSchemaExecutor());
-		executors.put(CqlQueryCommand.class, new CqlExecutor());
+		executors.put(CqlCommand.class, new CqlExecutor());
 		executors.put(CqlQueryCommand.class, new CqlQueryExecutor());
 		executors.put(BatchCommand.class, new BatchExecutor());
 	}

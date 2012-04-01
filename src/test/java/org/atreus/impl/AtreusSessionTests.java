@@ -27,6 +27,12 @@ package org.atreus.impl;
 import java.util.Calendar;
 import java.util.UUID;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.apache.cassandra.cql.CQLStatement;
+import org.apache.cassandra.cql.CqlLexer;
+import org.apache.cassandra.cql.CqlParser;
+import org.apache.cassandra.cql.SelectStatement;
 import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusCommandException;
 import org.atreus.AtreusConfiguration;
@@ -262,9 +268,11 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.writeColumn("col1", "value1");
 		s.writeColumn("col2", "value2");
 
-		AtreusRowList rows = s.query("SELECT * FROM ColumnTest1 WHERE KEY = " + rowKey);
-		Assert.assertEquals("value1", rows.iterator().next().get("col1", String.class));
+		String hex = ByteUtils.toHex(ByteUtils.toBytes("value3"));
+		s.execute("UPDATE ColumnTest1 SET col1 = '" + hex + "' WHERE KEY = " + rowKey);
 
+		AtreusRowList rows = s.query("SELECT * FROM ColumnTest1 WHERE KEY = " + rowKey);
+		Assert.assertEquals("value3", rows.iterator().next().get("col1", String.class));
 	}
 
 	@Test
