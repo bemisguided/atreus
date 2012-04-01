@@ -39,10 +39,10 @@ public class BatchCommand implements WriteCommand {
 
 		private final Class<?> type;
 
-		BatchReference(String columnFamily, ByteBuffer rowKey, Class<?> type) {
-			this.columnFamily = columnFamily;
-			this.rowKey = rowKey;
-			this.type = type;
+		BatchReference(BatchableCommand command) {
+			this.columnFamily = command.getColumnFamily();
+			this.rowKey = command.getRowKeyAsByteBuffer();
+			this.type = command.getClass();
 		}
 
 		@Override
@@ -87,7 +87,7 @@ public class BatchCommand implements WriteCommand {
 	private Map<BatchReference, List<BatchableCommand>> batchList = new HashMap<BatchCommand.BatchReference, List<BatchableCommand>>();
 
 	public void addCommand(BatchableCommand command) {
-		BatchReference ref = new BatchReference(command.getColumnFamily(), command.getRowKey(), command.getClass());
+		BatchReference ref = new BatchReference(command);
 		List<BatchableCommand> list = batchList.get(ref);
 		if (list == null) {
 			list = new LinkedList<BatchableCommand>();

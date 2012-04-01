@@ -26,7 +26,7 @@ package org.atreus;
 public interface AtreusRowList extends Iterable<AtreusColumnMap> {
 
 	public boolean hasRows();
-	
+
 	public int size();
-	
+
 }

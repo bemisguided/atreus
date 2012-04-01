@@ -95,14 +95,14 @@ public class BatchExecutor implements ThriftCommandExecutor {
 	private void handleDeleteColumnCommand(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
 		BatchableCommand firstCommand = batch.get(0);
 		String columnFamily = firstCommand.getColumnFamily();
-		ByteBuffer rowKey = firstCommand.getRowKey();
+		ByteBuffer rowKey = firstCommand.getRowKeyAsByteBuffer();
 
 		Deletion deletion = new Deletion();
 		deletion.setTimestamp(timeStamp);
 		SlicePredicate predicate = new SlicePredicate();
 		for (BatchableCommand command : batch) {
 			DeleteColumnCommand deleteColumn = (DeleteColumnCommand) command;
-			predicate.addToColumn_names(deleteColumn.getColumnName());
+			predicate.addToColumn_names(deleteColumn.getColumnNameAsByteBuffer());
 		}
 		deletion.setPredicate(predicate);
 		Mutation mutation = new Mutation();
@@ -113,7 +113,7 @@ public class BatchExecutor implements ThriftCommandExecutor {
 	private void handleDeleteRowCommand(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
 		BatchableCommand firstCommand = batch.get(0);
 		String columnFamily = firstCommand.getColumnFamily();
-		ByteBuffer rowKey = firstCommand.getRowKey();
+		ByteBuffer rowKey = firstCommand.getRowKeyAsByteBuffer();
 
 		Deletion deletion = new Deletion();
 		deletion.setTimestamp(timeStamp);
@@ -125,14 +125,14 @@ public class BatchExecutor implements ThriftCommandExecutor {
 	private void handleWriteCommand(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
 		WriteColumnCommand firstCommand = (WriteColumnCommand) batch.get(0);
 		String columnFamily = firstCommand.getColumnFamily();
-		ByteBuffer rowKey = firstCommand.getRowKey();
+		ByteBuffer rowKey = firstCommand.getRowKeyAsByteBuffer();
 
 		for (BatchableCommand command : batch) {
 			WriteColumnCommand writeColumn = (WriteColumnCommand) command;
 			ColumnOrSuperColumn colOrSuperCol = new ColumnOrSuperColumn();
 			Column column = new Column();
-			column.setName(writeColumn.getColumnName());
-			column.setValue(writeColumn.getValue());
+			column.setName(writeColumn.getColumnNameAsByteBuffer());
+			column.setValue(writeColumn.getValueAsByteBuffer());
 			column.setTimestamp(timeStamp);
 			colOrSuperCol.setColumn(column);
 			Mutation mutation = new Mutation();
@@ -145,16 +145,16 @@ public class BatchExecutor implements ThriftCommandExecutor {
 	private void handleWriteSubCommand(List<BatchableCommand> batch, ThriftMutations mutations, long timeStamp) {
 		WriteSubColumnCommand firstCommand = (WriteSubColumnCommand) batch.get(0);
 		String columnFamily = firstCommand.getColumnFamily();
-		ByteBuffer rowKey = firstCommand.getRowKey();
+		ByteBuffer rowKey = firstCommand.getRowKeyAsByteBuffer();
 
 		for (BatchableCommand command : batch) {
 			WriteSubColumnCommand writeColumn = (WriteSubColumnCommand) command;
 			ColumnOrSuperColumn colOrSuperCol = new ColumnOrSuperColumn();
 			SuperColumn superColumn = new SuperColumn();
-			superColumn.setName(writeColumn.getColumnName());
+			superColumn.setName(writeColumn.getColumnNameAsByteBuffer());
 			Column column = new Column();
-			column.setName(writeColumn.getSubColumnName());
-			column.setValue(writeColumn.getValue());
+			column.setName(writeColumn.getSubColumnNameAsByteBuffer());
+			column.setValue(writeColumn.getValueAsByteBuffer());
 			column.setTimestamp(timeStamp);
 			superColumn.addToColumns(column);
 			colOrSuperCol.setSuper_column(superColumn);

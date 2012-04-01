@@ -28,14 +28,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.atreus.AtreusColumnMap;
-import org.atreus.impl.converters.TypeConverterRegistry;
 
 public class AtreusColumnMapImpl extends AtreusColumnMapBase {
 
 	private final Map<ByteBuffer, ByteBuffer> map;
 
-	public AtreusColumnMapImpl(TypeConverterRegistry typeRegistry) {
-		super(typeRegistry);
+	public AtreusColumnMapImpl(AtreusSessionImpl session) {
+		super(session);
 		this.map = new HashMap<ByteBuffer, ByteBuffer>();
 	}
 

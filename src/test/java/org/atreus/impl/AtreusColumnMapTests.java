@@ -27,6 +27,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.atreus.AtreusConfiguration;
 import org.atreus.impl.converters.TypeConverterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,9 +39,12 @@ public class AtreusColumnMapTests {
 
 	@Before
 	public void startup() throws Exception {
+		AtreusConfiguration config = new AtreusConfiguration("localhost", 9160, "keystore");
+		AtreusSessionFactoryImpl factory = new AtreusSessionFactoryImpl(config);
+		AtreusSessionImpl session = new AtreusSessionImpl(factory);
 		typeRegistry = new TypeConverterRegistry();
 		typeRegistry.addDefaultConverters();
-		map = new AtreusColumnMapImpl(typeRegistry);
+		map = new AtreusColumnMapImpl(session);
 	}
 
 	@Test

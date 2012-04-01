@@ -23,6 +23,32 @@
  */
 package org.atreus.impl.commands;
 
-public class DescribeSchemaCommand implements Command {
+import java.nio.ByteBuffer;
+
+import org.atreus.impl.AtreusSessionImpl;
+
+public class RowCommandBase extends ColumnFamilyCommandBase {
+
+	private Object rowKey;
+
+	public RowCommandBase(AtreusSessionImpl session) {
+		super(session);
+	}
+
+	public Object getRowKey() {
+		return rowKey;
+	}
+
+	public ByteBuffer getRowKeyAsByteBuffer() {
+		return ByteBuffer.wrap(getRowKeyAsBytes());
+	}
+
+	public byte[] getRowKeyAsBytes() {
+		return toBytes(rowKey);
+	}
+
+	public void setRowKey(Object rowKey) {
+		this.rowKey = rowKey;
+	}
 
 }

@@ -23,19 +23,17 @@
  */
 package org.atreus.impl.commands;
 
-import org.atreus.impl.converters.TypeConverterRegistry;
+import org.atreus.impl.AtreusSessionImpl;
 
-public class ReadMultipleColumnsCommand extends ColumnCommandBase {
+public class ReadMultipleColumnsCommand extends RowCommandBase {
 
-	private final TypeConverterRegistry typeRegistry;
-
-	public ReadMultipleColumnsCommand(TypeConverterRegistry typeRegistry, String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
-		this.typeRegistry = typeRegistry;
+	public ReadMultipleColumnsCommand(AtreusSessionImpl session) {
+		super(session);
 	}
 
-	public TypeConverterRegistry getTypeRegistry() {
-		return typeRegistry;
+	@Override
+	public String toString() {
+		return "ReadMultipleColumnsCommand {columnFamily=" + getColumnFamily() + ", rowKey=" + getRowKey() + "}";
 	}
 
 }

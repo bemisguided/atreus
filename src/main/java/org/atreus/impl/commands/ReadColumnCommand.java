@@ -23,10 +23,18 @@
  */
 package org.atreus.impl.commands;
 
-public class ReadColumnCommand extends ColumnCommandBase {
+import org.atreus.impl.AtreusSessionImpl;
 
-	public ReadColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
-		super(columnFamily, rowKey, columnName, subColumnName);
+public class ReadColumnCommand extends SubColumnCommandBase {
+
+	public ReadColumnCommand(AtreusSessionImpl session) {
+		super(session);
+	}
+
+	@Override
+	public String toString() {
+		return "ReadColumnCommand {columnFamily=" + getColumnFamily() + ", rowKey=" + getRowKey() + ", columnName=" + getColumnName() + ", subColumnName=" + getSubColumnName()
+				+ "}";
 	}
 
 }

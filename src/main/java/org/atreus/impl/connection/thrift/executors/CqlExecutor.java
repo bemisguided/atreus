@@ -24,29 +24,35 @@
 package org.atreus.impl.connection.thrift.executors;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.Compression;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
+import org.atreus.AtreusCommandException;
 import org.atreus.impl.commands.Command;
-import org.atreus.impl.commands.WriteSubColumnCommand;
+import org.atreus.impl.commands.CqlCommand;
 
-public class WriteSubColumnExecutor implements ThriftCommandExecutor {
+public class CqlExecutor implements ThriftCommandExecutor {
+
+	protected CqlResult doExecutes(Client client, CqlCommand command) throws InvalidRequestException, UnavailableException, TimedOutException, TTransportException, TException {
+		try {
+			return client.execute_cql_query(command.getCqlStatementAsByteBuffer(), Compression.NONE);
+		} catch (SchemaDisagreementException e) {
+			throw new AtreusCommandException("CQL statement could not be executed", e);
+		}
+	}
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
-		WriteSubColumnCommand writeColumn = (WriteSubColumnCommand) command;
-		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
-		parent.setSuper_column(writeColumn.getColumnNameAsByteBuffer());
-		Column column = new Column(writeColumn.getSubColumnNameAsByteBuffer());
-		column.setValue(writeColumn.getValueAsByteBuffer());
-		column.setTimestamp(System.currentTimeMillis());
-		client.insert(writeColumn.getRowKeyAsByteBuffer(), parent, column, consistencyLevel);
+		CqlCommand cql = (CqlCommand) command;
+		doExecutes(client, cql);
 		return null;
 	}
+
 }

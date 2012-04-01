@@ -23,13 +23,13 @@
  */
 package org.atreus.impl.connection.thrift.executors;
 
+import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
-import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.impl.commands.Command;
@@ -42,10 +42,10 @@ public class WriteColumnExecutor implements ThriftCommandExecutor {
 			TTransportException, TException {
 		WriteColumnCommand writeColumn = (WriteColumnCommand) command;
 		ColumnParent parent = new ColumnParent(writeColumn.getColumnFamily());
-		Column column = new Column(writeColumn.getColumnName());
-		column.setValue(writeColumn.getValue());
+		Column column = new Column(writeColumn.getColumnNameAsByteBuffer());
+		column.setValue(writeColumn.getValueAsByteBuffer());
 		column.setTimestamp(System.currentTimeMillis());
-		client.insert(writeColumn.getRowKey(), parent, column, consistencyLevel);
+		client.insert(writeColumn.getRowKeyAsByteBuffer(), parent, column, consistencyLevel);
 		return null;
 	}
 

@@ -25,56 +25,45 @@ package org.atreus.impl.connection.thrift.executors;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.Compression;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.CqlResultType;
 import org.apache.cassandra.thrift.CqlRow;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
-import org.atreus.AtreusCommandException;
 import org.atreus.impl.AtreusColumnMapImpl;
 import org.atreus.impl.AtreusRowListImpl;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.CqlQueryCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class CqlQueryExecutor implements ThriftCommandExecutor {
-
-	private static final Logger logger = LoggerFactory.getLogger(CqlQueryExecutor.class);
+public class CqlQueryExecutor extends CqlExecutor implements ThriftCommandExecutor {
 
 	@Override
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevels) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
 		CqlQueryCommand cqlQuery = (CqlQueryCommand) command;
-		try {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL [" + new String(cqlQuery.getOriginalCql().array()) + "]");
-			}
-			CqlResult cqlResult = client.execute_cql_query(cqlQuery.getOriginalCql(), Compression.NONE);
-			if (logger.isDebugEnabled()) {
-				logger.debug("CQL result type [" + cqlResult.getType() + "]");
-			}
-			if (!CqlResultType.ROWS.equals(cqlResult.getType())) {
-				return null;
-			}
-			AtreusRowListImpl rowList = new AtreusRowListImpl(cqlResult.getRowsSize());
-			AtreusColumnMapImpl columnMap = new AtreusColumnMapImpl(cqlQuery.getTypeRegistry());
-			rowList.addColumnMap(columnMap);
-			for (CqlRow cqlRow : cqlResult.getRows()) {
-				for (Column column : cqlRow.getColumns()) {
-					columnMap.put(column.getName(), column.getValue());
-				}
-			}
-			return rowList;
-		} catch (SchemaDisagreementException e) {
-			throw new AtreusCommandException("CQL statement could not be executed", e);
+		CqlResult cqlResult = doExecutes(client, cqlQuery);
+
+		if (!CqlResultType.ROWS.equals(cqlResult.getType())) {
+			return new AtreusRowListImpl(0);
 		}
+
+		AtreusRowListImpl rowList = new AtreusRowListImpl(cqlResult.getRowsSize());
+
+		for (CqlRow cqlRow : cqlResult.getRows()) {
+			AtreusColumnMapImpl columnMap = new AtreusColumnMapImpl(cqlQuery.getSession());
+			rowList.addColumnMap(columnMap);
+			columnMap.setRowKey(cqlRow.getKey());
+			for (Column column : cqlRow.getColumns()) {
+				columnMap.put(column.getName(), column.getValue());
+			}
+			columnMap.setImmutable(true);
+		}
+		return rowList;
+
 	}
 
 }

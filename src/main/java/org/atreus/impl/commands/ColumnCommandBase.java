@@ -25,53 +25,29 @@ package org.atreus.impl.commands;
 
 import java.nio.ByteBuffer;
 
-public abstract class ColumnCommandBase implements ColumnCommand {
+import org.atreus.impl.AtreusSessionImpl;
 
-	private final String columnFamily;
+public abstract class ColumnCommandBase extends RowCommandBase {
 
-	private final ByteBuffer columnName;
+	private Object columnName;
 
-	private final ByteBuffer rowKey;
-
-	private final ByteBuffer subColumnName;
-
-	public ColumnCommandBase(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
-		this.columnFamily = columnFamily;
-		if (rowKey != null) {
-			this.rowKey = ByteBuffer.wrap(rowKey);
-		} else {
-			this.rowKey = null;
-		}
-		if (columnName != null) {
-			this.columnName = ByteBuffer.wrap(columnName);
-		} else {
-			this.columnName = null;
-		}
-		if (subColumnName != null) {
-			this.subColumnName = ByteBuffer.wrap(subColumnName);
-		} else {
-			this.subColumnName = null;
-		}
+	public ColumnCommandBase(AtreusSessionImpl session) {
+		super(session);
 	}
 
-	public String getColumnFamily() {
-		return columnFamily;
-	}
-
-	public ByteBuffer getColumnName() {
+	public Object getColumnName() {
 		return columnName;
 	}
 
-	public ByteBuffer getRowKey() {
-		return rowKey;
+	public ByteBuffer getColumnNameAsByteBuffer() {
+		return ByteBuffer.wrap(getColumnNameAsBytes());
 	}
 
-	public ByteBuffer getSubColumnName() {
-		return subColumnName;
+	public byte[] getColumnNameAsBytes() {
+		return toBytes(columnName);
 	}
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + " [columnFamily=" + columnFamily + ", columnName=" + columnName + ", rowKey=" + rowKey + ", subColumnName=" + subColumnName + "]";
+	public void setColumnName(Object columnName) {
+		this.columnName = columnName;
 	}
 }

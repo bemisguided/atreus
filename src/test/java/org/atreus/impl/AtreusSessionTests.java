@@ -33,6 +33,7 @@ import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusRowList;
 import org.atreus.AtreusSessionFactory;
 import org.atreus.AtreusSessionFactoryBuilder;
+import org.atreus.impl.utils.ByteUtils;
 import org.cassandraunit.AbstractCassandraUnit4TestCase;
 import org.cassandraunit.dataset.DataSet;
 import org.cassandraunit.dataset.xml.ClassPathXmlDataSet;
@@ -252,6 +253,21 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 	}
 
 	@Test
+	public void testCqlQuery() throws Exception {
+		// Setup test
+		String rowKey = UUID.randomUUID().toString();
+
+		// Write data to ColFamily
+		s.setFamilyAndKey("ColumnTest1", rowKey);
+		s.writeColumn("col1", "value1");
+		s.writeColumn("col2", "value2");
+
+		AtreusRowList rows = s.query("SELECT * FROM ColumnTest1 WHERE KEY = " + rowKey);
+		Assert.assertEquals("value1", rows.iterator().next().get("col1", String.class));
+
+	}
+
+	@Test
 	public void testDeleteColumns() throws Exception {
 		// Setup test
 		String rowKey1 = UUID.randomUUID().toString();
@@ -301,20 +317,7 @@ public class AtreusSessionTests extends AbstractCassandraUnit4TestCase {
 		s.setFamilyAndKey("ColumnTest1", rowKey2);
 		Assert.assertNull("Row key " + rowKey2 + " null", s.readColumn("col1", String.class));
 	}
-	@Test
-	public void testCqlQuery() throws Exception {
-		// Setup test
-		String rowKey = UUID.randomUUID().toString();
 
-		// Write data to ColFamily
-		s.setFamilyAndKey("ColumnTest1", rowKey);
-		s.writeColumn("col1", "value1");
-		s.writeColumn("col2", "value2");
-		
-		AtreusRowList rows = s.query("SELECT * FROM ColumnTest1 WHERE KEY = " + rowKey);
-		Assert.assertEquals("value1", rows.iterator().next().get("col1", String.class));
-	}
-	
 	@Test
 	public void testExistsColumn() throws Exception {
 		// Setup test

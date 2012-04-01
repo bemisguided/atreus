@@ -23,6 +23,26 @@
  */
 package org.atreus.impl.commands;
 
-public class DescribeSchemaCommand implements Command {
+import org.atreus.impl.AtreusSessionImpl;
+
+public abstract class CommandBase implements Command {
+
+	private final AtreusSessionImpl session;
+
+	protected CommandBase(AtreusSessionImpl session) {
+		this.session = session;
+	}
+
+	protected <T> T fromBytes(Class<T> type, byte[] bytes) {
+		return session.fromBytes(type, bytes);
+	}
+
+	public AtreusSessionImpl getSession() {
+		return session;
+	}
+
+	protected byte[] toBytes(Object value) {
+		return session.toBytes(value);
+	}
 
 }

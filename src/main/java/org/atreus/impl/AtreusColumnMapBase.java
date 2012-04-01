@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.atreus.AtreusColumnMap;
 import org.atreus.AtreusIllegalStateException;
-import org.atreus.impl.converters.TypeConverterRegistry;
 
 public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 
@@ -38,10 +37,10 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 
 	private byte[] rowKey;
 
-	private final TypeConverterRegistry typeRegistry;
+	private final AtreusSessionImpl session;
 
-	protected AtreusColumnMapBase(TypeConverterRegistry typeRegistry) {
-		this.typeRegistry = typeRegistry;
+	protected AtreusColumnMapBase(AtreusSessionImpl session) {
+		this.session = session;
 	}
 
 	protected final void assertMutable() {
@@ -95,7 +94,7 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 	}
 
 	protected final <T> T fromBytes(Class<T> type, byte[] bytes) {
-		return typeRegistry.fromBytes(type, bytes);
+		return session.fromBytes(type, bytes);
 	}
 
 	protected abstract AtreusColumnMap get(byte[] columnName);
@@ -133,8 +132,8 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 		return fromBytes(type, rowKey);
 	}
 
-	protected TypeConverterRegistry getTypeRegistry() {
-		return typeRegistry;
+	protected AtreusSessionImpl getSession() {
+		return session;
 	}
 
 	public final boolean isImmutable() {
@@ -190,6 +189,6 @@ public abstract class AtreusColumnMapBase implements AtreusColumnMap {
 	}
 
 	protected final byte[] toBytes(Object value) {
-		return typeRegistry.toBytes(value);
+		return session.toBytes(value);
 	}
 }

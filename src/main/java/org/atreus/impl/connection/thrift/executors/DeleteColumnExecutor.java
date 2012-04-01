@@ -41,12 +41,12 @@ public class DeleteColumnExecutor implements ThriftCommandExecutor {
 
 		ColumnPath path = new ColumnPath(deleteColumn.getColumnFamily());
 		if (deleteColumn.getSubColumnName() != null) {
-			path.setSuper_column(deleteColumn.getColumnName());
-			path.setColumn(deleteColumn.getSubColumnName());
+			path.setSuper_column(deleteColumn.getColumnNameAsByteBuffer());
+			path.setColumn(deleteColumn.getSubColumnNameAsByteBuffer());
 		} else {
-			path.setColumn(deleteColumn.getColumnName());
+			path.setColumn(deleteColumn.getColumnNameAsByteBuffer());
 		}
-		client.remove(deleteColumn.getRowKey(), path, System.currentTimeMillis(), consistencyLevel);
+		client.remove(deleteColumn.getRowKeyAsByteBuffer(), path, System.currentTimeMillis(), consistencyLevel);
 		return null;
 	}
 

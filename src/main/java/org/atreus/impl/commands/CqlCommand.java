@@ -25,18 +25,35 @@ package org.atreus.impl.commands;
 
 import java.nio.ByteBuffer;
 
+import org.atreus.impl.AtreusSessionImpl;
 import org.atreus.impl.utils.ByteUtils;
 
-public class CqlCommand implements Command {
+public class CqlCommand extends CommandBase implements Command {
 
-	private final ByteBuffer originalCql;
+	private String cqlStatement;
 
-	public CqlCommand(String cql) {
-		this.originalCql = ByteBuffer.wrap(ByteUtils.toBytes(cql));
+	public CqlCommand(AtreusSessionImpl session) {
+		super(session);
 	}
 
-	public ByteBuffer getOriginalCql() {
-		return originalCql;
+	public String getCqlStatement() {
+		return cqlStatement;
 	}
 
+	public ByteBuffer getCqlStatementAsByteBuffer() {
+		return ByteBuffer.wrap(getCqlStatementAsBytes());
+	}
+
+	public byte[] getCqlStatementAsBytes() {
+		return ByteUtils.toBytes(cqlStatement);
+	}
+
+	public void setCqlStatement(String cqlStatement) {
+		this.cqlStatement = cqlStatement;
+	}
+
+	@Override
+	public String toString() {
+		return "CqlCommand {cqlStatement=" + getCqlStatement() + "}";
+	}
 }

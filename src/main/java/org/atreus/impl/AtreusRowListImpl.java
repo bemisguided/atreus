@@ -38,9 +38,8 @@ public class AtreusRowListImpl implements AtreusRowList {
 		this.list = new ArrayList<AtreusColumnMap>(size);
 	}
 
-	@Override
-	public Iterator<AtreusColumnMap> iterator() {
-		return list.iterator();
+	public void addColumnMap(AtreusColumnMap columnMap) {
+		list.add(columnMap);
 	}
 
 	@Override
@@ -49,12 +48,13 @@ public class AtreusRowListImpl implements AtreusRowList {
 	}
 
 	@Override
-	public int size() {
-		return list.size();
+	public Iterator<AtreusColumnMap> iterator() {
+		return list.iterator();
 	}
 
-	public void addColumnMap(AtreusColumnMap columnMap) {
-		list.add(columnMap);
+	@Override
+	public int size() {
+		return list.size();
 	}
 
 }

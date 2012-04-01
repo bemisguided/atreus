@@ -23,6 +23,32 @@
  */
 package org.atreus.impl.commands;
 
-public class DescribeSchemaCommand implements Command {
+import java.nio.ByteBuffer;
+
+import org.atreus.impl.AtreusSessionImpl;
+
+public abstract class SubColumnCommandBase extends ColumnCommandBase {
+
+	private Object subColumnName;
+
+	public SubColumnCommandBase(AtreusSessionImpl session) {
+		super(session);
+	}
+
+	public Object getSubColumnName() {
+		return subColumnName;
+	}
+
+	public ByteBuffer getSubColumnNameAsByteBuffer() {
+		return ByteBuffer.wrap(getSubColumnNameAsBytes());
+	}
+
+	public byte[] getSubColumnNameAsBytes() {
+		return toBytes(subColumnName);
+	}
+
+	public void setSubColumnName(Object subColumnName) {
+		this.subColumnName = subColumnName;
+	}
 
 }

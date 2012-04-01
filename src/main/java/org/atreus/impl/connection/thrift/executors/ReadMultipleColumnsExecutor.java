@@ -57,11 +57,11 @@ public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 		range.setStart(new byte[0]);
 		range.setFinish(new byte[0]);
 		predicate.setSlice_range(range);
-		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKey(), parent, predicate, consistencyLevel);
+		List<ColumnOrSuperColumn> list = client.get_slice(readMultipleColumns.getRowKeyAsByteBuffer(), parent, predicate, consistencyLevel);
 
-		AtreusColumnMapBase result = new AtreusColumnMapImpl(readMultipleColumns.getTypeRegistry());
+		AtreusColumnMapBase result = new AtreusColumnMapImpl(readMultipleColumns.getSession());
 		if (list.size() > 0 && list.get(0).isSetSuper_column()) {
-			result = new AtreusSuperColumnMapImpl(readMultipleColumns.getTypeRegistry());
+			result = new AtreusSuperColumnMapImpl(readMultipleColumns.getSession());
 		}
 		for (ColumnOrSuperColumn colOrSuper : list) {
 			if (colOrSuper.isSetSuper_column()) {
@@ -74,7 +74,7 @@ public class ReadMultipleColumnsExecutor implements ThriftCommandExecutor {
 				result.put(column.getName(), column.getValue());
 			}
 		}
-		result.setRowKey(readMultipleColumns.getRowKey().array());
+		result.setRowKey(readMultipleColumns.getRowKeyAsBytes());
 		result.setImmutable(true);
 		return result;
 	}

@@ -45,13 +45,13 @@ public class ReadColumnExecutor implements ThriftCommandExecutor {
 
 		ColumnPath path = new ColumnPath(readColumn.getColumnFamily());
 		if (readColumn.getSubColumnName() == null) {
-			path.setColumn(readColumn.getColumnName());
+			path.setColumn(readColumn.getColumnNameAsByteBuffer());
 		} else {
-			path.setSuper_column(readColumn.getColumnName());
-			path.setColumn(readColumn.getSubColumnName());
+			path.setSuper_column(readColumn.getColumnNameAsByteBuffer());
+			path.setColumn(readColumn.getSubColumnNameAsByteBuffer());
 		}
 		try {
-			ColumnOrSuperColumn result = client.get(readColumn.getRowKey(), path, consistencyLevel);
+			ColumnOrSuperColumn result = client.get(readColumn.getRowKeyAsByteBuffer(), path, consistencyLevel);
 			return result.getColumn().getValue();
 		} catch (NotFoundException e) {
 			// Not found for now return null

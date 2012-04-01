@@ -35,6 +35,8 @@ public interface AtreusSession {
 
 	public void deleteRow(String colFamily, Object rowKey);
 
+	public void execute(String cql);
+
 	public boolean existsColumn(Object colName);
 
 	public boolean existsColumn(Object colName, Object subColName);
@@ -65,6 +67,8 @@ public interface AtreusSession {
 
 	public AtreusColumnMap newColumnMap(boolean superColumns);
 
+	public AtreusRowList query(String cql);
+
 	public <T> T readColumn(Object colName, Class<T> type);
 
 	public <T> T readColumn(Object colName, Object subColName, Class<T> type);
@@ -72,10 +76,6 @@ public interface AtreusSession {
 	public byte[] readColumnAsBytes(Object colName);
 
 	public byte[] readColumnAsBytes(Object colName, Object subColName);
-
-	public void execute(String cql);
-
-	public AtreusRowList query(String cql);
 
 	public AtreusColumnMap readColumns();
 

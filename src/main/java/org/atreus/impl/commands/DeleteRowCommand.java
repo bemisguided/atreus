@@ -23,10 +23,17 @@
  */
 package org.atreus.impl.commands;
 
-public class DeleteRowCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
+import org.atreus.impl.AtreusSessionImpl;
 
-	public DeleteRowCommand(String columnFamily, byte[] rowKey) {
-		super(columnFamily, rowKey, null, null);
+public class DeleteRowCommand extends RowCommandBase implements BatchableCommand, WriteCommand {
+
+	public DeleteRowCommand(AtreusSessionImpl session) {
+		super(session);
+	}
+
+	@Override
+	public String toString() {
+		return "DeleteRowCommand {columnFamily=" + getColumnFamily() + ", rowKey=" + getRowKey() + "}";
 	}
 
 }

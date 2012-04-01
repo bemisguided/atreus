@@ -23,19 +23,17 @@
  */
 package org.atreus.impl.commands;
 
-import org.atreus.impl.converters.TypeConverterRegistry;
+import org.atreus.impl.AtreusSessionImpl;
 
 public class CqlQueryCommand extends CqlCommand {
 
-	private final TypeConverterRegistry typeRegistry;
-
-	public CqlQueryCommand(String cql, TypeConverterRegistry typeRegistry) {
-		super(cql);
-		this.typeRegistry = typeRegistry;
+	public CqlQueryCommand(AtreusSessionImpl session) {
+		super(session);
 	}
 
-	public TypeConverterRegistry getTypeRegistry() {
-		return typeRegistry;
+	@Override
+	public String toString() {
+		return "CqlQueryCommand {cqlStatement=" + getCqlStatement() + "}";
 	}
 
 }

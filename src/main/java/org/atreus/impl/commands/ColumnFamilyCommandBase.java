@@ -23,6 +23,22 @@
  */
 package org.atreus.impl.commands;
 
-public class DescribeSchemaCommand implements Command {
+import org.atreus.impl.AtreusSessionImpl;
+
+public abstract class ColumnFamilyCommandBase extends CommandBase {
+
+	private String columnFamily;
+
+	public ColumnFamilyCommandBase(AtreusSessionImpl session) {
+		super(session);
+	}
+
+	public String getColumnFamily() {
+		return columnFamily;
+	}
+
+	public void setColumnFamily(String columnFamily) {
+		this.columnFamily = columnFamily;
+	}
 
 }

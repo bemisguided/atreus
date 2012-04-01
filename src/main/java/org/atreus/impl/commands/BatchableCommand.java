@@ -29,6 +29,6 @@ public interface BatchableCommand extends Command {
 
 	public String getColumnFamily();
 
-	public ByteBuffer getRowKey();
+	public ByteBuffer getRowKeyAsByteBuffer();
 
 }

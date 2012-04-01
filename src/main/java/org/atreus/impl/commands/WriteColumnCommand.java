@@ -23,17 +23,36 @@
  */
 package org.atreus.impl.commands;
 
+import java.nio.ByteBuffer;
+
+import org.atreus.impl.AtreusSessionImpl;
+
 public class WriteColumnCommand extends ColumnCommandBase implements BatchableCommand, WriteCommand {
 
-	private final byte[] value;
+	private Object value;
 
-	public WriteColumnCommand(String columnFamily, byte[] rowKey, byte[] columnName, byte[] value) {
-		super(columnFamily, rowKey, columnName, null);
-		this.value = value;
+	public WriteColumnCommand(AtreusSessionImpl session) {
+		super(session);
 	}
 
-	public byte[] getValue() {
+	public Object getValue() {
 		return value;
 	}
 
+	public ByteBuffer getValueAsByteBuffer() {
+		return ByteBuffer.wrap(getValueAsBytes());
+	}
+
+	public byte[] getValueAsBytes() {
+		return toBytes(value);
+	}
+
+	public void setValue(Object value) {
+		this.value = value;
+	}
+
+	@Override
+	public String toString() {
+		return "WriteColumnCommand {columnFamily=" + getColumnFamily() + ", rowKey=" + getRowKey() + ", columnName=" + getColumnName() + ", value=" + value + "}";
+	}
 }
