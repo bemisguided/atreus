@@ -34,15 +34,15 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-public final class SpringAtreusSessionFactory implements InitializingBean, DisposableBean {
+public final class AtreusSpringTransactionSessionFactory implements InitializingBean, DisposableBean, AtreusSpringSessionFactory {
 
-	private static final Logger logger = LoggerFactory.getLogger(SpringAtreusSessionFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(AtreusSpringTransactionSessionFactory.class);
 
 	private AtreusConfiguration config;
 
 	private AtreusSessionFactory sessionFactory;
 
-	public SpringAtreusSessionFactory() {
+	public AtreusSpringTransactionSessionFactory() {
 	}
 
 	@Override
