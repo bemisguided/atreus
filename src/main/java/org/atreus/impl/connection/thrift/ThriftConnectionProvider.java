@@ -40,7 +40,7 @@ import org.atreus.AtreusUnknownException;
 import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.CqlCommand;
-import org.atreus.impl.commands.CqlQueryCommand;
+import org.atreus.impl.commands.CqlWriteCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.DescribeSchemaCommand;
@@ -53,7 +53,6 @@ import org.atreus.impl.connection.Connection;
 import org.atreus.impl.connection.ConnectionProvider;
 import org.atreus.impl.connection.thrift.executors.BatchExecutor;
 import org.atreus.impl.connection.thrift.executors.CqlExecutor;
-import org.atreus.impl.connection.thrift.executors.CqlQueryExecutor;
 import org.atreus.impl.connection.thrift.executors.DeleteColumnExecutor;
 import org.atreus.impl.connection.thrift.executors.DeleteRowExecutor;
 import org.atreus.impl.connection.thrift.executors.DescribeSchemaExecutor;
@@ -76,7 +75,7 @@ public class ThriftConnectionProvider implements ConnectionProvider {
 		executors.put(WriteSubColumnCommand.class, new WriteSubColumnExecutor());
 		executors.put(DescribeSchemaCommand.class, new DescribeSchemaExecutor());
 		executors.put(CqlCommand.class, new CqlExecutor());
-		executors.put(CqlQueryCommand.class, new CqlQueryExecutor());
+		executors.put(CqlWriteCommand.class, new CqlExecutor());
 		executors.put(BatchCommand.class, new BatchExecutor());
 	}
 

@@ -25,15 +25,15 @@ package org.atreus.impl.commands;
 
 import org.atreus.impl.AtreusSessionImpl;
 
-public class CqlQueryCommand extends CqlCommand {
+public class CqlWriteCommand extends CqlCommand implements WriteCommand {
 
-	public CqlQueryCommand(AtreusSessionImpl session) {
+	public CqlWriteCommand(AtreusSessionImpl session) {
 		super(session);
 	}
 
 	@Override
 	public String toString() {
-		return "CqlQueryCommand {cqlStatement=" + getCqlStatement() + "}";
+		return "CqlWriteCommand {cqlStatement=" + getCqlStatement() + "}";
 	}
 
 }

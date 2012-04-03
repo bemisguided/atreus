@@ -32,6 +32,8 @@ public class CqlCommand extends CommandBase implements Command {
 
 	private String cqlStatement;
 
+	private boolean resultSet;
+
 	public CqlCommand(AtreusSessionImpl session) {
 		super(session);
 	}
@@ -48,8 +50,16 @@ public class CqlCommand extends CommandBase implements Command {
 		return ByteUtils.toBytes(cqlStatement);
 	}
 
+	public boolean isResultSet() {
+		return resultSet;
+	}
+
 	public void setCqlStatement(String cqlStatement) {
 		this.cqlStatement = cqlStatement;
+	}
+
+	public void setResultSet(boolean resultSet) {
+		this.resultSet = resultSet;
 	}
 
 	@Override

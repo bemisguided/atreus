@@ -34,7 +34,7 @@ import org.atreus.impl.commands.BatchCommand;
 import org.atreus.impl.commands.BatchableCommand;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.CqlCommand;
-import org.atreus.impl.commands.CqlQueryCommand;
+import org.atreus.impl.commands.CqlWriteCommand;
 import org.atreus.impl.commands.DeleteColumnCommand;
 import org.atreus.impl.commands.DeleteRowCommand;
 import org.atreus.impl.commands.ReadColumnCommand;
@@ -43,9 +43,13 @@ import org.atreus.impl.commands.WriteColumnCommand;
 import org.atreus.impl.commands.WriteSubColumnCommand;
 import org.atreus.impl.connection.ConnectionManager;
 import org.atreus.impl.converters.TypeConverterRegistry;
+import org.atreus.impl.cql.CqlSimpleParser;
+import org.atreus.impl.cql.CqlStatement;
 import org.atreus.impl.utils.AssertUtils;
 
 public class AtreusSessionImpl implements AtreusSession {
+
+	private static final CqlSimpleParser PARSER = new CqlSimpleParser();
 
 	private String columnFamily;
 
@@ -138,6 +142,32 @@ public class AtreusSessionImpl implements AtreusSession {
 		doExecuteOrBatch(command, getWriteConsistencyLevel());
 	}
 
+	protected Object doCqlExecute(String cql, boolean resultSet) {
+		CqlStatement statement = PARSER.parse(cql);
+		CqlCommand command;
+		switch (statement.getType()) {
+		case BATCH:
+		case DELETE:
+		case INSERT:
+		case UPDATE:
+			command = new CqlWriteCommand(this);
+			if (statement.getConsistencyLevel() == null) {
+				statement.setConsistencyLevel(getWriteConsistencyLevel());
+			}
+			break;
+		default:
+			command = new CqlCommand(this);
+			if (statement.getConsistencyLevel() == null) {
+				statement.setConsistencyLevel(getReadConsistencyLevel());
+			}
+			break;
+		}
+		command.setCqlStatement(cql);
+		command.setResultSet(resultSet);
+
+		return doExecute(command, statement.getConsistencyLevel());
+	}
+
 	protected Object doExecute(Command command, AtreusConsistencyLevel consistencyLevel) {
 		return getConnectionManager().execute(command, consistencyLevel);
 	}
@@ -158,9 +188,7 @@ public class AtreusSessionImpl implements AtreusSession {
 		assertIsReady();
 		AssertUtils.hasText(cql, "CQL parameter is required");
 
-		CqlCommand command = new CqlCommand(this);
-		command.setCqlStatement(cql);
-		doExecute(command, getWriteConsistencyLevel());
+		doCqlExecute(cql, false);
 	}
 
 	@Override
@@ -270,9 +298,8 @@ public class AtreusSessionImpl implements AtreusSession {
 	public AtreusRowList query(String cql) {
 		assertIsReady();
 		AssertUtils.hasText(cql, "CQL parameter is required");
-		CqlQueryCommand command = new CqlQueryCommand(this);
-		command.setCqlStatement(cql);
-		return (AtreusRowList) doExecute(command, getReadConsistencyLevel());
+
+		return (AtreusRowList) doCqlExecute(cql, true);
 	}
 
 	@Override

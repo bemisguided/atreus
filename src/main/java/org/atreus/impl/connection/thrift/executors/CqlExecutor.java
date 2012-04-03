@@ -24,9 +24,12 @@
 package org.atreus.impl.connection.thrift.executors;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
+import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.Compression;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.CqlResult;
+import org.apache.cassandra.thrift.CqlResultType;
+import org.apache.cassandra.thrift.CqlRow;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.cassandra.thrift.TimedOutException;
@@ -34,6 +37,8 @@ import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.atreus.AtreusCommandException;
+import org.atreus.impl.AtreusColumnMapImpl;
+import org.atreus.impl.AtreusRowListImpl;
 import org.atreus.impl.commands.Command;
 import org.atreus.impl.commands.CqlCommand;
 
@@ -51,8 +56,34 @@ public class CqlExecutor implements ThriftCommandExecutor {
 	public Object execute(Client client, Command command, ConsistencyLevel consistencyLevel) throws InvalidRequestException, UnavailableException, TimedOutException,
 			TTransportException, TException {
 		CqlCommand cql = (CqlCommand) command;
-		doExecutes(client, cql);
-		return null;
+		CqlResult cqlResult = doExecutes(client, cql);
+
+		// Does the command request a result set?
+		if (!cql.isResultSet()) {
+			// No, then just return null
+			return null;
+		}
+
+		// Does the result have rows?
+		if (!CqlResultType.ROWS.equals(cqlResult.getType())) {
+			// No then just return an empty row list
+			return new AtreusRowListImpl(0);
+		}
+
+		// Otherwise build the row list results
+		AtreusRowListImpl rowList = new AtreusRowListImpl(cqlResult.getRowsSize());
+
+		for (CqlRow cqlRow : cqlResult.getRows()) {
+			AtreusColumnMapImpl columnMap = new AtreusColumnMapImpl(cql.getSession());
+			rowList.addColumnMap(columnMap);
+			columnMap.setRowKey(cqlRow.getKey());
+			for (Column column : cqlRow.getColumns()) {
+				columnMap.put(column.getName(), column.getValue());
+			}
+			columnMap.setImmutable(true);
+		}
+		return rowList;
+
 	}
 
 }
