@@ -23,8 +23,10 @@
  */
 package org.atreus.support.spring;
 
-public interface AtreusSpringSessionFactory {
+import org.atreus.AtreusSession;
 
-	public AtreusSpringSession getCurrentSession();
+public interface AtreusSpringSession extends AtreusSession {
+
+	public AtreusSession getDelegate();
 
 }

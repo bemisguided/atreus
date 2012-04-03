@@ -59,10 +59,11 @@ public final class AtreusSpringTransactionSessionFactory implements Initializing
 		transactionSynchronization.bindSession();
 	}
 
-	private AtreusSession createSession() {
+	private AtreusSpringSession createSession() {
 		AtreusSession session = sessionFactory.openSession();
+		AtreusSpringSession springSession = new AtreusSpringSessionImpl(session);
 		attachSessionToTransaction(session);
-		return session;
+		return springSession;
 	}
 
 	@Override
@@ -74,7 +75,7 @@ public final class AtreusSpringTransactionSessionFactory implements Initializing
 		return config;
 	}
 
-	public AtreusSession getCurrentSession() {
+	public AtreusSpringSession getCurrentSession() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Call getSession() - Thread [" + Thread.currentThread().getId() + "]");
 		}
@@ -82,7 +83,7 @@ public final class AtreusSpringTransactionSessionFactory implements Initializing
 			if (logger.isDebugEnabled()) {
 				logger.debug("Session exists for the current thread/transaction context - Thread [" + Thread.currentThread().getId() + "]");
 			}
-			return (AtreusSession) TransactionSynchronizationManager.getResource(this);
+			return (AtreusSpringSession) TransactionSynchronizationManager.getResource(this);
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Session does not exist for the current thread/transaction context - Thread [" + Thread.currentThread().getId() + "]");
