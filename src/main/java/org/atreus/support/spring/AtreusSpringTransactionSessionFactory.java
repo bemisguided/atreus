@@ -23,58 +23,34 @@
  */
 package org.atreus.support.spring;
 
-import org.atreus.AtreusConfiguration;
 import org.atreus.AtreusSession;
-import org.atreus.AtreusSessionFactory;
-import org.atreus.AtreusSessionFactoryBuilder;
-import org.atreus.impl.utils.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-public final class AtreusSpringTransactionSessionFactory implements InitializingBean, DisposableBean, AtreusSpringSessionFactory {
+public final class AtreusSpringTransactionSessionFactory extends AtreusSpringSessionFactoryBase {
 
 	private static final Logger logger = LoggerFactory.getLogger(AtreusSpringTransactionSessionFactory.class);
 
-	private AtreusConfiguration config;
-
-	private AtreusSessionFactory sessionFactory;
-
 	public AtreusSpringTransactionSessionFactory() {
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		AssertUtils.notNull(config, "Atreus Configuration property is not set");
-		sessionFactory = AtreusSessionFactoryBuilder.buildFactory(config);
 	}
 
 	private void attachSessionToTransaction(AtreusSession session) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Attaching session to transaction - Thread [" + Thread.currentThread().getId() + "]");
 		}
-		AtreusTransactionSynchronization transactionSynchronization = new AtreusTransactionSynchronization(session, sessionFactory);
+		AtreusTransactionSynchronization transactionSynchronization = new AtreusTransactionSynchronization(session,  getSessionFactory());
 		transactionSynchronization.bindSession();
 	}
 
 	private AtreusSpringSession createSession() {
-		AtreusSession session = sessionFactory.openSession();
+		AtreusSession session = getSessionFactory().openSession();
 		AtreusSpringSession springSession = new AtreusSpringSessionImpl(session);
 		attachSessionToTransaction(session);
 		return springSession;
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		sessionFactory.disconnect();
-	}
-
-	public AtreusConfiguration getConfiguration() {
-		return config;
-	}
-
 	public AtreusSpringSession getCurrentSession() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Call getSession() - Thread [" + Thread.currentThread().getId() + "]");
@@ -91,7 +67,4 @@ public final class AtreusSpringTransactionSessionFactory implements Initializing
 		return createSession();
 	}
 
-	public void setConfiguration(AtreusConfiguration config) {
-		this.config = config;
-	}
 }
