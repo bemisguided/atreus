@@ -33,16 +33,16 @@ import org.atreus.AtreusTypeConverter;
 
 public abstract class ObjectStreamTypeConverter implements AtreusTypeConverter {
 
-	public final Object fromBytes(byte[] bytes) {
+	public final Object fromBytes(Class<?> type, byte[] bytes) {
 		try {
 			ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-			return read(input);
+			return read(type, input);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public abstract Object read(ObjectInputStream input) throws IOException;
+	public abstract Object read(Class<?> type, ObjectInputStream input) throws IOException;
 
 	public final byte[] toBytes(Object value) {
 		try {

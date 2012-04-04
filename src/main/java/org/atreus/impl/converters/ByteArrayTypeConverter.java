@@ -28,7 +28,7 @@ import org.atreus.AtreusTypeConverter;
 public class ByteArrayTypeConverter implements AtreusTypeConverter {
 
 	@Override
-	public Object fromBytes(byte[] bytes) {
+	public Object fromBytes(Class<?> type, byte[] bytes) {
 		return bytes;
 	}
 

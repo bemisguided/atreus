@@ -21,14 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus;
+package org.atreus.impl.converters;
 
-public interface AtreusTypeConverter {
+import org.atreus.AtreusTypeConverter;
+import org.atreus.impl.utils.ByteUtils;
 
-	public Object fromBytes(Class<?> type, byte[] bytes);
+public class EnumTypeConverter implements AtreusTypeConverter {
 
-	public boolean isSupported(Class<?> type);
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Object fromBytes(Class<?> type, byte[] bytes) {
+		Class<? extends Enum> ce = (Class<? extends Enum>) type;
+		return Enum.valueOf(ce, ByteUtils.toString(bytes));
+	}
 
-	public byte[] toBytes(Object value);
+	@Override
+	public boolean isSupported(Class<?> type) {
+		return type.isEnum();
+	}
+
+	@Override
+	public byte[] toBytes(Object value) {
+		Enum<?> enumValue = (Enum<?>) value;
+		return ByteUtils.toBytes(enumValue.name());
+	}
 
 }

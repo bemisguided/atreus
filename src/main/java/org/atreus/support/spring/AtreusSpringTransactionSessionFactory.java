@@ -39,7 +39,7 @@ public final class AtreusSpringTransactionSessionFactory extends AtreusSpringSes
 		if (logger.isDebugEnabled()) {
 			logger.debug("Attaching session to transaction - Thread [" + Thread.currentThread().getId() + "]");
 		}
-		AtreusTransactionSynchronization transactionSynchronization = new AtreusTransactionSynchronization(session,  getSessionFactory());
+		AtreusTransactionSynchronization transactionSynchronization = new AtreusTransactionSynchronization(session, getSessionFactory());
 		transactionSynchronization.bindSession();
 	}
 

@@ -35,7 +35,7 @@ public class CalendarTypeConverter extends ObjectStreamTypeConverter {
 		return Calendar.class.isAssignableFrom(type);
 	}
 
-	public Object read(ObjectInputStream input) throws IOException {
+	public Object read(Class<?> type, ObjectInputStream input) throws IOException {
 		long timestamp = input.readLong();
 		String tzId = input.readUTF();
 		TimeZone tz = TimeZone.getTimeZone(tzId);
@@ -49,4 +49,5 @@ public class CalendarTypeConverter extends ObjectStreamTypeConverter {
 		output.writeLong(cal.getTimeInMillis());
 		output.writeUTF(cal.getTimeZone().getID());
 	}
+
 }

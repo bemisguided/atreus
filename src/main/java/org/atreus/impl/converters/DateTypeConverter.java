@@ -31,7 +31,7 @@ import org.atreus.impl.utils.ByteUtils;
 public class DateTypeConverter implements AtreusTypeConverter {
 
 	@Override
-	public Object fromBytes(byte[] bytes) {
+	public Object fromBytes(Class<?> type, byte[] bytes) {
 		long time = ByteUtils.toLong(bytes);
 		return new Date(time);
 	}

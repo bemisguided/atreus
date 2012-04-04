@@ -29,7 +29,7 @@ import org.atreus.impl.utils.ByteUtils;
 public class ShortTypeConverter implements AtreusTypeConverter {
 
 	@Override
-	public Object fromBytes(byte[] bytes) {
+	public Object fromBytes(Class<?> type, byte[] bytes) {
 		return ByteUtils.toShort(bytes);
 	}
 

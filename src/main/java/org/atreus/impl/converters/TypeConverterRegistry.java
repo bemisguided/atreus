@@ -53,6 +53,7 @@ public class TypeConverterRegistry {
 		converters.add(new StringTypeConverter());
 		converters.add(new CalendarTypeConverter());
 		converters.add(new DateTypeConverter());
+		converters.add(new EnumTypeConverter());
 	}
 
 	public AtreusTypeConverter findConverter(Class<?> type) {
@@ -76,7 +77,7 @@ public class TypeConverterRegistry {
 			return null;
 		}
 		AtreusTypeConverter converter = findConverter(type);
-		return (T) converter.fromBytes(bytes);
+		return (T) converter.fromBytes(type, bytes);
 	}
 
 	public List<AtreusTypeConverter> getConverters() {

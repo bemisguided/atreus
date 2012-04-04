@@ -28,7 +28,7 @@ import org.atreus.impl.utils.ByteUtils;
 
 public class StringTypeConverter implements AtreusTypeConverter {
 
-	public Object fromBytes(byte[] bytes) {
+	public Object fromBytes(Class<?> type, byte[] bytes) {
 		return ByteUtils.toString(bytes);
 	}
 
