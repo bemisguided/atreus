@@ -23,14 +23,41 @@
  */
 package org.atreus.impl.cache;
 
-public enum CacheResult {
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-	DELETED,
+public class CachedColumnFamily extends CachedReference {
 
-	PARTIAL,
+	private final String name;
 
-	FULL,
+	private final Map<ByteBuffer, CachedRow> rows = new HashMap<ByteBuffer, CachedRow>();
 
-	UNKNOWN;
+	public CachedColumnFamily(String name) {
+		this.name = name;
+	}
+
+	@Override
+	protected Iterable<? extends CachedReference> getChildren() {
+		return rows.values();
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public CachedRow getRow(byte[] rowKey) {
+		ByteBuffer rowKeyBuffer = ByteBuffer.wrap(rowKey);
+		CachedRow row = rows.get(rowKeyBuffer);
+		if (row == null) {
+			row = new CachedRow(this, rowKey);
+			rows.put(rowKeyBuffer, row);
+		}
+		return row;
+	}
+
+	public Iterable<CachedRow> getRows() {
+		return rows.values();
+	}
 
 }

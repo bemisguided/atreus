@@ -23,8 +23,53 @@
  */
 package org.atreus.impl.cache;
 
-public enum CacheResultStatus {
+public abstract class CachedReference {
 
-	NO_RESULTS;
+	private final CachedReference parent;
+
+	private CacheResult result = CacheResult.UNKNOWN;
+
+	public CachedReference() {
+		this.parent = null;
+	}
+
+	public CachedReference(CachedReference parent) {
+		this.parent = parent;
+	}
+
+	protected abstract Iterable<? extends CachedReference> getChildren();
+
+	protected CachedReference getParent() {
+		return parent;
+	}
+
+	public CacheResult getResult() {
+		return result;
+	}
+
+	public void markResultDelete() {
+		result = CacheResult.DELETED;
+		for (CachedReference cachedReference : getChildren()) {
+			cachedReference.markResultDelete();
+		}
+	}
+
+	public void markResultFull() {
+		result = CacheResult.FULL;
+		if (parent != null) {
+			parent.markResultPartial();
+		}
+	}
+
+	public void markResultPartial() {
+		result = CacheResult.PARTIAL;
+		if (parent != null) {
+			parent.markResultPartial();
+		}
+	}
+
+	public void setResult(CacheResult result) {
+		this.result = result;
+	}
 
 }

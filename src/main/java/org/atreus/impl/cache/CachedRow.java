@@ -23,14 +23,51 @@
  */
 package org.atreus.impl.cache;
 
-public enum CacheResult {
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-	DELETED,
+public class CachedRow extends CachedReference {
 
-	PARTIAL,
+	private final byte[] rowKey;
 
-	FULL,
+	private final Map<ByteBuffer, CachedColumn> columns = new HashMap<ByteBuffer, CachedColumn>();
 
-	UNKNOWN;
+	public CachedRow(CachedColumnFamily parent, byte[] rowKey) {
+		super(parent);
+		this.rowKey = rowKey;
+	}
 
+	@Override
+	protected Iterable<? extends CachedReference> getChildren() {
+		return columns.values();
+	}
+
+	public CachedColumn getColumn(byte[] name) {
+		ByteBuffer nameBuffer = ByteBuffer.wrap(name);
+		CachedColumn column = columns.get(nameBuffer);
+		if (column == null) {
+			column = new CachedColumn(this, name);
+			columns.put(nameBuffer, column);
+		}
+		return column;
+	}
+
+	public Iterable<CachedColumn> getColumns() {
+		return columns.values();
+	}
+
+	public byte[] getRowKey() {
+		return rowKey;
+	}
+
+	public CachedColumn getSuperColumn(byte[] name) {
+		ByteBuffer nameBuffer = ByteBuffer.wrap(name);
+		CachedSuperColumn column = (CachedSuperColumn) columns.get(nameBuffer);
+		if (column == null) {
+			column = new CachedSuperColumn(this, name);
+			columns.put(nameBuffer, column);
+		}
+		return column;
+	}
 }

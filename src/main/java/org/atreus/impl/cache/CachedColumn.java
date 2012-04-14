@@ -23,14 +23,46 @@
  */
 package org.atreus.impl.cache;
 
-public enum CacheResult {
+import java.util.Collections;
 
-	DELETED,
+public class CachedColumn extends CachedReference {
 
-	PARTIAL,
+	private final byte[] name;
 
-	FULL,
+	private byte[] value;
 
-	UNKNOWN;
+	public CachedColumn(CachedRow parent, byte[] name) {
+		super(parent);
+		this.name = name;
+	}
+
+	public CachedColumn(CachedSuperColumn parent, byte[] name) {
+		super(parent);
+		this.name = name;
+	}
+
+	@Override
+	protected Iterable<? extends CachedReference> getChildren() {
+		return Collections.emptySet();
+	}
+
+	public byte[] getName() {
+		return name;
+	}
+
+	public byte[] getValue() {
+		return value;
+	}
+
+	@Override
+	public void markResultDelete() {
+		value = null;
+		super.markResultDelete();
+	}
+
+	public void setValue(byte[] value) {
+		markResultFull();
+		this.value = value;
+	}
 
 }

@@ -26,24 +26,19 @@ package org.atreus.impl.cache;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ColumnCache {
+public class SessionCache {
 
-	private final Map<ColumnReference, CacheResult> columnCache = new HashMap<ColumnReference, CacheResult>();
+	private final Map<String, CachedColumnFamily> columnFamilies = new HashMap<String, CachedColumnFamily>();
 
-	public ColumnCache() {
+	public SessionCache() {
 	}
 
-	public CacheResult get(String columnFamily, byte[] rowKey, byte[] columnName) {
-		return get(columnFamily, rowKey, columnName, null);
-	}
-
-	public CacheResult get(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName) {
-		ColumnReference reference = new ColumnReference(columnFamily, rowKey, columnName, subColumnName);
-		return columnCache.get(reference);
-	}
-
-	public void put(String columnFamily, byte[] rowKey, byte[] columnName, byte[] subColumnName, byte[] value) {
-		ColumnReference reference = new ColumnReference(columnFamily, rowKey, columnName, subColumnName);
-		// columnCache.put(reference, );
+	public CachedColumnFamily getColumnFamily(String name) {
+		CachedColumnFamily columnFamily = columnFamilies.get(name);
+		if (columnFamily == null) {
+			columnFamily = new CachedColumnFamily(name);
+			columnFamilies.put(name, columnFamily);
+		}
+		return columnFamily;
 	}
 }
