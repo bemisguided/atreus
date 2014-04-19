@@ -24,14 +24,15 @@
 package org.atreus.impl.entities;
 
 import org.atreus.core.entities.AtreusEntity;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.core.entities.AtreusField;
+import org.atreus.core.entities.AtreusPrimaryKey;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 import static org.atreus.impl.util.StringUtils.getValue;
 
@@ -55,19 +56,56 @@ public class EntityManager {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   public void addEntity(ManagedEntity managedEntity) {
-    registry.put(managedEntity.getTypeClass(), managedEntity);
+    registry.put(managedEntity.getEntityClass(), managedEntity);
   }
 
   public void scanPath(String path) {
     Reflections reflections = new Reflections(path);
     Set<Class<?>> entityTypes = reflections.getTypesAnnotatedWith(AtreusEntity.class);
     for(Class<?> entityType : entityTypes) {
+      LOG.trace("Found Entity with @AtreusEntity classType={}", entityType.getCanonicalName());
+
       AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
       ManagedEntity managedEntity = new ManagedEntity();
       String className = entityType.getSimpleName();
       managedEntity.setName(getValue(entityAnnotation.value(), className));
       managedEntity.setTableName(getValue(entityAnnotation.table(), className));
       managedEntity.setKeySpaceName(getValue(entityAnnotation.keySpace(), className));
+
+      List<ManagedField> primaryKeysList = new ArrayList<>();
+      List<ManagedField> managedFieldsList = new ArrayList<>();
+      for(Field field : entityType.getDeclaredFields()) {
+        String fieldName = field.getName();
+        LOG.trace("Found declared field name={}", fieldName);
+        // Skip transient field
+        if (Modifier.isTransient(field.getModifiers())) {
+          LOG.trace("Field is transient and being ignored name={}", fieldName);
+          continue;
+        }
+        ManagedField managedField = new ManagedField();
+        managedField.setColumnName(fieldName);
+        managedField.setJavaField(field);
+        AtreusPrimaryKey primaryKeyAnnotation = field.getAnnotation(AtreusPrimaryKey.class);
+        if (primaryKeyAnnotation != null) {
+          managedField.setColumnName(getValue(primaryKeyAnnotation.value(), fieldName));
+          // TODO type manager
+          primaryKeysList.add(primaryKeyAnnotation.order(), managedField);
+          continue;
+        }
+        AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
+        if (fieldAnnotation != null) {
+          managedField.setColumnName(getValue(fieldAnnotation.value(), fieldName));
+          // TODO type manager
+        }
+        managedFieldsList.add(managedField);
+        ManagedField[] primaryKeys = new ManagedField[primaryKeysList.size()];
+        primaryKeysList.toArray(primaryKeys);
+        ManagedField[] managedFields = new ManagedField[managedFieldsList.size()];
+        managedFieldsList.toArray(managedFields);
+        managedEntity.setPrimaryKey(primaryKeys);
+        managedEntity.setFields(managedFields);
+      }
+      addEntity(managedEntity);
     }
   }
 

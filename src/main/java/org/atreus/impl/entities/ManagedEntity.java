@@ -41,7 +41,7 @@ public class ManagedEntity {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> typeClass;
+  private Class<?> entityClass;
 
   private String name;
 
@@ -71,12 +71,12 @@ public class ManagedEntity {
     this.name = name;
   }
 
-  public Class<?> getTypeClass() {
-    return typeClass;
+  public Class<?> getEntityClass() {
+    return entityClass;
   }
 
-  public void setTypeClass(Class<?> typeClass) {
-    this.typeClass = typeClass;
+  public void setEntityClass(Class<?> entityClass) {
+    this.entityClass = entityClass;
   }
 
   public String getKeySpaceName() {
