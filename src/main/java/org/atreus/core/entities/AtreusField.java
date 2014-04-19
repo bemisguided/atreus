@@ -21,7 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.types;
+package org.atreus.core.entities;
+
+import org.atreus.core.types.AtreusTypeAccessor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,18 +31,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicates an Type Accessor to be managed by Atreus.
+ * Annotation indicates a field member is to be used as a primary key for the managed entity by Atreus.
  *
  * @author Martin Crawford
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface AtreusType {
+@Target(ElementType.FIELD)
+public @interface AtreusField {
 
   /**
-   * Class of the type supported by the Type Accessor.
+   * Sets the type accessor for this field. Default is based on the type of the field itself.
+   *
    * @return
    */
-  public Class<?> value();
+  public Class<AtreusTypeAccessor> type();
+
+  /**
+   * Sets the column name of this field. Default is the field name.
+   *
+   * @return
+   */
+  public String value();
 
 }

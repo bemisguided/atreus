@@ -43,6 +43,8 @@ public class ManagedEntity {
 
   private Class<?> typeClass;
 
+  private String name;
+
   private String keySpaceName;
 
   private String tableName;
@@ -60,6 +62,14 @@ public class ManagedEntity {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
 
   public Class<?> getTypeClass() {
     return typeClass;

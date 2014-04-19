@@ -23,11 +23,17 @@
  */
 package org.atreus.impl.entities;
 
+import org.atreus.core.entities.AtreusEntity;
+import org.atreus.impl.util.StringUtils;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
+import static org.atreus.impl.util.StringUtils.getValue;
 
 /**
  * Registry of managed entities.
@@ -50,6 +56,19 @@ public class EntityManager {
 
   public void addEntity(ManagedEntity managedEntity) {
     registry.put(managedEntity.getTypeClass(), managedEntity);
+  }
+
+  public void scanPath(String path) {
+    Reflections reflections = new Reflections(path);
+    Set<Class<?>> entityTypes = reflections.getTypesAnnotatedWith(AtreusEntity.class);
+    for(Class<?> entityType : entityTypes) {
+      AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
+      ManagedEntity managedEntity = new ManagedEntity();
+      String className = entityType.getSimpleName();
+      managedEntity.setName(getValue(entityAnnotation.value(), className));
+      managedEntity.setTableName(getValue(entityAnnotation.table(), className));
+      managedEntity.setKeySpaceName(getValue(entityAnnotation.keySpace(), className));
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

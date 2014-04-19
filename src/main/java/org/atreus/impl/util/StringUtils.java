@@ -21,26 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.types;
+package org.atreus.impl.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class StringUtils {
 
-/**
- * Annotation indicates an Type Accessor to be managed by Atreus.
- *
- * @author Martin Crawford
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface AtreusType {
+  public static String getValue(String value, String defaultValue) {
+    if (isNullOrEmpty(value)) {
+      return defaultValue;
+    }
+    return value;
+  }
 
-  /**
-   * Class of the type supported by the Type Accessor.
-   * @return
-   */
-  public Class<?> value();
+  public static boolean isNotNullOrEmpty(String value) {
+    return !isNullOrEmpty(value);
+  }
+
+	public static boolean isNullOrEmpty(String value) {
+    if (value == null || value.trim().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
 
 }
