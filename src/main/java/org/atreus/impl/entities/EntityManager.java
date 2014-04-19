@@ -21,50 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl.entities;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.types.AtreusTypeAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Base class for Type Accessors mapped by a byte array.
+ * Registry of managed entities.
  *
  * @author Martin Crawford
  */
-public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccessor<T> {
+public class EntityManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityManager.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Map<Class<?>, ManagedEntity> registry = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public T get(Row row, String colName) {
-    ByteBuffer byteBuffer = row.getBytes(colName);
-    return toValue(byteBuffer.array());
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, T value) {
-    ByteBuffer byteBuffer = ByteBuffer.wrap(fromValue(value));
-    boundStatement.setBytes(colName, byteBuffer);
+  public void addEntity(ManagedEntity managedEntity) {
+    registry.put(managedEntity.getTypeClass(), managedEntity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected abstract T toValue(byte[] bytes);
-
-  protected abstract byte[] fromValue(T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+}

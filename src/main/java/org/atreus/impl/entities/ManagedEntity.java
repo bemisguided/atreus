@@ -21,50 +21,84 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl.entities;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.types.AtreusTypeAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.nio.ByteBuffer;
+;
 
 /**
- * Base class for Type Accessors mapped by a byte array.
+ * Managed Entity bean.
  *
  * @author Martin Crawford
  */
-public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccessor<T> {
+public class ManagedEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntity.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> typeClass;
+
+  private String keySpaceName;
+
+  private String tableName;
+
+  private ManagedField[] primaryKey;
+
+  private ManagedField[] fields;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public T get(Row row, String colName) {
-    ByteBuffer byteBuffer = row.getBytes(colName);
-    return toValue(byteBuffer.array());
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, T value) {
-    ByteBuffer byteBuffer = ByteBuffer.wrap(fromValue(value));
-    boundStatement.setBytes(colName, byteBuffer);
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected abstract T toValue(byte[] bytes);
-
-  protected abstract byte[] fromValue(T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  public Class<?> getTypeClass() {
+    return typeClass;
+  }
+
+  public void setTypeClass(Class<?> typeClass) {
+    this.typeClass = typeClass;
+  }
+
+  public String getKeySpaceName() {
+    return keySpaceName;
+  }
+
+  public void setKeySpaceName(String keySpaceName) {
+    this.keySpaceName = keySpaceName;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(String tableName) {
+    this.tableName = tableName;
+  }
+
+  public ManagedField[] getPrimaryKey() {
+    return primaryKey;
+  }
+
+  public void setPrimaryKey(ManagedField[] primaryKey) {
+    this.primaryKey = primaryKey;
+  }
+
+  public ManagedField[] getFields() {
+    return fields;
+  }
+
+  public void setFields(ManagedField[] fields) {
+    this.fields = fields;
+  }
+
+}

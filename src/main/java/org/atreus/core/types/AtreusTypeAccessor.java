@@ -26,14 +26,12 @@ package org.atreus.core.types;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 
-import java.io.Serializable;
-
 /**
  * Interface for an Atreus Type Accessor.
  *
  * @author Martin Crawford
  */
-public interface AtreusTypeAccessor<T extends Serializable> {
+public interface AtreusTypeAccessor<T> {
 
   public T get(Row row, String colName);
 
