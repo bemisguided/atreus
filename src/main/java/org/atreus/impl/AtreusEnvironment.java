@@ -21,41 +21,67 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.impl.util.ByteUtils;
+import com.datastax.driver.core.Cluster;
+import org.atreus.core.AtreusConfiguration;
+import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.types.TypeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Integer Type Accessor.
+ * Atreus Environment setup.
  *
  * @author Martin Crawford
  */
-@AtreusType(Short.class)
-public class ShortTypeAccessor extends BaseByteBufferTypeAccessor<Short> {
+public class AtreusEnvironment {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusEnvironment.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Cluster cluster;
+  private final AtreusConfiguration configuration;
+  private final EntityManager entityManager;
+  private final TypeManager typeManager;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public AtreusEnvironment(AtreusConfiguration configuration) {
+    this.configuration = configuration;
+    this.entityManager = new EntityManager(this);
+    this.typeManager = new TypeManager(this);
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  @Override
-  protected Short toValue(byte[] bytes) {
-    return ByteUtils.toShort(bytes);
-  }
-
-  @Override
-  protected byte[] fromValue(Short value) {
-    return ByteUtils.toBytes(value);
-  }
-
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public Cluster getCluster() {
+    return cluster;
+  }
+
+  public void setCluster(Cluster cluster) {
+    this.cluster = cluster;
+  }
+
+  public AtreusConfiguration getConfiguration() {
+    return configuration;
+  }
+
+  public EntityManager getEntityManager() {
+    return entityManager;
+  }
+
+  public TypeManager getTypeManager() {
+    return typeManager;
+  }
 
 }

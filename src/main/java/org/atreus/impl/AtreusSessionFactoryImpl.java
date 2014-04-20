@@ -21,75 +21,79 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types;
+package org.atreus.impl;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-import org.atreus.impl.AtreusEnvironment;
-import org.reflections.Reflections;
+import com.datastax.driver.core.Cluster;
+import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.AtreusSession;
+import org.atreus.core.AtreusSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Registry of Type Accessors.
+ * Implements an Atreus Session Factory.
  *
  * @author Martin Crawford
  */
-public class TypeManager {
+public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionFactoryImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TypeManager(AtreusEnvironment environment) {
+  public AtreusSessionFactoryImpl(AtreusEnvironment environment) {
     this.environment = environment;
-    scanPath("org.atreus.impl.types");
+  }
+
+  public AtreusSessionFactoryImpl(AtreusConfiguration configuration) {
+    this.environment = new AtreusEnvironment(configuration);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
+  public void connect() {
+    Cluster cluster = Cluster.builder()
+        .addContactPoints(environment.getConfiguration().getHosts())
+        .withPort(environment.getConfiguration().getPort())
+        .build();
+    cluster.connect();
+    environment.setCluster(cluster);
   }
 
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
-    for (Class<?> key : registry.keySet()) {
-      if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
-      }
-    }
-    return null;
+  @Override
+  public void disconnect() {
+    environment.getCluster().close();
   }
 
-  public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
-    for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
-      }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
+  @Override
+  public String[] getHosts() {
+    return environment.getConfiguration().getHosts();
+  }
+
+  @Override
+  public String getKeySpace() {
+    return environment.getConfiguration().getKeySpace();
+  }
+
+  @Override
+  public int getPort() {
+    return environment.getConfiguration().getPort();
+  }
+
+  @Override
+  public boolean isConnected() {
+    return !environment.getCluster().isClosed();
+  }
+
+  @Override
+  public AtreusSession openSession() {
+    return new AtreusSessionImpl(environment, environment.getCluster().newSession());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

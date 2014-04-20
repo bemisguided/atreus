@@ -21,75 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types;
+package org.atreus.core.impl;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-import org.atreus.impl.AtreusEnvironment;
-import org.reflections.Reflections;
+import org.atreus.core.BaseCassandraTests;
+import org.atreus.core.impl.entities.tests.TestEntity1;
+import org.atreus.core.impl.entities.tests.TestEntity2;
+import org.junit.Assert;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Registry of Type Accessors.
+ * Unit tests for the Atreus Session impl.
  *
  * @author Martin Crawford
  */
-public class TypeManager {
+public class AtreusSessionImplTests extends BaseCassandraTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImplTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  public TypeManager(AtreusEnvironment environment) {
-    this.environment = environment;
-    scanPath("org.atreus.impl.types");
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
-  }
+  @Test
+  public void testSaveFind() {
+    executeCQL("CREATE TABLE default.TestEntity2 (id text, field1 text, field2 int, PRIMARY KEY(id))");
+    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
-    for (Class<?> key : registry.keySet()) {
-      if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
-      }
-    }
-    return null;
-  }
+    TestEntity2 testEntity = new TestEntity2();
+    testEntity.setId("1234567");
+    testEntity.setField1("field1Value");
+    testEntity.setField2(24321);
 
-  public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
-    for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
-      }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
+    getSession().save(testEntity);
+
+    TestEntity2 otherEntity = getSession().findByKey(TestEntity2.class, "1234567");
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertEquals("1234567", otherEntity.getId());
+    Assert.assertEquals("field1Value", otherEntity.getField1());
+    Assert.assertEquals(24321, (int) otherEntity.getField2());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

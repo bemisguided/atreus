@@ -25,8 +25,8 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.types.AtreusType;
-import org.atreus.core.types.AtreusTypeAccessor;
+import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusTypeAccessor;
 
 /**
  * Long Type Accessor.

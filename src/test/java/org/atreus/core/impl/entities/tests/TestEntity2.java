@@ -21,22 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.core.impl.entities.tests;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.impl.util.ByteUtils;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.AtreusFieldType;
+import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.impl.types.cql.LongTypeAccessor;
 
 /**
- * Integer Type Accessor.
+ * Test Entity 2.
  *
  * @author Martin Crawford
  */
-@AtreusType(Short.class)
-public class ShortTypeAccessor extends BaseByteBufferTypeAccessor<Short> {
+@AtreusEntity()
+public class TestEntity2 {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  @AtreusPrimaryKey
+  private String id;
+
+  @AtreusField
+  private String field1;
+
+  private Integer field2;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -44,18 +55,32 @@ public class ShortTypeAccessor extends BaseByteBufferTypeAccessor<Short> {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  @Override
-  protected Short toValue(byte[] bytes) {
-    return ByteUtils.toShort(bytes);
-  }
-
-  @Override
-  protected byte[] fromValue(Short value) {
-    return ByteUtils.toBytes(value);
-  }
-
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public String getField1() {
+    return field1;
+  }
+
+  public void setField1(String field1) {
+    this.field1 = field1;
+  }
+
+  public Integer getField2() {
+    return field2;
+  }
+
+  public void setField2(Integer field2) {
+    this.field2 = field2;
+  }
 
 }

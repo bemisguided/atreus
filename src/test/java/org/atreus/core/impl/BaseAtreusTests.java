@@ -21,75 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types;
+package org.atreus.core.impl;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.AtreusConfiguration;
 import org.atreus.impl.AtreusEnvironment;
-import org.reflections.Reflections;
+import org.cassandraunit.DataLoader;
+import org.cassandraunit.dataset.xml.ClassPathXmlDataSet;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Registry of Type Accessors.
+ * Base class for Cassandra required unit tests.
  *
  * @author Martin Crawford
  */
-public class TypeManager {
+public abstract class BaseAtreusTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
+  protected static final String CLUSTER_HOST_NAME = "localhost";
+  protected static final int CLUSTER_PORT = 9142;
+  protected static final String DEFAULT_KEY_SPACE = "default";
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
+  private AtreusEnvironment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TypeManager(AtreusEnvironment environment) {
-    this.environment = environment;
-    scanPath("org.atreus.impl.types");
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
-  }
-
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
-    for (Class<?> key : registry.keySet()) {
-      if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
-      }
-    }
-    return null;
-  }
-
-  public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
-    for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
-      }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
+  @Before
+  public void before() throws Exception {
+    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    environment = new AtreusEnvironment(configuration);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -98,4 +65,11 @@ public class TypeManager {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  protected AtreusEnvironment getEnvironment() {
+    return environment;
+  }
+
+  protected void setEnvironment(AtreusEnvironment environment) {
+    this.environment = environment;
+  }
+}

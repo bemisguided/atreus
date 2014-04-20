@@ -21,20 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.util;
+package org.atreus.core.ext;
 
-public class AssertUtils {
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.entities.AtreusManagedField;
 
-  public static void hasText(String value, String message) {
-    if (value == null || value.trim().length() < 1) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+import java.util.Collection;
 
-  public static void notNull(Object value, String message) {
-    if (value == null) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+/**
+ * Interface for a strategy to configure managed entities.
+ *
+ * @author Martin Crawford
+ */
+public interface AtreusEntityStrategy {
+
+  public Collection<Class<?>> findEntities(String path);
+
+  public boolean isPrimaryKey(AtreusManagedField managedField);
+
+  public void processEntity(AtreusManagedEntity managedEntity);
+
+  public void processField(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
+
+  public void processPrimaryKey(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
 
 }

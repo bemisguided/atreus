@@ -21,26 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.types;
+package org.atreus.core.ext.entities;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Annotation indicates an Type Accessor to be managed by Atreus.
+ * Interface for a managed entity.
  *
  * @author Martin Crawford
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface AtreusType {
+public interface AtreusManagedEntity {
 
-  /**
-   * Class of the type supported by the Type Accessor.
-   * @return
-   */
-  public Class<?> value();
+  public String getName();
+
+  public void setName(String name);
+
+  public Class<?> getEntityType();
+
+  public String getKeySpace();
+
+  public void setKeySpace(String keySpace);
+
+  public String getTable();
+
+  public void setTable(String table);
+
+  public List<AtreusManagedField> getPrimaryKey();
+
+  public Set<AtreusManagedField> getFields();
 
 }

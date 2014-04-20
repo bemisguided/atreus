@@ -21,20 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.util;
+package org.atreus.core.ext.entities;
 
-public class AssertUtils {
+import org.atreus.core.ext.AtreusTypeAccessor;
 
-  public static void hasText(String value, String message) {
-    if (value == null || value.trim().length() < 1) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+import java.lang.reflect.Field;
 
-  public static void notNull(Object value, String message) {
-    if (value == null) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+/**
+ * Interface for a managed field.
+ *
+ * @author Martin Crawford
+ */
+public interface AtreusManagedField {
+
+  public String getColumn();
+
+  public void setColumn(String column);
+
+  public Field getJavaField();
+
+  public AtreusTypeAccessor getTypeAccessor();
+
+  public void setTypeAccessor(AtreusTypeAccessor typeAccessor);
 
 }

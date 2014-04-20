@@ -21,75 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types;
+package org.atreus.core;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-import org.atreus.impl.AtreusEnvironment;
-import org.reflections.Reflections;
+import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.impl.entities.AtreusAnnotationEntityStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Registry of Type Accessors.
+ * Atreus Configuration.
  *
  * @author Martin Crawford
  */
-public class TypeManager {
+public class AtreusConfiguration {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusConfiguration.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
+  private boolean defaultBatchWriting = true;
+  private String[] hosts;
+  private String keySpace;
+  private int port;
+  private AtreusEntityStrategy[] entityStrategies = new AtreusEntityStrategy[]{new AtreusAnnotationEntityStrategy()};
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TypeManager(AtreusEnvironment environment) {
-    this.environment = environment;
-    scanPath("org.atreus.impl.types");
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
+  public AtreusConfiguration(String host, int port, String keySpace) {
+    this.hosts = new String[]{host};
+    this.keySpace = keySpace;
+    this.port = port;
   }
 
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
-    for (Class<?> key : registry.keySet()) {
-      if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
-      }
-    }
-    return null;
-  }
-
-  public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
-    for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
-      }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
+  public AtreusConfiguration(String[] hosts, int port, String keySpace) {
+    this.hosts = hosts;
+    this.keySpace = keySpace;
+    this.port = port;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -98,4 +69,32 @@ public class TypeManager {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  public boolean isDefaultBatchWriting() {
+    return defaultBatchWriting;
+  }
+
+  public void setDefaultBatchWriting(boolean defaultBatchWriting) {
+    this.defaultBatchWriting = defaultBatchWriting;
+  }
+
+  public AtreusEntityStrategy[] getEntityStrategies() {
+    return entityStrategies;
+  }
+
+  public void setEntityStrategies(AtreusEntityStrategy[] entityStrategies) {
+    this.entityStrategies = entityStrategies;
+  }
+
+  public String[] getHosts() {
+    return hosts;
+  }
+
+  public String getKeySpace() {
+    return keySpace;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+}

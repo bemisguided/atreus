@@ -21,37 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.core.impl.entities.tests;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.AtreusFieldType;
+import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.impl.types.cql.LongTypeAccessor;
 
 /**
- * Managed Entity bean.
+ * Test Entity 1.
  *
  * @author Martin Crawford
  */
-public class ManagedEntity {
+@AtreusEntity()
+public class TestEntity1 {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntity.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> entityClass;
+  @AtreusPrimaryKey
+  private String primaryKey;
 
-  private String name;
+  @AtreusField
+  private String field1;
 
-  private String keySpaceName;
+  private Integer field2;
 
-  private String tableName;
+  private transient String field3;
 
-  private ManagedField[] primaryKey;
-
-  private ManagedField[] fields;
+  @AtreusField(value = "field4field")
+  @AtreusFieldType(LongTypeAccessor.class)
+  private Integer field4;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -63,52 +65,43 @@ public class ManagedEntity {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Class<?> getEntityClass() {
-    return entityClass;
-  }
-
-  public void setEntityClass(Class<?> entityClass) {
-    this.entityClass = entityClass;
-  }
-
-  public String getKeySpaceName() {
-    return keySpaceName;
-  }
-
-  public void setKeySpaceName(String keySpaceName) {
-    this.keySpaceName = keySpaceName;
-  }
-
-  public String getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  public ManagedField[] getPrimaryKey() {
+  public String getPrimaryKey() {
     return primaryKey;
   }
 
-  public void setPrimaryKey(ManagedField[] primaryKey) {
+  public void setPrimaryKey(String primaryKey) {
     this.primaryKey = primaryKey;
   }
 
-  public ManagedField[] getFields() {
-    return fields;
+  public String getField1() {
+    return field1;
   }
 
-  public void setFields(ManagedField[] fields) {
-    this.fields = fields;
+  public void setField1(String field1) {
+    this.field1 = field1;
   }
 
+  public int getField2() {
+    return field2;
+  }
+
+  public void setField2(int field2) {
+    this.field2 = field2;
+  }
+
+  public String getField3() {
+    return field3;
+  }
+
+  public void setField3(String field3) {
+    this.field3 = field3;
+  }
+
+  public Integer getField4() {
+    return field4;
+  }
+
+  public void setField4(Integer field4) {
+    this.field4 = field4;
+  }
 }

@@ -21,29 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.queries;
+package org.atreus.impl.entities;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import java.io.Serializable;
 
 /**
- * Helper class to build CQL queries.
+ * Helper class to bind data to and from Cassandra rows and statements.
  *
  * @author Martin Crawford
  */
-public class QueryHelper {
+public class BindingHelper {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(QueryHelper.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BindingHelper.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -51,49 +49,49 @@ public class QueryHelper {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static RegularStatement insertEntity(AtreusManagedEntity managedEntity) {
-    Insert insert = insertInto(managedEntity.getKeySpace(), managedEntity.getTable());
+  public static void bindToEntity(AtreusManagedEntity managedEntity, Object entity, Row row) {
     for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      insert.value(columnName, bindMarker(columnName));
+      bindToField(managedField, entity, row);
     }
     for (AtreusManagedField managedField : managedEntity.getFields()) {
-      String columnName = managedField.getColumn();
-      insert.value(columnName, bindMarker(columnName));
+      bindToField(managedField, entity, row);
     }
-    return insert;
   }
 
-  public static RegularStatement selectEntity(AtreusManagedEntity managedEntity) {
-    Select select = select().all().from(managedEntity.getKeySpace(), managedEntity.getTable());
-    Select.Where where = null;
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      if (where == null) {
-        where = select.where(eq(columnName, bindMarker(columnName)));
-        continue;
-      }
-      where.and(eq(columnName, bindMarker(columnName)));
+  public static void bindToField(AtreusManagedField managedField, Object entity, Row row) {
+    Object value = managedField.getTypeAccessor().get(row, managedField.getColumn());
+    try {
+      managedField.getJavaField().set(entity, value);
     }
-    return select;
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public static RegularStatement updateEntity(AtreusManagedEntity managedEntity) {
-    Update update = update(managedEntity.getKeySpace(), managedEntity.getTable());
-    Update.Where where = null;
+  public static void bindFromPrimaryKeys(AtreusManagedEntity managedEntity, BoundStatement boundStatement, Serializable... primaryKeys) {
+    int index = 0;
     for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      if (where == null) {
-        where = update.where(eq(columnName, bindMarker(columnName)));
-        continue;
-      }
-      where.and(eq(columnName, bindMarker(columnName)));
+      managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), primaryKeys[index]);
+    }
+  }
+
+  public static void bindFromEntity(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
+    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
+      bindFromField(managedField, entity, boundStatement);
     }
     for (AtreusManagedField managedField : managedEntity.getFields()) {
-      String columnName = managedField.getColumn();
-      where.with(set(columnName, bindMarker(columnName)));
+      bindFromField(managedField, entity, boundStatement);
     }
-    return update;
+  }
+
+  public static void bindFromField(AtreusManagedField managedField, Object object, BoundStatement boundStatement) {
+    try {
+      Object value = managedField.getJavaField().get(object);
+      managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -27,11 +27,9 @@ import java.io.Serializable;
 
 public interface AtreusSession {
 
-  public <T> T findByKey(Class<T> type, Serializable... keys);
+  public <T> T findByKey(Class<T> entityType, Serializable... primaryKeys);
 
-  public Object findByKey(Serializable... keys);
-
-  public void save(Object object);
+  public void save(Object entity);
 
   public void close();
 

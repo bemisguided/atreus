@@ -1,7 +1,32 @@
+/**
+ * The MIT License
+ *
+ * Copyright (c) 2014 Martin Crawford and contributors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.atreus.core.impl.queries;
 
-import org.atreus.impl.entities.ManagedEntity;
-import org.atreus.impl.entities.ManagedField;
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.impl.entities.ManagedEntityImpl;
+import org.atreus.impl.entities.ManagedFieldImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,54 +53,63 @@ public class QueryHelperTests {
 
   @Test
   public void testInsert() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testInsert");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testInsert");
+    managedEntity.getPrimaryKey().add(buildField("id"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2);", QueryHelper.insertEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testInsertWithCompositeKey() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testInsertWithCompositeKey");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id1"), buildField("id2")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testInsertWithCompositeKey");
+    managedEntity.getPrimaryKey().add(buildField("id1"));
+    managedEntity.getPrimaryKey().add(buildField("id2"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("INSERT INTO queryhelpertests.testInsertWithCompositeKey(id1,id2,col1,col2) VALUES (:id1,:id2,:col1,:col2);", QueryHelper.insertEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testSelect() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testSelect");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testSelect");
+    managedEntity.getPrimaryKey().add(buildField("id"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("SELECT * FROM queryhelpertests.testSelect WHERE id=:id;", QueryHelper.selectEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testSelectWithCompositeKey() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testSelectWithCompositeKey");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id1"), buildField("id2")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testSelectWithCompositeKey");
+    managedEntity.getPrimaryKey().add(buildField("id1"));
+    managedEntity.getPrimaryKey().add(buildField("id2"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("SELECT * FROM queryhelpertests.testSelectWithCompositeKey WHERE id1=:id1 AND id2=:id2;", QueryHelper.selectEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testUpdate() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testUpdate");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testUpdate");
+    managedEntity.getPrimaryKey().add(buildField("id"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testUpdateWithCompositeKey() {
-    ManagedEntity managedEntity = buildEntity("QueryHelperTests", "testUpdate");
-    managedEntity.setPrimaryKey(new ManagedField[]{buildField("id1"), buildField("id2")});
-    managedEntity.setFields(new ManagedField[]{buildField("col1"), buildField("col2")});
+    AtreusManagedEntity managedEntity = buildEntity("QueryHelperTests", "testUpdate");
+    managedEntity.getPrimaryKey().add(buildField("id1"));
+    managedEntity.getPrimaryKey().add(buildField("id2"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id1=:id1 AND id2=:id2;", QueryHelper.updateEntity(managedEntity).getQueryString());
   }
@@ -84,16 +118,16 @@ public class QueryHelperTests {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private ManagedEntity buildEntity(String keySpaceName, String tableName) {
-    ManagedEntity managedEntity = new ManagedEntity();
-    managedEntity.setKeySpaceName(keySpaceName);
-    managedEntity.setTableName(tableName);
+  private AtreusManagedEntity buildEntity(String keySpaceName, String tableName) {
+    AtreusManagedEntity managedEntity = new ManagedEntityImpl();
+    managedEntity.setKeySpace(keySpaceName);
+    managedEntity.setTable(tableName);
     return managedEntity;
   }
 
-  private ManagedField buildField(String columnName) {
-    ManagedField managedField = new ManagedField();
-    managedField.setColumnName(columnName);
+  private AtreusManagedField buildField(String columnName) {
+    AtreusManagedField managedField = new ManagedFieldImpl();
+    managedField.setColumn(columnName);
     return managedField;
   }
 

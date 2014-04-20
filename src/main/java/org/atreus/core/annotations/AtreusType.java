@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.entities;
+package org.atreus.core.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,33 +29,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicates an entity to be managed by Atreus.
+ * Annotation indicates an Type Accessor to be managed by Atreus.
  *
  * @author Martin Crawford
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface AtreusEntity {
+public @interface AtreusType {
 
   /**
-   * Sets the table name for this managed entity. Default name is the class name of the managed entity.
+   * Class of the type supported by the Type Accessor.
    *
    * @return
    */
-  public String table();
-
-  /**
-   * Sets the key space for this managed entity. Default is the keyspace enabled during configuration of Atreus.
-   *
-   * @return
-   */
-  public String keySpace();
-
-  /**
-   * Sets the name of this managed entity. Default value is the class name of the manged entity.
-   *
-   * @return
-   */
-  public String value();
+  public Class<?> value();
 
 }

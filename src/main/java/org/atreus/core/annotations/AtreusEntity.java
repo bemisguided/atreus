@@ -21,9 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.entities;
-
-import org.atreus.core.types.AtreusTypeAccessor;
+package org.atreus.core.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -31,33 +29,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicates a field member is to be used as a primary key for the managed entity by Atreus.
+ * Annotation indicates an entity to be managed by Atreus.
  *
  * @author Martin Crawford
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface AtreusPrimaryKey {
+@Target(ElementType.TYPE)
+public @interface AtreusEntity {
 
   /**
-   * Sets the column name of this primary key field. Default is the field name.
+   * Sets the table name for this managed entity. Default name is the class name of the managed entity.
    *
    * @return
    */
-  public String value();
+  public String table() default "";
 
   /**
-   * Sets the order of this primary key applicable for composite primary keys. Default is zero.
+   * Sets the key space for this managed entity. Default is the keyspace enabled during configuration of Atreus.
    *
    * @return
    */
-  public int order() default 0;
+  public String keySpace() default "";
 
   /**
-   * Sets the type accessor for this primary key field. Default is based on the type of the field itself.
+   * Sets the name of this managed entity. Default value is the class name of the manged entity.
    *
    * @return
    */
-  public Class<AtreusTypeAccessor> type();
+  public String value() default "";
 
 }

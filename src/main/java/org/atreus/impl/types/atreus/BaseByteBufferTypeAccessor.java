@@ -25,9 +25,8 @@ package org.atreus.impl.types.atreus;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.types.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeAccessor;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**

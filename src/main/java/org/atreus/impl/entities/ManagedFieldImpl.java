@@ -21,75 +21,74 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types;
+package org.atreus.impl.entities;
 
-import org.atreus.core.annotations.AtreusType;
 import org.atreus.core.ext.AtreusTypeAccessor;
-import org.atreus.impl.AtreusEnvironment;
-import org.reflections.Reflections;
+import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Field;
 
 /**
- * Registry of Type Accessors.
+ * Managed Field bean.
  *
  * @author Martin Crawford
  */
-public class TypeManager {
+public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
+  private String column;
+
+  private Field javaField;
+
+  private AtreusTypeAccessor typeAccessor;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TypeManager(AtreusEnvironment environment) {
-    this.environment = environment;
-    scanPath("org.atreus.impl.types");
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
+
+  @Override
+  public int compareTo(ManagedFieldImpl o) {
+    if (column == null && o.column == null) {
+      return 0;
+    }
+    if (column == null) {
+      return -1;
+    }
+    if (o.column == null) {
+      return 1;
+    }
+    return column.compareTo(o.column);
   }
 
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
-    for (Class<?> key : registry.keySet()) {
-      if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
-      }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-    return null;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    ManagedFieldImpl that = (ManagedFieldImpl) o;
+
+    if (column != null ? !column.equals(that.column) : that.column != null) {
+      return false;
+    }
+
+    return true;
   }
 
-  public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
-    for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
-      }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-    }
+  @Override
+  public int hashCode() {
+    return column != null ? column.hashCode() : 0;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -97,5 +96,34 @@ public class TypeManager {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public String getColumn() {
+    return column;
+  }
+
+  @Override
+  public void setColumn(String column) {
+    this.column = column;
+  }
+
+  @Override
+  public Field getJavaField() {
+    return javaField;
+  }
+
+  public void setJavaField(Field javaField) {
+    this.javaField = javaField;
+  }
+
+  @Override
+  public AtreusTypeAccessor getTypeAccessor() {
+    return typeAccessor;
+  }
+
+  @Override
+  public void setTypeAccessor(AtreusTypeAccessor typeAccessor) {
+    this.typeAccessor = typeAccessor;
+  }
 
 } // end of class

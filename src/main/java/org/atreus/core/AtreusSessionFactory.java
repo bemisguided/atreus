@@ -23,13 +23,18 @@
  */
 package org.atreus.core;
 
+/**
+ * Interface for an Atreus Session Factory.
+ *
+ * @author Martin Crawford
+ */
 public interface AtreusSessionFactory {
 
   public void disconnect();
 
-  public String getHost();
+  public String[] getHosts();
 
-  public String getKeyspace();
+  public String getKeySpace();
 
   public int getPort();
 

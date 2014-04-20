@@ -15,7 +15,7 @@
     <org.reflections-version>0.9.9-RC1</org.reflections-version>
 		<cassandra-thrift-version>2.0.2</cassandra-thrift-version>
 		<org.apache.commons.pool-version>1.6</org.apache.commons.pool-version>
-		<cassandra-unit-version>2.0.2.0</cassandra-unit-version>
+		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
     <org.slf4j-version>1.7.6</org.slf4j-version>
 		<org.easymock-version>3.1</org.easymock-version>
 	</properties>
@@ -177,6 +177,7 @@
             <exclude>**/v0/**</exclude>
 						<exclude>*.markdown</exclude>
 						<exclude>*.gitignore</exclude>
+            <exclude>*.yaml</exclude>
 					</excludes>
 					<useDefaultExcludes>true</useDefaultExcludes>
 					<useDefaultMapping>true</useDefaultMapping>

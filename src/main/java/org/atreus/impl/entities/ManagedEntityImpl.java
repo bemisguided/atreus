@@ -21,53 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.types;
+package org.atreus.impl.entities;
 
-import org.atreus.core.impl.BaseAtreusTests;
-import org.atreus.impl.types.TypeManager;
-import org.atreus.impl.types.atreus.ShortTypeAccessor;
-import org.atreus.impl.types.cql.IntegerTypeAccessor;
-import org.atreus.impl.types.cql.LongTypeAccessor;
-import org.atreus.impl.types.cql.StringTypeAccessor;
-import org.junit.Test;
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+;
 
 /**
- * Unit tests for the Type Manager.
+ * Managed Entity bean.
  *
  * @author Martin Crawford
  */
-public class TypeManagerTests extends BaseAtreusTests {
+public class ManagedEntityImpl implements AtreusManagedEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManagerTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> entityType;
+
+  private String name;
+
+  private String keySpace;
+
+  private String table;
+
+  private List<AtreusManagedField> primaryKey = new ArrayList<>();
+
+  private Set<AtreusManagedField> fields = new TreeSet<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Test
-  public void testDefaultTypes() {
-    TypeManager typeManager = getEnvironment().getTypeManager();
-
-    Assert.notNull(typeManager.findType(String.class), "StringTypeAccessor expected");
-    Assert.isInstanceOf(StringTypeAccessor.class, typeManager.findType(String.class));
-
-    Assert.notNull(typeManager.findType(Integer.class), "IntegerTypeAccessor expected");
-    Assert.isInstanceOf(IntegerTypeAccessor.class, typeManager.findType(Integer.class));
-
-    Assert.notNull(typeManager.findType(Long.class), "LongTypeAccessor expected");
-    Assert.isInstanceOf(LongTypeAccessor.class, typeManager.findType(Long.class));
-
-    Assert.notNull(typeManager.findType(Short.class), "ShortTypeAccessor expected");
-    Assert.isInstanceOf(ShortTypeAccessor.class, typeManager.findType(Short.class));
-
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -75,4 +70,53 @@ public class TypeManagerTests extends BaseAtreusTests {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  @Override
+  public Class<?> getEntityType() {
+    return entityType;
+  }
+
+  public void setEntityType(Class<?> entityType) {
+    this.entityType = entityType;
+  }
+
+  @Override
+  public String getKeySpace() {
+    return keySpace;
+  }
+
+  @Override
+  public void setKeySpace(String keySpace) {
+    this.keySpace = keySpace;
+  }
+
+  @Override
+  public String getTable() {
+    return table;
+  }
+
+  @Override
+  public void setTable(String table) {
+    this.table = table;
+  }
+
+  @Override
+  public List<AtreusManagedField> getPrimaryKey() {
+    return primaryKey;
+  }
+
+  @Override
+  public Set<AtreusManagedField> getFields() {
+    return fields;
+  }
+
+}

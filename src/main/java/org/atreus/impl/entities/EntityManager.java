@@ -23,18 +23,21 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.entities.AtreusEntity;
-import org.atreus.core.entities.AtreusField;
-import org.atreus.core.entities.AtreusPrimaryKey;
-import org.reflections.Reflections;
+import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.types.TypeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
-
-import static org.atreus.impl.util.StringUtils.getValue;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Registry of managed entities.
@@ -49,69 +52,121 @@ public class EntityManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Map<Class<?>, ManagedEntity> registry = new HashMap<>();
+  private final AtreusEnvironment environment;
+  private Map<Class<?>, AtreusManagedEntity> classRegistry = new HashMap<>();
+  private Map<String, AtreusManagedEntity> nameRegistry = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public EntityManager(AtreusEnvironment environment) {
+    this.environment = environment;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addEntity(ManagedEntity managedEntity) {
-    registry.put(managedEntity.getEntityClass(), managedEntity);
+  public void addEntity(AtreusManagedEntity managedEntity) {
+    classRegistry.put(managedEntity.getEntityType(), managedEntity);
+    nameRegistry.put(managedEntity.getName(), managedEntity);
+  }
+
+  public AtreusManagedEntity getEntity(String name) {
+    return nameRegistry.get(name);
+  }
+
+  public AtreusManagedEntity getEntity(Class<?> entityType) {
+    return classRegistry.get(entityType);
   }
 
   public void scanPath(String path) {
-    Reflections reflections = new Reflections(path);
-    Set<Class<?>> entityTypes = reflections.getTypesAnnotatedWith(AtreusEntity.class);
-    for(Class<?> entityType : entityTypes) {
-      LOG.trace("Found Entity with @AtreusEntity classType={}", entityType.getCanonicalName());
+    LOG.trace("Scanning classpath path={}", path);
 
-      AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
-      ManagedEntity managedEntity = new ManagedEntity();
-      String className = entityType.getSimpleName();
-      managedEntity.setName(getValue(entityAnnotation.value(), className));
-      managedEntity.setTableName(getValue(entityAnnotation.table(), className));
-      managedEntity.setKeySpaceName(getValue(entityAnnotation.keySpace(), className));
+    AtreusEntityStrategy[] entityStrategies = environment.getConfiguration().getEntityStrategies();
 
-      List<ManagedField> primaryKeysList = new ArrayList<>();
-      List<ManagedField> managedFieldsList = new ArrayList<>();
-      for(Field field : entityType.getDeclaredFields()) {
-        String fieldName = field.getName();
-        LOG.trace("Found declared field name={}", fieldName);
-        // Skip transient field
-        if (Modifier.isTransient(field.getModifiers())) {
-          LOG.trace("Field is transient and being ignored name={}", fieldName);
-          continue;
-        }
-        ManagedField managedField = new ManagedField();
-        managedField.setColumnName(fieldName);
-        managedField.setJavaField(field);
-        AtreusPrimaryKey primaryKeyAnnotation = field.getAnnotation(AtreusPrimaryKey.class);
-        if (primaryKeyAnnotation != null) {
-          managedField.setColumnName(getValue(primaryKeyAnnotation.value(), fieldName));
-          // TODO type manager
-          primaryKeysList.add(primaryKeyAnnotation.order(), managedField);
-          continue;
-        }
-        AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
-        if (fieldAnnotation != null) {
-          managedField.setColumnName(getValue(fieldAnnotation.value(), fieldName));
-          // TODO type manager
-        }
-        managedFieldsList.add(managedField);
-        ManagedField[] primaryKeys = new ManagedField[primaryKeysList.size()];
-        primaryKeysList.toArray(primaryKeys);
-        ManagedField[] managedFields = new ManagedField[managedFieldsList.size()];
-        managedFieldsList.toArray(managedFields);
-        managedEntity.setPrimaryKey(primaryKeys);
-        managedEntity.setFields(managedFields);
-      }
-      addEntity(managedEntity);
+    // Resolve all candidate entity classes using the configured entity strategies
+    Set<Class<?>> entityTypes = new HashSet<>();
+    for (AtreusEntityStrategy entityStrategy : entityStrategies) {
+      LOG.trace("Scanning with AtreusEntityStrategy={}", entityStrategy.getClass());
+      entityTypes.addAll(entityStrategy.findEntities(path));
     }
+
+    // Iterate and process each found entity class
+    for (Class<?> entityType : entityTypes) {
+      doProcessEntity(entityType);
+    }
+
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void doProcessEntity(Class<?> entityType) {
+    LOG.trace("Processing Entity entityType={}", entityType.getCanonicalName());
+
+    AtreusConfiguration configuration = environment.getConfiguration();
+
+    // Create the managed entity with defaults
+    ManagedEntityImpl managedEntity = new ManagedEntityImpl();
+    String className = entityType.getSimpleName();
+    managedEntity.setEntityType(entityType);
+    managedEntity.setName(className);
+    managedEntity.setTable(className);
+    managedEntity.setKeySpace(configuration.getKeySpace());
+
+    // Iterate the entity strategies and process
+    for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
+      entityStrategy.processEntity(managedEntity);
+    }
+
+    for (Field javaField : entityType.getDeclaredFields()) {
+      doProcessField(managedEntity, javaField);
+    }
+
+    LOG.debug("Registered Entity name={} entityClass={}", managedEntity.getName(), managedEntity.getEntityType());
+    addEntity(managedEntity);
+  }
+
+
+  private void doProcessField(AtreusManagedEntity managedEntity, Field javaField) {
+    String fieldName = javaField.getName();
+    LOG.trace("Processing Field for Entity entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
+
+    AtreusConfiguration configuration = environment.getConfiguration();
+    TypeManager typeManager = environment.getTypeManager();
+
+    // Ignore transient field
+    if (Modifier.isTransient(javaField.getModifiers())) {
+      LOG.trace("Ignored as it is transient entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
+      return;
+    }
+
+    // Set the accessibility of the field to true
+    javaField.setAccessible(true);
+
+    // Create the managed field and set the defaults
+    ManagedFieldImpl managedField = new ManagedFieldImpl();
+    managedField.setColumn(fieldName);
+    managedField.setJavaField(javaField);
+    AtreusTypeAccessor typeAccessor = typeManager.findType(javaField.getType());
+    LOG.trace("{}", javaField.getType());
+    if (typeAccessor != null) {
+      LOG.trace("Resolved typeAccessor={}", typeAccessor.getClass());
+      managedField.setTypeAccessor(typeAccessor);
+    }
+
+    // Iterate the entity strategies and process
+    for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
+      if (entityStrategy.isPrimaryKey(managedField)) {
+        LOG.trace("Identified a primary key field entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
+        entityStrategy.processPrimaryKey(managedEntity, managedField);
+      }
+      else {
+        entityStrategy.processField(managedEntity, managedField);
+      }
+    }
+
+    // TODO validation: type accessor, primary keys are serializable
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

@@ -21,20 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.util;
+package org.atreus.core.annotations;
 
-public class AssertUtils {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  public static void hasText(String value, String message) {
-    if (value == null || value.trim().length() < 1) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+/**
+ * Annotation indicates a field member is to be used as a primary key for the managed entity by Atreus.
+ *
+ * @author Martin Crawford
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface AtreusPrimaryKey {
 
-  public static void notNull(Object value, String message) {
-    if (value == null) {
-      throw new IllegalArgumentException(message);
-    }
-  }
+  /**
+   * Sets the column name of this primary key field. Default is the field name.
+   *
+   * @return
+   */
+  public String value() default "";
+
+  /**
+   * Sets the order of this primary key applicable for composite primary keys. Default is zero.
+   *
+   * @return
+   */
+  public int order() default 0;
 
 }
