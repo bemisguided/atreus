@@ -13,8 +13,6 @@
 		<org.springframework.version>3.0.6.RELEASE</org.springframework.version>
     <com.datastax.cassandra.driver-version>2.0.1</com.datastax.cassandra.driver-version>
     <org.reflections-version>0.9.9-RC1</org.reflections-version>
-		<cassandra-thrift-version>2.0.2</cassandra-thrift-version>
-		<org.apache.commons.pool-version>1.6</org.apache.commons.pool-version>
 		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
     <org.slf4j-version>1.7.6</org.slf4j-version>
 		<org.easymock-version>3.1</org.easymock-version>
@@ -61,18 +59,6 @@
 			<version>${org.springframework.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<version>${org.apache.commons.pool-version}</version>
-		</dependency>
-
-    <dependency>
-      <groupId>org.apache.cassandra</groupId>
-      <artifactId>cassandra-thrift</artifactId>
-      <version>${cassandra-thrift-version}</version>
-    </dependency>
 
     <!-- Logging -->
     <dependency>
@@ -190,16 +176,5 @@
 
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>maven.scale7.org</id>
-			<name>Scale7 Maven Repo</name>
-			<url>https://github.com/s7/mvnrepo/raw/master</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>
