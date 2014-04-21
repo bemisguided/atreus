@@ -21,43 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.entities.tests;
+package org.atreus.impl.types.cql;
 
-import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.core.annotations.AtreusFieldType;
-import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.impl.types.cql.LongTypeAccessor;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusTypeAccessor;
+
+import java.util.Date;
+import java.util.UUID;
 
 /**
- * Test Entity 1.
+ * Date Type Accessor.
  *
  * @author Martin Crawford
  */
-@AtreusEntity()
-public class TestEntity1 {
+@AtreusType(Date.class)
+public class DateTypeAccessor implements AtreusTypeAccessor<Date> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  @AtreusPrimaryKey
-  private String primaryKey;
-
-  @AtreusField
-  private String field1;
-
-  private int field2;
-
-  private transient String field3;
-
-  @AtreusField(value = "field4field")
-  @AtreusFieldType(LongTypeAccessor.class)
-  private Integer field4;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public Date get(Row row, String colName) {
+    return row.getDate(colName);
+  }
+
+  @Override
+  public void set(BoundStatement boundStatement, String colName, Date value) {
+    boundStatement.setDate(colName, value);
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -65,43 +63,4 @@ public class TestEntity1 {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getPrimaryKey() {
-    return primaryKey;
-  }
-
-  public void setPrimaryKey(String primaryKey) {
-    this.primaryKey = primaryKey;
-  }
-
-  public String getField1() {
-    return field1;
-  }
-
-  public void setField1(String field1) {
-    this.field1 = field1;
-  }
-
-  public int getField2() {
-    return field2;
-  }
-
-  public void setField2(int field2) {
-    this.field2 = field2;
-  }
-
-  public String getField3() {
-    return field3;
-  }
-
-  public void setField3(String field3) {
-    this.field3 = field3;
-  }
-
-  public Integer getField4() {
-    return field4;
-  }
-
-  public void setField4(Integer field4) {
-    this.field4 = field4;
-  }
 }

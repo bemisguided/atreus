@@ -44,6 +44,7 @@ public class TypeManager {
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
+  private static final Map<Class<?>, Class<?>> REGISTRY_PRIMITIVE_WRAPPERS = new HashMap<>();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -51,6 +52,18 @@ public class TypeManager {
   private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  static {
+    REGISTRY_PRIMITIVE_WRAPPERS.put(boolean.class, Boolean.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(byte.class, Byte.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(char.class, Character.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(double.class, Double.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(float.class, Float.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(int.class, Integer.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(long.class, Long.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(short.class, Short.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(void.class, Void.class);
+  }
 
   public TypeManager(AtreusEnvironment environment) {
     this.environment = environment;
@@ -64,6 +77,12 @@ public class TypeManager {
   }
 
   public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
+    // Handle primitive types
+    if (typeClass.isPrimitive()) {
+      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
+    }
+
+    // Iterate the registry and find the first assignable class
     for (Class<?> key : registry.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
         return registry.get(key);

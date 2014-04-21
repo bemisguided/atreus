@@ -26,6 +26,9 @@ package org.atreus.impl.types.atreus;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.impl.util.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
@@ -38,6 +41,8 @@ public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccesso
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseByteBufferTypeAccessor.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -46,13 +51,27 @@ public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccesso
 
   @Override
   public T get(Row row, String colName) {
+    LOG.trace("get() = colName {}", colName);
     ByteBuffer byteBuffer = row.getBytes(colName);
-    return toValue(byteBuffer.array());
+    if (byteBuffer == null) {
+      return null;
+    }
+    byte[] bytes = byteBuffer.array();
+    LOG.trace("get() = bytes {}", ByteUtils.toHex(bytes));
+    return toValue(bytes);
   }
 
   @Override
   public void set(BoundStatement boundStatement, String colName, T value) {
-    ByteBuffer byteBuffer = ByteBuffer.wrap(fromValue(value));
+    LOG.trace("set() = colName {}", colName);
+    if (value == null) {
+      boundStatement.setBytes(colName, null);
+      return;
+    }
+    byte[] bytes = fromValue(value);
+    LOG.trace("set() = bytes {}", ByteUtils.toHex(bytes));
+    ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+    LOG.trace("set() post byte buffer {}", ByteUtils.toHex(byteBuffer.array()));
     boundStatement.setBytes(colName, byteBuffer);
   }
 
