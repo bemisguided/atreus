@@ -24,8 +24,7 @@
 package org.atreus.core.impl;
 
 import org.atreus.core.BaseCassandraTests;
-import org.atreus.core.impl.entities.tests.TestEntity1;
-import org.atreus.core.impl.entities.tests.TestEntity2;
+import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -50,22 +49,36 @@ public class AtreusSessionImplTests extends BaseCassandraTests {
 
   @Test
   public void testSaveFind() {
-    executeCQL("CREATE TABLE default.TestEntity2 (id text, field1 text, field2 int, PRIMARY KEY(id))");
+    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
+        "id text, " +
+        "aBigDecimal decimal, " +
+        "aBigInteger varint, " +
+        "aBoolean boolean, " +
+        "aDate timestamp, " +
+        "aDouble double, " +
+        "aFloat float, " +
+        "anInetAddress inet, " +
+        "aInteger int, " +
+        "aLong bigint, " +
+        "aShort blob, " +
+        "aString text, " +
+        "aUuid uuid, " +
+        "PRIMARY KEY(id))");
     getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
-    TestEntity2 testEntity = new TestEntity2();
+    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
     testEntity.setId("1234567");
-    testEntity.setField1("field1Value");
-    testEntity.setField2(24321);
+    testEntity.setaString("field1Value");
+    testEntity.setaShort((short) 321);
 
     getSession().save(testEntity);
 
-    TestEntity2 otherEntity = getSession().findByKey(TestEntity2.class, "1234567");
+    TypeConversionTestEntity otherEntity = getSession().findByKey(TypeConversionTestEntity.class, "1234567");
 
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals("1234567", otherEntity.getId());
-    Assert.assertEquals("field1Value", otherEntity.getField1());
-    Assert.assertEquals(24321, (int) otherEntity.getField2());
+    Assert.assertEquals("field1Value", otherEntity.getaString());
+    Assert.assertEquals(321, otherEntity.getaShort());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

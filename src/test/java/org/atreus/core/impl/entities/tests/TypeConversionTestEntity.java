@@ -24,18 +24,21 @@
 package org.atreus.core.impl.entities.tests;
 
 import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.impl.types.cql.LongTypeAccessor;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.util.Date;
+import java.util.UUID;
 
 /**
- * Test Entity 2.
+ * TypeConversionTestEntity.
  *
  * @author Martin Crawford
  */
 @AtreusEntity()
-public class TestEntity2 {
+public class TypeConversionTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -44,10 +47,29 @@ public class TestEntity2 {
   @AtreusPrimaryKey
   private String id;
 
-  @AtreusField
-  private String field1;
+  private BigDecimal aBigDecimal;
 
-  private Integer field2;
+  private BigInteger aBigInteger;
+
+  private boolean aBoolean;
+
+  private Date aDate;
+
+  private double aDouble;
+
+  private float aFloat;
+
+  private InetAddress anInetAddress;
+
+  private int aInteger;
+
+  private long aLong;
+
+  private short aShort;
+
+  private String aString;
+
+  private UUID aUuid;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -59,6 +81,7 @@ public class TestEntity2 {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
+
   public String getId() {
     return id;
   }
@@ -67,20 +90,100 @@ public class TestEntity2 {
     this.id = id;
   }
 
-  public String getField1() {
-    return field1;
+  public short getaShort() {
+    return aShort;
   }
 
-  public void setField1(String field1) {
-    this.field1 = field1;
+  public void setaShort(short aShort) {
+    this.aShort = aShort;
   }
 
-  public Integer getField2() {
-    return field2;
+  public BigDecimal getaBigDecimal() {
+    return aBigDecimal;
   }
 
-  public void setField2(Integer field2) {
-    this.field2 = field2;
+  public void setaBigDecimal(BigDecimal aBigDecimal) {
+    this.aBigDecimal = aBigDecimal;
+  }
+
+  public BigInteger getaBigInteger() {
+    return aBigInteger;
+  }
+
+  public void setaBigInteger(BigInteger aBigInteger) {
+    this.aBigInteger = aBigInteger;
+  }
+
+  public boolean isaBoolean() {
+    return aBoolean;
+  }
+
+  public void setaBoolean(boolean aBoolean) {
+    this.aBoolean = aBoolean;
+  }
+
+  public Date getaDate() {
+    return aDate;
+  }
+
+  public void setaDate(Date aDate) {
+    this.aDate = aDate;
+  }
+
+  public double getaDouble() {
+    return aDouble;
+  }
+
+  public void setaDouble(double aDouble) {
+    this.aDouble = aDouble;
+  }
+
+  public float getaFloat() {
+    return aFloat;
+  }
+
+  public void setaFloat(float aFloat) {
+    this.aFloat = aFloat;
+  }
+
+  public InetAddress getAnInetAddress() {
+    return anInetAddress;
+  }
+
+  public void setAnInetAddress(InetAddress anInetAddress) {
+    this.anInetAddress = anInetAddress;
+  }
+
+  public int getaInteger() {
+    return aInteger;
+  }
+
+  public void setaInteger(int aInteger) {
+    this.aInteger = aInteger;
+  }
+
+  public long getaLong() {
+    return aLong;
+  }
+
+  public void setaLong(long aLong) {
+    this.aLong = aLong;
+  }
+
+  public String getaString() {
+    return aString;
+  }
+
+  public void setaString(String aString) {
+    this.aString = aString;
+  }
+
+  public UUID getaUuid() {
+    return aUuid;
+  }
+
+  public void setaUuid(UUID aUuid) {
+    this.aUuid = aUuid;
   }
 
 }
