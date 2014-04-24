@@ -23,6 +23,7 @@
  */
 package org.atreus.core;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import org.atreus.core.ext.AtreusEntityStrategy;
 import org.atreus.impl.entities.AtreusAnnotationEntityStrategy;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class AtreusConfiguration {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private boolean defaultBatchWriting = true;
+  private ConsistencyLevel defaultConsistencyLevelRead = ConsistencyLevel.ONE;
+  private ConsistencyLevel defaultConsistencyLevelWrite = ConsistencyLevel.ONE;
   private String[] hosts;
   private String keySpace;
   private int port;
@@ -75,6 +78,22 @@ public class AtreusConfiguration {
 
   public void setDefaultBatchWriting(boolean defaultBatchWriting) {
     this.defaultBatchWriting = defaultBatchWriting;
+  }
+
+  public ConsistencyLevel getDefaultConsistencyLevelRead() {
+    return defaultConsistencyLevelRead;
+  }
+
+  public void setDefaultConsistencyLevelRead(ConsistencyLevel defaultConsistencyLevelRead) {
+    this.defaultConsistencyLevelRead = defaultConsistencyLevelRead;
+  }
+
+  public ConsistencyLevel getDefaultConsistencyLevelWrite() {
+    return defaultConsistencyLevelWrite;
+  }
+
+  public void setDefaultConsistencyLevelWrite(ConsistencyLevel defaultConsistencyLevelWrite) {
+    this.defaultConsistencyLevelWrite = defaultConsistencyLevelWrite;
   }
 
   public AtreusEntityStrategy[] getEntityStrategies() {

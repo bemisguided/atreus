@@ -21,66 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.impl.queries;
 
-import org.atreus.core.BaseCassandraTests;
-import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
-import org.junit.Assert;
-import org.junit.Test;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import org.atreus.impl.AtreusEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Unit tests for the Atreus Session impl.
+ * Manages queries and the caching of prepared statements.
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImplTests extends BaseCassandraTests {
+public class QueryManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImplTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(QueryManager.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final AtreusEnvironment environment;
+
+  private Map<String, PreparedStatement> preparedStatementMap = new HashMap<>();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public QueryManager(AtreusEnvironment environment) {
+    this.environment = environment;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testSaveFind() {
-    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
-        "id text, " +
-        "aBigDecimal decimal, " +
-        "aBigInteger varint, " +
-        "aBoolean boolean, " +
-        "aDate timestamp, " +
-        "aDouble double, " +
-        "aFloat float, " +
-        "anInetAddress inet, " +
-        "aInteger int, " +
-        "aLong bigint, " +
-        "aShort blob, " +
-        "aString text, " +
-        "aUuid uuid, " +
-        "PRIMARY KEY(id))");
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
+  public BoundStatement generate(RegularStatement cassandraStatement) {
+    return generate(cassandraStatement.getQueryString());
+  }
 
-    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
-    testEntity.setaString("field1Value");
-    testEntity.setaShort((short) 321);
+  public BoundStatement generate(String cqlQueryString) {
+    // TODO cql normalization
+    PreparedStatement preparedStatement = preparedStatementMap.get(cqlQueryString);
 
-    getSession().save(testEntity);
-    String primaryKey = testEntity.getId();
-
-    TypeConversionTestEntity otherEntity = getSession().findByKey(TypeConversionTestEntity.class, primaryKey);
-
-    Assert.assertNotNull("Expect a value", otherEntity);
-    Assert.assertEquals(primaryKey, otherEntity.getId());
-    Assert.assertEquals("field1Value", otherEntity.getaString());
-    Assert.assertEquals(321, otherEntity.getaShort());
+    if (preparedStatement == null) {
+      preparedStatement = environment.getCassandraSession().prepare(cqlQueryString);
+      preparedStatementMap.put(cqlQueryString, preparedStatement);
+    }
+    return new BoundStatement(preparedStatement);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

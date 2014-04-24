@@ -24,8 +24,10 @@
 package org.atreus.impl;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +45,11 @@ public class AtreusEnvironment {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Cluster cluster;
+  private Cluster cassandraCluster;
+  private Session cassandraSession;
   private final AtreusConfiguration configuration;
   private final EntityManager entityManager;
+  private final QueryManager queryManager;
   private final TypeManager typeManager;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -53,6 +57,7 @@ public class AtreusEnvironment {
   public AtreusEnvironment(AtreusConfiguration configuration) {
     this.configuration = configuration;
     this.entityManager = new EntityManager(this);
+    this.queryManager = new QueryManager(this);
     this.typeManager = new TypeManager(this);
   }
 
@@ -64,12 +69,20 @@ public class AtreusEnvironment {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public Cluster getCluster() {
-    return cluster;
+  public Cluster getCassandraCluster() {
+    return cassandraCluster;
   }
 
-  public void setCluster(Cluster cluster) {
-    this.cluster = cluster;
+  public void setCassandraCluster(Cluster cassandraCluster) {
+    this.cassandraCluster = cassandraCluster;
+  }
+
+  public Session getCassandraSession() {
+    return cassandraSession;
+  }
+
+  public void setCassandraSession(Session cassandraSession) {
+    this.cassandraSession = cassandraSession;
   }
 
   public AtreusConfiguration getConfiguration() {
@@ -78,6 +91,10 @@ public class AtreusEnvironment {
 
   public EntityManager getEntityManager() {
     return entityManager;
+  }
+
+  public QueryManager getQueryManager() {
+    return queryManager;
   }
 
   public TypeManager getTypeManager() {

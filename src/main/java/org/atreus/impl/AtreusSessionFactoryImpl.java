@@ -63,12 +63,13 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
         .withPort(environment.getConfiguration().getPort())
         .build();
     cluster.connect();
-    environment.setCluster(cluster);
+    environment.setCassandraCluster(cluster);
+    environment.setCassandraSession(cluster.newSession());
   }
 
   @Override
   public void disconnect() {
-    environment.getCluster().close();
+    environment.getCassandraCluster().close();
   }
 
   @Override
@@ -88,12 +89,12 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
   @Override
   public boolean isConnected() {
-    return !environment.getCluster().isClosed();
+    return !environment.getCassandraCluster().isClosed();
   }
 
   @Override
   public AtreusSession openSession() {
-    return new AtreusSessionImpl(environment, environment.getCluster().newSession());
+    return new AtreusSessionImpl(environment);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

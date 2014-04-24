@@ -23,7 +23,10 @@
  */
 package org.atreus.impl;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.impl.entities.BindingHelper;
@@ -48,13 +51,11 @@ public class AtreusSessionImpl implements AtreusSession {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
-  private final Session session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public AtreusSessionImpl(AtreusEnvironment environment, Session session) {
+  public AtreusSessionImpl(AtreusEnvironment environment) {
     this.environment = environment;
-    this.session = session;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -68,9 +69,9 @@ public class AtreusSessionImpl implements AtreusSession {
     }
     RegularStatement statement = QueryHelper.selectEntity(managedEntity);
     LOG.debug("CQL Statement: {}", statement.getQueryString());
-    BoundStatement boundStatement = new BoundStatement(session.prepare(statement));
+    BoundStatement boundStatement = environment.getQueryManager().generate(statement);
     BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
-    ResultSet resultSet = session.execute(boundStatement);
+    ResultSet resultSet = environment.getCassandraSession().execute(boundStatement);
     Row row = resultSet.one();
     if (row == null) {
       return null;
@@ -94,14 +95,14 @@ public class AtreusSessionImpl implements AtreusSession {
     }
     RegularStatement statement = QueryHelper.insertEntity(managedEntity);
     LOG.debug("CQL Statement: {}", statement.getQueryString());
-    BoundStatement boundStatement = new BoundStatement(session.prepare(statement));
+    BoundStatement boundStatement = environment.getQueryManager().generate(statement);
     BindingHelper.bindFromEntity(managedEntity, entity, boundStatement);
-    session.execute(boundStatement);
+    environment.getCassandraSession().execute(boundStatement);
   }
 
   @Override
   public void close() {
-    session.close();
+    // TODO Internal closing of the Atreus Session
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
