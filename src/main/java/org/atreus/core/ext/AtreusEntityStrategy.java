@@ -37,12 +37,14 @@ public interface AtreusEntityStrategy {
 
   public Collection<Class<?>> findEntities(String path);
 
-  public boolean isPrimaryKey(AtreusManagedField managedField);
+  public boolean isPrimaryKeyField(AtreusManagedField managedField);
+
+  public boolean isTtlField(AtreusManagedField managedField);
 
   public void processEntity(AtreusManagedEntity managedEntity);
 
   public void processField(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
 
-  public void processPrimaryKey(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
+  public void processPrimaryKeyField(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
 
 }

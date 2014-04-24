@@ -53,12 +53,10 @@ public class QueryHelper {
 
   public static RegularStatement insertEntity(AtreusManagedEntity managedEntity) {
     Insert insert = insertInto(managedEntity.getKeySpace(), managedEntity.getTable());
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      insert.value(columnName, bindMarker(columnName));
-    }
+    String columnName = managedEntity.getPrimaryKeyField().getColumn();
+    insert.value(columnName, bindMarker(columnName));
     for (AtreusManagedField managedField : managedEntity.getFields()) {
-      String columnName = managedField.getColumn();
+      columnName = managedField.getColumn();
       insert.value(columnName, bindMarker(columnName));
     }
     return insert;
@@ -66,31 +64,17 @@ public class QueryHelper {
 
   public static RegularStatement selectEntity(AtreusManagedEntity managedEntity) {
     Select select = select().all().from(managedEntity.getKeySpace(), managedEntity.getTable());
-    Select.Where where = null;
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      if (where == null) {
-        where = select.where(eq(columnName, bindMarker(columnName)));
-        continue;
-      }
-      where.and(eq(columnName, bindMarker(columnName)));
-    }
+    String columnName = managedEntity.getPrimaryKeyField().getColumn();
+    select.where(eq(columnName, bindMarker(columnName)));
     return select;
   }
 
   public static RegularStatement updateEntity(AtreusManagedEntity managedEntity) {
     Update update = update(managedEntity.getKeySpace(), managedEntity.getTable());
-    Update.Where where = null;
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      String columnName = managedField.getColumn();
-      if (where == null) {
-        where = update.where(eq(columnName, bindMarker(columnName)));
-        continue;
-      }
-      where.and(eq(columnName, bindMarker(columnName)));
-    }
+    String columnName = managedEntity.getPrimaryKeyField().getColumn();
+    Update.Where where = update.where(eq(columnName, bindMarker(columnName)));
     for (AtreusManagedField managedField : managedEntity.getFields()) {
-      String columnName = managedField.getColumn();
+      columnName = managedField.getColumn();
       where.with(set(columnName, bindMarker(columnName)));
     }
     return update;

@@ -28,8 +28,6 @@ import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -50,15 +48,17 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   private Class<?> entityType;
 
-  private String name;
+  private Set<AtreusManagedField> fields = new TreeSet<>();
 
   private String keySpace;
 
+  private String name;
+
+  private AtreusManagedField primaryKeyField;
+
   private String table;
 
-  private List<AtreusManagedField> primaryKey = new ArrayList<>();
-
-  private Set<AtreusManagedField> fields = new TreeSet<>();
+  private AtreusManagedField ttlField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -110,13 +110,25 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   @Override
-  public List<AtreusManagedField> getPrimaryKey() {
-    return primaryKey;
+  public Set<AtreusManagedField> getFields() {
+    return fields;
+  }
+
+  public AtreusManagedField getPrimaryKeyField() {
+    return primaryKeyField;
+  }
+
+  public void setPrimaryKeyField(AtreusManagedField primaryKeyField) {
+    this.primaryKeyField = primaryKeyField;
   }
 
   @Override
-  public Set<AtreusManagedField> getFields() {
-    return fields;
+  public AtreusManagedField getTtlField() {
+    return ttlField;
+  }
+
+  public void setTtlField(AtreusManagedField ttlField) {
+    this.ttlField = ttlField;
   }
 
 }

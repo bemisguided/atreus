@@ -71,11 +71,11 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
     Assert.assertEquals(TestEntity1.class, managedEntity.getEntityType());
 
     // Assert TestEntity1 primary key
-    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKey().get(0).getColumn());
-    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKey().get(0).getJavaField().getName());
-    Assert.assertTrue("accessibility should be true", managedEntity.getPrimaryKey().get(0).getJavaField().isAccessible());
-    Assert.assertNotNull("Expected not null TypeAccessor", managedEntity.getPrimaryKey().get(0).getTypeAccessor());
-    Assert.assertEquals(StringTypeAccessor.class, managedEntity.getPrimaryKey().get(0).getTypeAccessor().getClass());
+    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getColumn());
+    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getJavaField().getName());
+    Assert.assertTrue("accessibility should be true", managedEntity.getPrimaryKeyField().getJavaField().isAccessible());
+    Assert.assertNotNull("Expected not null TypeAccessor", managedEntity.getPrimaryKeyField().getTypeAccessor());
+    Assert.assertEquals(StringTypeAccessor.class, managedEntity.getPrimaryKeyField().getTypeAccessor().getClass());
 
     // Assert TestEntity1 fields
     Assert.assertEquals(3, managedEntity.getFields().size());

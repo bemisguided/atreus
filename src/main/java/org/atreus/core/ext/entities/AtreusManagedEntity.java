@@ -23,7 +23,6 @@
  */
 package org.atreus.core.ext.entities;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,22 +32,24 @@ import java.util.Set;
  */
 public interface AtreusManagedEntity {
 
-  public String getName();
-
-  public void setName(String name);
-
   public Class<?> getEntityType();
+
+  public Set<AtreusManagedField> getFields();
 
   public String getKeySpace();
 
   public void setKeySpace(String keySpace);
 
+  public String getName();
+
+  public void setName(String name);
+
+  public AtreusManagedField getPrimaryKeyField();
+
   public String getTable();
 
   public void setTable(String table);
 
-  public List<AtreusManagedField> getPrimaryKey();
-
-  public Set<AtreusManagedField> getFields();
+  public AtreusManagedField getTtlField();
 
 }

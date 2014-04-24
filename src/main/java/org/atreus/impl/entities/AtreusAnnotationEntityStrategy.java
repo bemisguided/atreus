@@ -23,10 +23,7 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.core.annotations.AtreusFieldType;
-import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.core.annotations.*;
 import org.atreus.core.ext.AtreusEntityStrategy;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.core.ext.entities.AtreusManagedField;
@@ -63,9 +60,15 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public boolean isPrimaryKey(AtreusManagedField managedField) {
+  public boolean isPrimaryKeyField(AtreusManagedField managedField) {
     Field javaField = managedField.getJavaField();
     return javaField.getAnnotation(AtreusPrimaryKey.class) != null;
+  }
+
+  @Override
+  public boolean isTtlField(AtreusManagedField managedField) {
+    Field javaField = managedField.getJavaField();
+    return javaField.getAnnotation(AtreusTtl.class) != null;
   }
 
   @Override
@@ -106,7 +109,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public void processPrimaryKey(AtreusManagedEntity managedEntity, AtreusManagedField managedField) {
+  public void processPrimaryKeyField(AtreusManagedEntity managedEntity, AtreusManagedField managedField) {
     Field javaField = managedField.getJavaField();
     AtreusPrimaryKey primaryKeyAnnotation = javaField.getAnnotation(AtreusPrimaryKey.class);
 
@@ -128,8 +131,6 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
         throw new RuntimeException(e);
       }
     }
-
-    managedEntity.getPrimaryKey().add(primaryKeyAnnotation.order(), managedField);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

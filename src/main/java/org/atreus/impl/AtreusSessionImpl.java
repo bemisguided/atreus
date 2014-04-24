@@ -60,7 +60,7 @@ public class AtreusSessionImpl implements AtreusSession {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public <T> T findByKey(Class<T> entityType, Serializable... primaryKeys) {
+  public <T> T findByKey(Class<T> entityType, Serializable primaryKey) {
     AssertUtils.notNull(entityType, "entityType is a required parameter");
     AtreusManagedEntity managedEntity = environment.getEntityManager().getEntity(entityType);
     if (managedEntity == null) {
@@ -69,7 +69,7 @@ public class AtreusSessionImpl implements AtreusSession {
     RegularStatement statement = QueryHelper.selectEntity(managedEntity);
     LOG.debug("CQL Statement: {}", statement.getQueryString());
     BoundStatement boundStatement = new BoundStatement(session.prepare(statement));
-    BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKeys);
+    BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
     ResultSet resultSet = session.execute(boundStatement);
     Row row = resultSet.one();
     if (row == null) {

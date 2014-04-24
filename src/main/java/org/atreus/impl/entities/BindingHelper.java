@@ -50,9 +50,7 @@ public class BindingHelper {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   public static void bindToEntity(AtreusManagedEntity managedEntity, Object entity, Row row) {
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      bindToField(managedField, entity, row);
-    }
+    bindToField(managedEntity.getPrimaryKeyField(), entity, row);
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       bindToField(managedField, entity, row);
     }
@@ -68,17 +66,13 @@ public class BindingHelper {
     }
   }
 
-  public static void bindFromPrimaryKeys(AtreusManagedEntity managedEntity, BoundStatement boundStatement, Serializable... primaryKeys) {
-    int index = 0;
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), primaryKeys[index]);
-    }
+  public static void bindFromPrimaryKeys(AtreusManagedEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
+    AtreusManagedField managedField = managedEntity.getPrimaryKeyField();
+    managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), primaryKey);
   }
 
   public static void bindFromEntity(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
-    for (AtreusManagedField managedField : managedEntity.getPrimaryKey()) {
-      bindFromField(managedField, entity, boundStatement);
-    }
+    bindFromField(managedEntity.getPrimaryKeyField(), entity, boundStatement);
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       bindFromField(managedField, entity, boundStatement);
     }

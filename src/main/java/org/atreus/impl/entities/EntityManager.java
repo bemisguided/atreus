@@ -127,7 +127,7 @@ public class EntityManager {
   }
 
 
-  private void doProcessField(AtreusManagedEntity managedEntity, Field javaField) {
+  private void doProcessField(ManagedEntityImpl managedEntity, Field javaField) {
     String fieldName = javaField.getName();
     LOG.trace("Processing Field for Entity entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
 
@@ -156,16 +156,21 @@ public class EntityManager {
 
     // Iterate the entity strategies and process
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
-      if (entityStrategy.isPrimaryKey(managedField)) {
+      if (entityStrategy.isPrimaryKeyField(managedField)) {
         LOG.trace("Identified a primary key field entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
-        entityStrategy.processPrimaryKey(managedEntity, managedField);
+        entityStrategy.processPrimaryKeyField(managedEntity, managedField);
+        managedEntity.setPrimaryKeyField(managedField);
+      }
+      else if (entityStrategy.isTtlField(managedField)) {
+        LOG.trace("Identified a ttl key field entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
+        managedEntity.setTtlField(managedField);
       }
       else {
         entityStrategy.processField(managedEntity, managedField);
       }
     }
 
-    // TODO validation: type accessor, primary keys are serializable
+    // TODO validation: type accessor, primary keys are serializable, validate ttl
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
