@@ -24,6 +24,7 @@
 package org.atreus.impl.types;
 
 import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
 import org.atreus.core.ext.AtreusTypeAccessor;
 import org.atreus.impl.AtreusEnvironment;
 import org.reflections.Reflections;
@@ -49,7 +50,8 @@ public class TypeManager {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusTypeAccessor<?>> registry = new HashMap<>();
+  private Map<Class<?>, AtreusTypeAccessor<?>> typeAccessorMap = new HashMap<>();
+  private Map<Class<?>, AtreusPrimaryKeyGenerator<?>> primaryKeyGeneratorMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -72,20 +74,39 @@ public class TypeManager {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addType(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
-    registry.put(typeClass, typeAccessor);
+  public void addPrimaryKeyGenerator(Class<?> typeClass, AtreusPrimaryKeyGenerator<?> primaryKeyGenerator) {
+    primaryKeyGeneratorMap.put(typeClass, primaryKeyGenerator);
   }
 
-  public AtreusTypeAccessor<?> findType(Class<?> typeClass) {
+  public void addTypeAccessor(Class<?> typeClass, AtreusTypeAccessor<?> typeAccessor) {
+    typeAccessorMap.put(typeClass, typeAccessor);
+  }
+
+  public AtreusPrimaryKeyGenerator<?> findPrimaryKeyGenerator(Class<?> typeClass) {
     // Handle primitive types
     if (typeClass.isPrimitive()) {
       typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
     }
 
     // Iterate the registry and find the first assignable class
-    for (Class<?> key : registry.keySet()) {
+    for (Class<?> key : primaryKeyGeneratorMap.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
-        return registry.get(key);
+        return primaryKeyGeneratorMap.get(key);
+      }
+    }
+    return null;
+  }
+
+  public AtreusTypeAccessor<?> findTypeAccessor(Class<?> typeClass) {
+    // Handle primitive types
+    if (typeClass.isPrimitive()) {
+      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
+    }
+
+    // Iterate the registry and find the first assignable class
+    for (Class<?> key : typeAccessorMap.keySet()) {
+      if (key.isAssignableFrom(typeClass)) {
+        return typeAccessorMap.get(key);
       }
     }
     return null;
@@ -95,18 +116,12 @@ public class TypeManager {
     Reflections reflections = new Reflections(path);
     Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
     for (Class<?> clazz : classes) {
-      if (!AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
-        continue;
+      AtreusType annotation = clazz.getAnnotation(AtreusType.class);
+      if (AtreusTypeAccessor.class.isAssignableFrom(clazz)) {
+        registerTypeAccessor(clazz, annotation);
       }
-      try {
-        AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
-        AtreusType annotation = clazz.getAnnotation(AtreusType.class);
-        Class<?> typeClass = annotation.value();
-        LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
-        addType(typeClass, typeAccessor);
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
+      if (AtreusPrimaryKeyGenerator.class.isAssignableFrom(clazz)) {
+        registerPrimaryKeyGenerator(clazz, annotation);
       }
     }
   }
@@ -114,6 +129,30 @@ public class TypeManager {
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void registerPrimaryKeyGenerator(Class<?> clazz, AtreusType annotation) {
+    try {
+      AtreusPrimaryKeyGenerator<?> primaryKeyGenerator = (AtreusPrimaryKeyGenerator) clazz.newInstance();
+      Class<?> typeClass = annotation.value();
+      LOG.debug("Registered primaryKeyGenerator={} for typeClass={}", primaryKeyGenerator.getClass(), typeClass);
+      addPrimaryKeyGenerator(typeClass, primaryKeyGenerator);
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void registerTypeAccessor(Class<?> clazz, AtreusType annotation) {
+    try {
+      AtreusTypeAccessor<?> typeAccessor = (AtreusTypeAccessor) clazz.newInstance();
+      Class<?> typeClass = annotation.value();
+      LOG.debug("Registered typeAccessor={} for typeClass={}", typeAccessor.getClass(), typeClass);
+      addTypeAccessor(typeClass, typeAccessor);
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

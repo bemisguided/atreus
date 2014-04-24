@@ -72,25 +72,44 @@ public class BindingHelper {
   }
 
   public static void bindFromEntity(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
-    bindFromField(managedEntity.getPrimaryKeyField(), entity, boundStatement);
+    AtreusManagedField managedPrimaryKey = managedEntity.getPrimaryKeyField();
+    Object primaryKey = getField(managedPrimaryKey, entity);
+    if (primaryKey == null && managedEntity.getPrimaryKeyGenerator() != null) {
+      primaryKey = managedEntity.getPrimaryKeyGenerator().generate();
+      setField(managedPrimaryKey, entity, primaryKey);
+    }
+    bindFromField(managedPrimaryKey, entity, boundStatement);
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       bindFromField(managedField, entity, boundStatement);
     }
   }
 
-  public static void bindFromField(AtreusManagedField managedField, Object object, BoundStatement boundStatement) {
+  public static void bindFromField(AtreusManagedField managedField, Object entity, BoundStatement boundStatement) {
+    Object value = getField(managedField, entity);
+    managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), value);
+  }
+
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private static Object getField(AtreusManagedField managedField, Object entity) {
     try {
-      Object value = managedField.getJavaField().get(object);
-      managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), value);
+      return managedField.getJavaField().get(entity);
     }
     catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+  private static void setField(AtreusManagedField managedField, Object entity, Object value) {
+    try {
+      managedField.getJavaField().set(entity, value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

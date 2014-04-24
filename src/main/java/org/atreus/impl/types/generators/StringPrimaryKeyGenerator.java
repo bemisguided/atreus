@@ -21,52 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.types;
+package org.atreus.impl.types.generators;
 
-import org.atreus.core.impl.BaseAtreusTests;
-import org.atreus.impl.types.TypeManager;
-import org.atreus.impl.types.atreus.ShortTypeAccessor;
-import org.atreus.impl.types.cql.IntegerTypeAccessor;
-import org.atreus.impl.types.cql.LongTypeAccessor;
-import org.atreus.impl.types.cql.StringTypeAccessor;
-import org.junit.Test;
+import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
+
+import java.util.Random;
 
 /**
- * Unit tests for the Type Manager.
+ * String Primary Key Generator.
  *
  * @author Martin Crawford
  */
-public class TypeManagerTests extends BaseAtreusTests {
+@AtreusType(String.class)
+public class StringPrimaryKeyGenerator implements AtreusPrimaryKeyGenerator<String> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(TypeManagerTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(StringPrimaryKeyGenerator.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private static char[] symbols;
+
+  private final Random random = new Random();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  static {
+    StringBuilder tmp = new StringBuilder();
+    for (char ch = '0'; ch <= '9'; ++ch) {
+      tmp.append(ch);
+    }
+    for (char ch = 'a'; ch <= 'z'; ++ch) {
+      tmp.append(ch);
+    }
+    symbols = tmp.toString().toCharArray();
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testDefaultTypes() {
-    TypeManager typeManager = getEnvironment().getTypeManager();
-
-    Assert.notNull(typeManager.findTypeAccessor(String.class), "StringTypeAccessor expected");
-    Assert.isInstanceOf(StringTypeAccessor.class, typeManager.findTypeAccessor(String.class));
-
-    Assert.notNull(typeManager.findTypeAccessor(Integer.class), "IntegerTypeAccessor expected");
-    Assert.isInstanceOf(IntegerTypeAccessor.class, typeManager.findTypeAccessor(Integer.class));
-
-    Assert.notNull(typeManager.findTypeAccessor(Long.class), "LongTypeAccessor expected");
-    Assert.isInstanceOf(LongTypeAccessor.class, typeManager.findTypeAccessor(Long.class));
-
-    Assert.notNull(typeManager.findTypeAccessor(Short.class), "ShortTypeAccessor expected");
-    Assert.isInstanceOf(ShortTypeAccessor.class, typeManager.findTypeAccessor(Short.class));
-
+  @Override
+  public String generate() {
+    char[] buf = new char[10];
+    for (int idx = 0; idx < buf.length; ++idx) {
+      buf[idx] = symbols[random.nextInt(symbols.length)];
+    }
+    return new String(buf);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -25,6 +25,7 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
 import org.atreus.core.ext.AtreusTypeAccessor;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.impl.AtreusEnvironment;
@@ -147,7 +148,7 @@ public class EntityManager {
     ManagedFieldImpl managedField = new ManagedFieldImpl();
     managedField.setColumn(fieldName);
     managedField.setJavaField(javaField);
-    AtreusTypeAccessor typeAccessor = typeManager.findType(javaField.getType());
+    AtreusTypeAccessor typeAccessor = typeManager.findTypeAccessor(javaField.getType());
     LOG.trace("{}", javaField.getType());
     if (typeAccessor != null) {
       LOG.trace("Resolved typeAccessor={}", typeAccessor.getClass());
@@ -158,6 +159,10 @@ public class EntityManager {
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
       if (entityStrategy.isPrimaryKeyField(managedField)) {
         LOG.trace("Identified a primary key field entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
+        AtreusPrimaryKeyGenerator primaryKeyGenerator = typeManager.findPrimaryKeyGenerator(javaField.getType());
+        if (primaryKeyGenerator != null) {
+          managedEntity.setPrimaryKeyGenerator(primaryKeyGenerator);
+        }
         entityStrategy.processPrimaryKeyField(managedEntity, managedField);
         managedEntity.setPrimaryKeyField(managedField);
       }
@@ -170,7 +175,7 @@ public class EntityManager {
       }
     }
 
-    // TODO validation: type accessor, primary keys are serializable, validate ttl
+    // TODO validation: type accessor, primary keys & generator are serializable, validate ttl
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

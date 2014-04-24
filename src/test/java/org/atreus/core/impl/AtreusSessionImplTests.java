@@ -67,16 +67,16 @@ public class AtreusSessionImplTests extends BaseCassandraTests {
     getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
     TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
-    testEntity.setId("1234567");
     testEntity.setaString("field1Value");
     testEntity.setaShort((short) 321);
 
     getSession().save(testEntity);
+    String primaryKey = testEntity.getId();
 
-    TypeConversionTestEntity otherEntity = getSession().findByKey(TypeConversionTestEntity.class, "1234567");
+    TypeConversionTestEntity otherEntity = getSession().findByKey(TypeConversionTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect a value", otherEntity);
-    Assert.assertEquals("1234567", otherEntity.getId());
+    Assert.assertEquals(primaryKey, otherEntity.getId());
     Assert.assertEquals("field1Value", otherEntity.getaString());
     Assert.assertEquals(321, otherEntity.getaShort());
   }

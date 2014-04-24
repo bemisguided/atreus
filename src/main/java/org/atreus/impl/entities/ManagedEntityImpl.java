@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.entities;
 
+import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
@@ -55,6 +56,8 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   private String name;
 
   private AtreusManagedField primaryKeyField;
+
+  private AtreusPrimaryKeyGenerator primaryKeyGenerator;
 
   private String table;
 
@@ -120,6 +123,16 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   public void setPrimaryKeyField(AtreusManagedField primaryKeyField) {
     this.primaryKeyField = primaryKeyField;
+  }
+
+  @Override
+  public AtreusPrimaryKeyGenerator getPrimaryKeyGenerator() {
+    return primaryKeyGenerator;
+  }
+
+  @Override
+  public void setPrimaryKeyGenerator(AtreusPrimaryKeyGenerator primaryKeyGenerator) {
+    this.primaryKeyGenerator = primaryKeyGenerator;
   }
 
   @Override

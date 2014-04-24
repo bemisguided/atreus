@@ -21,41 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.entities;
+package org.atreus.core.ext;
 
-import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
-
-import java.util.Set;
+import java.io.Serializable;
 
 /**
- * Interface for a managed entity.
+ * Interface for an Atreus Primary Key Generator.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusPrimaryKeyGenerator<T extends Serializable> {
 
-  public Class<?> getEntityType();
-
-  public Set<AtreusManagedField> getFields();
-
-  public String getKeySpace();
-
-  public void setKeySpace(String keySpace);
-
-  public String getName();
-
-  public void setName(String name);
-
-  public AtreusManagedField getPrimaryKeyField();
-
-  public AtreusPrimaryKeyGenerator getPrimaryKeyGenerator();
-
-  public void setPrimaryKeyGenerator(AtreusPrimaryKeyGenerator<?> primaryKeyGenerator);
-
-  public String getTable();
-
-  public void setTable(String table);
-
-  public AtreusManagedField getTtlField();
+  public T generate();
 
 }
