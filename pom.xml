@@ -16,6 +16,7 @@
 		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
     <org.slf4j-version>1.7.6</org.slf4j-version>
 		<org.easymock-version>3.1</org.easymock-version>
+    <org.antlr-version>4.2.2</org.antlr-version>
 	</properties>
 
 	<dependencies>
@@ -59,6 +60,13 @@
 			<version>${org.springframework.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
+    <!-- ANTLR4 -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>${org.antlr-version}</version>
+    </dependency>
 
     <!-- Logging -->
     <dependency>
@@ -122,6 +130,21 @@
 				</configuration>
 				<version>2.7.2</version>
 			</plugin>
+
+      <!-- ANTLR4 -->
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.2.2</version>
+
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Code Coverage -->
       <plugin>
