@@ -24,20 +24,12 @@
 package org.atreus.core;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
-import org.atreus.core.impl.BaseAtreusTests;
-import org.atreus.impl.AtreusEnvironment;
-import org.atreus.impl.AtreusSessionImpl;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.PreparedStatement;
 
 /**
  * Base class for Cassandra required unit tests.
@@ -52,8 +44,6 @@ public abstract class BaseCassandraTests extends BaseAtreusTests {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusSession session;
-
   private static Cluster cluster;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -67,21 +57,6 @@ public abstract class BaseCassandraTests extends BaseAtreusTests {
     executeCQL("CREATE KEYSPACE " + DEFAULT_KEY_SPACE + " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
   }
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
-    setEnvironment(new AtreusEnvironment(configuration));
-    getEnvironment().setCassandraCluster(cluster);
-    getEnvironment().setCassandraSession(cluster.newSession());
-    session = new AtreusSessionImpl(getEnvironment());
-  }
-
-  @After
-  public void after() throws Exception {
-    session.close();
-    session = null;
-    setEnvironment(null);
-  }
 
   @AfterClass
   public static void afterClass() throws Exception {
@@ -97,8 +72,8 @@ public abstract class BaseCassandraTests extends BaseAtreusTests {
     cassandraSession.close();
   }
 
-  protected AtreusSession getSession() {
-    return session;
+  protected Cluster getCassandraCluster() {
+    return cluster;
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

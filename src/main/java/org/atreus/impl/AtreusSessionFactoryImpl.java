@@ -24,6 +24,7 @@
 package org.atreus.impl;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ConsistencyLevel;
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.AtreusSessionFactory;

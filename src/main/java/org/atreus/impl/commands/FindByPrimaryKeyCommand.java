@@ -21,64 +21,69 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.impl.commands;
 
-import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
-import org.junit.Assert;
-import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.AtreusSessionImpl;
+import org.atreus.impl.entities.BindingHelper;
+import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+
 /**
- * Unit tests for the Atreus Session impl.
+ * Find by primary key command.
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
+public class FindByPrimaryKeyCommand extends BaseCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImplTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(FindByPrimaryKeyCommand.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Serializable primaryKey;
+
+  private AtreusManagedEntity managedEntity;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public FindByPrimaryKeyCommand(AtreusEnvironment environment, AtreusSessionImpl session) {
+    super(environment, session);
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testSaveFind() {
-    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
-        "id text, " +
-        "aBigDecimal decimal, " +
-        "aBigInteger varint, " +
-        "aBoolean boolean, " +
-        "aDate timestamp, " +
-        "aDouble double, " +
-        "aFloat float, " +
-        "anInetAddress inet, " +
-        "aInteger int, " +
-        "aLong bigint, " +
-        "aShort blob, " +
-        "aString text, " +
-        "aUuid uuid, " +
-        "PRIMARY KEY(id))");
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
+  @Override
+  public void prepare() {
+    RegularStatement statement = QueryHelper.selectEntity(managedEntity);
+    setBoundStatement(getQueryManager().generate(statement));
+    BindingHelper.bindFromPrimaryKeys(managedEntity, getBoundStatement(), primaryKey);
+  }
 
-    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
-    testEntity.setaString("field1Value");
-    testEntity.setaShort((short) 321);
-
-    getSession().save(testEntity);
-    String primaryKey = testEntity.getId();
-
-    TypeConversionTestEntity otherEntity = getSession().findByPrimaryKey(TypeConversionTestEntity.class, primaryKey);
-
-    Assert.assertNotNull("Expect a value", otherEntity);
-    Assert.assertEquals(primaryKey, otherEntity.getId());
-    Assert.assertEquals("field1Value", otherEntity.getaString());
-    Assert.assertEquals(321, otherEntity.getaShort());
+  @Override
+  public Object execute() {
+    getBoundStatement().setConsistencyLevel(getSession().getReadConsistencyLevel());
+    ResultSet resultSet = getCassandraSession().execute(getBoundStatement());
+    Row row = resultSet.one();
+    if (row == null) {
+      return null;
+    }
+    try {
+      Object entity = managedEntity.getEntityType().newInstance();
+      BindingHelper.bindToEntity(managedEntity, entity, row);
+      return entity;
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -86,5 +91,21 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public Serializable getPrimaryKey() {
+    return primaryKey;
+  }
+
+  public void setPrimaryKey(Serializable primaryKey) {
+    this.primaryKey = primaryKey;
+  }
+
+  public AtreusManagedEntity getManagedEntity() {
+    return managedEntity;
+  }
+
+  public void setManagedEntity(AtreusManagedEntity managedEntity) {
+    this.managedEntity = managedEntity;
+  }
 
 } // end of class

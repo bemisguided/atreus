@@ -23,7 +23,7 @@
  */
 package org.atreus.core.impl.types;
 
-import org.atreus.core.impl.BaseAtreusTests;
+import org.atreus.core.BaseAtreusTests;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.types.atreus.ShortTypeAccessor;
 import org.atreus.impl.types.cql.IntegerTypeAccessor;

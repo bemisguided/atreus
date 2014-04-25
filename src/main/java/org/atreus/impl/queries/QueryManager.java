@@ -70,6 +70,7 @@ public class QueryManager {
       preparedStatement = environment.getCassandraSession().prepare(cqlQueryString);
       preparedStatementMap.put(cqlQueryString, preparedStatement);
     }
+    LOG.debug("CQL Statement: {}", preparedStatement.getQueryString());
     return new BoundStatement(preparedStatement);
   }
 

@@ -21,42 +21,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.core;
 
-import org.atreus.core.AtreusConfiguration;
-import org.atreus.impl.AtreusEnvironment;
-import org.cassandraunit.DataLoader;
-import org.cassandraunit.dataset.xml.ClassPathXmlDataSet;
-import org.junit.Before;
+import com.datastax.driver.core.ConsistencyLevel;
+import junit.framework.Assert;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Cassandra required unit tests.
+ * Unit tests for the Atreus Session Builder.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+public class AtreusSessionBuilderTests extends BaseCassandraTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionBuilderTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private AtreusEnvironment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
+  @Test
+  public void testBuildFactory() {
+    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    Assert.assertEquals(CLUSTER_HOST_NAME, sessionFactory.getHosts()[0]);
+    Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());
+    Assert.assertEquals(DEFAULT_KEY_SPACE, sessionFactory.getKeySpace());
+    Assert.assertTrue("Expected sessionFactory.isConnected to be true", sessionFactory.isConnected());
+  }
+
+  @Test
+  public void testBuildFactoryWithMultipleHosts() {
+    String[] hosts = new String[]{CLUSTER_HOST_NAME, "127.0.0.1"};
+    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(hosts, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    Assert.assertEquals(hosts, sessionFactory.getHosts());
+    Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());
+    Assert.assertEquals(DEFAULT_KEY_SPACE, sessionFactory.getKeySpace());
+    Assert.assertTrue("Expected sessionFactory.isConnected to be true", sessionFactory.isConnected());
+  }
+
+  @Test
+  public void testBuildFactoryWithConfiguration() {
     AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
-    environment = new AtreusEnvironment(configuration);
+    configuration.setDefaultBatchWriting(false);
+    configuration.setDefaultConsistencyLevelRead(ConsistencyLevel.EACH_QUORUM);
+    configuration.setDefaultConsistencyLevelWrite(ConsistencyLevel.QUORUM);
+    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(configuration);
+    Assert.assertEquals(CLUSTER_HOST_NAME, sessionFactory.getHosts()[0]);
+    Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());
+    Assert.assertEquals(DEFAULT_KEY_SPACE, sessionFactory.getKeySpace());
+    Assert.assertTrue("Expected sessionFactory.isConnected to be true", sessionFactory.isConnected());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -65,11 +84,4 @@ public abstract class BaseAtreusTests {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected AtreusEnvironment getEnvironment() {
-    return environment;
-  }
-
-  protected void setEnvironment(AtreusEnvironment environment) {
-    this.environment = environment;
-  }
-}
+} // end of class

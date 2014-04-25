@@ -23,11 +23,21 @@
  */
 package org.atreus.core;
 
+import com.datastax.driver.core.ConsistencyLevel;
+
 import java.io.Serializable;
 
 public interface AtreusSession {
 
-  public <T> T findByKey(Class<T> entityType, Serializable primaryKey);
+  public ConsistencyLevel getReadConsistencyLevel();
+
+  public void setReadConsistencyLevel(ConsistencyLevel consistencyLevel);
+
+  public ConsistencyLevel getWriteConsistencyLevel();
+
+  public void setWriteConsistencyLevel(ConsistencyLevel consistencyLevel);
+
+  public <T> T findByPrimaryKey(Class<T> entityType, Serializable primaryKey);
 
   public void save(Object entity);
 

@@ -21,64 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.impl.commands;
 
-import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
-import org.junit.Assert;
-import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
+import org.atreus.core.AtreusSession;
+import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.entities.BindingHelper;
+import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Unit tests for the Atreus Session impl.
+ * Save command.
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
+public class SaveCommand extends BaseCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImplTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(SaveCommand.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Object entity;
+
+  private AtreusManagedEntity managedEntity;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public SaveCommand(AtreusEnvironment environment, AtreusSession session) {
+    super(environment, session);
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testSaveFind() {
-    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
-        "id text, " +
-        "aBigDecimal decimal, " +
-        "aBigInteger varint, " +
-        "aBoolean boolean, " +
-        "aDate timestamp, " +
-        "aDouble double, " +
-        "aFloat float, " +
-        "anInetAddress inet, " +
-        "aInteger int, " +
-        "aLong bigint, " +
-        "aShort blob, " +
-        "aString text, " +
-        "aUuid uuid, " +
-        "PRIMARY KEY(id))");
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
+  @Override
+  public void prepare() {
+    RegularStatement statement = QueryHelper.insertEntity(managedEntity);
+    setBoundStatement(getQueryManager().generate(statement));
+    BindingHelper.bindFromEntity(managedEntity, entity, getBoundStatement());
+  }
 
-    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
-    testEntity.setaString("field1Value");
-    testEntity.setaShort((short) 321);
-
-    getSession().save(testEntity);
-    String primaryKey = testEntity.getId();
-
-    TypeConversionTestEntity otherEntity = getSession().findByPrimaryKey(TypeConversionTestEntity.class, primaryKey);
-
-    Assert.assertNotNull("Expect a value", otherEntity);
-    Assert.assertEquals(primaryKey, otherEntity.getId());
-    Assert.assertEquals("field1Value", otherEntity.getaString());
-    Assert.assertEquals(321, otherEntity.getaShort());
+  @Override
+  public Object execute() {
+    getBoundStatement().setConsistencyLevel(getSession().getWriteConsistencyLevel());
+    getEnvironment().getCassandraSession().execute(getBoundStatement());
+    return null;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -86,5 +76,21 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public Object getEntity() {
+    return entity;
+  }
+
+  public void setEntity(Object entity) {
+    this.entity = entity;
+  }
+
+  public AtreusManagedEntity getManagedEntity() {
+    return managedEntity;
+  }
+
+  public void setManagedEntity(AtreusManagedEntity managedEntity) {
+    this.managedEntity = managedEntity;
+  }
 
 } // end of class

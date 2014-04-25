@@ -21,64 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.core;
 
-import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
-import org.junit.Assert;
-import org.junit.Test;
+import org.atreus.impl.AtreusEnvironment;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Unit tests for the Atreus Session impl.
+ * Base class for Atreus without Cassandra unit tests.
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
+public abstract class BaseAtreusTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImplTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
+  protected static final String CLUSTER_HOST_NAME = "localhost";
+  protected static final int CLUSTER_PORT = 9142;
+  protected static final String DEFAULT_KEY_SPACE = "default";
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private AtreusEnvironment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testSaveFind() {
-    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
-        "id text, " +
-        "aBigDecimal decimal, " +
-        "aBigInteger varint, " +
-        "aBoolean boolean, " +
-        "aDate timestamp, " +
-        "aDouble double, " +
-        "aFloat float, " +
-        "anInetAddress inet, " +
-        "aInteger int, " +
-        "aLong bigint, " +
-        "aShort blob, " +
-        "aString text, " +
-        "aUuid uuid, " +
-        "PRIMARY KEY(id))");
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
-
-    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
-    testEntity.setaString("field1Value");
-    testEntity.setaShort((short) 321);
-
-    getSession().save(testEntity);
-    String primaryKey = testEntity.getId();
-
-    TypeConversionTestEntity otherEntity = getSession().findByPrimaryKey(TypeConversionTestEntity.class, primaryKey);
-
-    Assert.assertNotNull("Expect a value", otherEntity);
-    Assert.assertEquals(primaryKey, otherEntity.getId());
-    Assert.assertEquals("field1Value", otherEntity.getaString());
-    Assert.assertEquals(321, otherEntity.getaShort());
+  @Before
+  public void before() throws Exception {
+    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    environment = new AtreusEnvironment(configuration);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -87,4 +62,11 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  protected AtreusEnvironment getEnvironment() {
+    return environment;
+  }
+
+  protected void setEnvironment(AtreusEnvironment environment) {
+    this.environment = environment;
+  }
+}

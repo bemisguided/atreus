@@ -32,6 +32,17 @@ import org.atreus.impl.AtreusSessionFactoryImpl;
  */
 public class AtreusSessionFactoryBuilder {
 
+  // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  private AtreusSessionFactoryBuilder() {
+  }
+
+  // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
   /**
    * Builds a new Atreus Session Factory.
    *
