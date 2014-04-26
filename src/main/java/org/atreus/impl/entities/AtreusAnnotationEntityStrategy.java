@@ -121,6 +121,20 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
       managedField.setColumn(primaryKeyAnnotation.value());
     }
 
+    if (primaryKeyAnnotation.generated()) {
+      AtreusPrimaryKeyGenerator primaryKeyGeneratorAnnotation = javaField.getAnnotation(AtreusPrimaryKeyGenerator.class);
+      if (primaryKeyGeneratorAnnotation != null) {
+        try {
+          managedEntity.setPrimaryKeyGenerator(primaryKeyGeneratorAnnotation.value().newInstance());
+        }
+        catch (InstantiationException | IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    } else {
+      managedEntity.setPrimaryKeyGenerator(null);
+    }
+
     AtreusFieldType fieldTypeAnnotation = javaField.getAnnotation(AtreusFieldType.class);
 
     if (fieldTypeAnnotation != null) {
