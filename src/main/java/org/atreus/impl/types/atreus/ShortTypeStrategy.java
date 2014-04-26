@@ -21,22 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.types.atreus;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-
-import java.math.BigDecimal;
+import org.atreus.impl.util.ByteUtils;
 
 /**
- * BigDecimal Type Accessor.
+ * Integer Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(BigDecimal.class)
-public class BigDecimalTypeAccessor implements AtreusTypeAccessor<BigDecimal> {
+@AtreusType(Short.class)
+public class ShortTypeStrategy extends BaseByteBufferTypeStrategy<Short> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -46,17 +42,17 @@ public class BigDecimalTypeAccessor implements AtreusTypeAccessor<BigDecimal> {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public BigDecimal get(Row row, String colName) {
-    return row.getDecimal(colName);
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, BigDecimal value) {
-    boundStatement.setDecimal(colName, value);
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  @Override
+  protected Short toValue(byte[] bytes) {
+    return ByteUtils.toShort(bytes);
+  }
+
+  @Override
+  protected byte[] fromValue(Short value) {
+    return ByteUtils.toBytes(value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -26,17 +26,15 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-
-import java.net.InetAddress;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 /**
- * InetAddress Type Accessor.
+ * Long Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(InetAddress.class)
-public class InetAddressTypeAccessor implements AtreusTypeAccessor<InetAddress> {
+@AtreusType(Long.class)
+public class LongTypeStrategy implements AtreusTypeStrategy<Long> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,13 +45,13 @@ public class InetAddressTypeAccessor implements AtreusTypeAccessor<InetAddress> 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public InetAddress get(Row row, String colName) {
-    return row.getInet(colName);
+  public Long get(Row row, String colName) {
+    return row.getLong(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, InetAddress value) {
-    boundStatement.setInet(colName, value);
+  public void set(BoundStatement boundStatement, String colName, Long value) {
+    boundStatement.setLong(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

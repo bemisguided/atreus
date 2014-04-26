@@ -57,7 +57,7 @@ public class BindingHelper {
   }
 
   public static void bindToField(AtreusManagedField managedField, Object entity, Row row) {
-    Object value = managedField.getTypeAccessor().get(row, managedField.getColumn());
+    Object value = managedField.getTypeStrategy().get(row, managedField.getColumn());
     try {
       managedField.getJavaField().set(entity, value);
     }
@@ -68,7 +68,7 @@ public class BindingHelper {
 
   public static void bindFromPrimaryKeys(AtreusManagedEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
     AtreusManagedField managedField = managedEntity.getPrimaryKeyField();
-    managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), primaryKey);
+    managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), primaryKey);
   }
 
   public static void bindFromEntity(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
@@ -86,7 +86,7 @@ public class BindingHelper {
 
   public static void bindFromField(AtreusManagedField managedField, Object entity, BoundStatement boundStatement) {
     Object value = getField(managedField, entity);
-    managedField.getTypeAccessor().set(boundStatement, managedField.getColumn(), value);
+    managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

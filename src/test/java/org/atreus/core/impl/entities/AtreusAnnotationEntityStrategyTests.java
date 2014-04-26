@@ -28,9 +28,9 @@ import org.atreus.core.ext.entities.AtreusManagedField;
 import org.atreus.core.BaseAtreusTests;
 import org.atreus.core.impl.entities.tests.TestEntity1;
 import org.atreus.impl.entities.EntityManager;
-import org.atreus.impl.types.cql.IntegerTypeAccessor;
-import org.atreus.impl.types.cql.LongTypeAccessor;
-import org.atreus.impl.types.cql.StringTypeAccessor;
+import org.atreus.impl.types.cql.IntegerTypeStrategy;
+import org.atreus.impl.types.cql.LongTypeStrategy;
+import org.atreus.impl.types.cql.StringTypeStrategy;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -74,23 +74,23 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
     Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getColumn());
     Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getJavaField().getName());
     Assert.assertTrue("accessibility should be true", managedEntity.getPrimaryKeyField().getJavaField().isAccessible());
-    Assert.assertNotNull("Expected not null TypeAccessor", managedEntity.getPrimaryKeyField().getTypeAccessor());
-    Assert.assertEquals(StringTypeAccessor.class, managedEntity.getPrimaryKeyField().getTypeAccessor().getClass());
+    Assert.assertNotNull("Expected not null TypeAccessor", managedEntity.getPrimaryKeyField().getTypeStrategy());
+    Assert.assertEquals(StringTypeStrategy.class, managedEntity.getPrimaryKeyField().getTypeStrategy().getClass());
 
     // Assert TestEntity1 fields
     Assert.assertEquals(3, managedEntity.getFields().size());
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       if ("field1".equals(managedField.getColumn())) {
-        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeAccessor());
-        Assert.assertEquals(StringTypeAccessor.class, managedField.getTypeAccessor().getClass());
+        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeStrategy());
+        Assert.assertEquals(StringTypeStrategy.class, managedField.getTypeStrategy().getClass());
       }
       if ("field2".equals(managedField.getColumn())) {
-        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeAccessor());
-        Assert.assertEquals(IntegerTypeAccessor.class, managedField.getTypeAccessor().getClass());
+        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeStrategy());
+        Assert.assertEquals(IntegerTypeStrategy.class, managedField.getTypeStrategy().getClass());
       }
       if ("field4field".equals(managedField.getColumn())) {
-        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeAccessor());
-        Assert.assertEquals(LongTypeAccessor.class, managedField.getTypeAccessor().getClass());
+        Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeStrategy());
+        Assert.assertEquals(LongTypeStrategy.class, managedField.getTypeStrategy().getClass());
       }
     }
   }

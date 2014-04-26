@@ -26,17 +26,15 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
-
-import java.math.BigInteger;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 /**
- * BigInteger Type Accessor.
+ * String Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(BigInteger.class)
-public class BigIntegerTypeAccessor implements AtreusTypeAccessor<BigInteger> {
+@AtreusType(String.class)
+public class StringTypeStrategy implements AtreusTypeStrategy<String> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,13 +45,13 @@ public class BigIntegerTypeAccessor implements AtreusTypeAccessor<BigInteger> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public BigInteger get(Row row, String colName) {
-    return row.getVarint(colName);
+  public String get(Row row, String colName) {
+    return row.getString(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, BigInteger value) {
-    boundStatement.setVarint(colName, value);
+  public void set(BoundStatement boundStatement, String colName, String value) {
+    boundStatement.setString(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

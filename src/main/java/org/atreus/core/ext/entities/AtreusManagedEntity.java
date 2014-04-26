@@ -23,7 +23,7 @@
  */
 package org.atreus.core.ext.entities;
 
-import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 
 import java.util.Set;
 
@@ -48,9 +48,9 @@ public interface AtreusManagedEntity {
 
   public AtreusManagedField getPrimaryKeyField();
 
-  public AtreusPrimaryKeyGenerator getPrimaryKeyGenerator();
+  public AtreusPrimaryKeyStrategy getPrimaryKeyGenerator();
 
-  public void setPrimaryKeyGenerator(AtreusPrimaryKeyGenerator<?> primaryKeyGenerator);
+  public void setPrimaryKeyGenerator(AtreusPrimaryKeyStrategy<?> primaryKeyGenerator);
 
   public String getTable();
 

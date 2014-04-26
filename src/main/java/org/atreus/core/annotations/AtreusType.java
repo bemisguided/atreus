@@ -29,7 +29,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation indicates an Type Accessor to be managed by Atreus.
+ * Annotation indicates an Type Strategy to be managed by Atreus.
  *
  * @author Martin Crawford
  */
@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 public @interface AtreusType {
 
   /**
-   * Class of the type supported by the Type Accessor.
+   * Class of the type supported by the Type Strategy.
    *
    * @return
    */

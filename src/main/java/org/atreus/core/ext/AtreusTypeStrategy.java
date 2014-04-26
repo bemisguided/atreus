@@ -27,11 +27,11 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 
 /**
- * Interface for an Atreus Type Accessor.
+ * Interface for an Atreus Type Strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusTypeAccessor<T> {
+public interface AtreusTypeStrategy<T> {
 
   public T get(Row row, String colName);
 

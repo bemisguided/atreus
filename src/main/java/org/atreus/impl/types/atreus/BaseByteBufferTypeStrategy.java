@@ -21,26 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.generators;
+package org.atreus.impl.types.atreus;
 
-import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.utils.Bytes;
+import org.atreus.core.ext.AtreusTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
+import java.nio.ByteBuffer;
 
 /**
- * UUID Primary Key Generator.
+ * Base class for Type Strategy mapped by a byte array.
  *
  * @author Martin Crawford
  */
-@AtreusType(UUID.class)
-public class UuidPrimaryKeyGenerator implements AtreusPrimaryKeyGenerator<UUID> {
+public abstract class BaseByteBufferTypeStrategy<T> implements AtreusTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(UuidPrimaryKeyGenerator.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseByteBufferTypeStrategy.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -49,11 +50,31 @@ public class UuidPrimaryKeyGenerator implements AtreusPrimaryKeyGenerator<UUID> 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public UUID generate() {
-    return UUID.randomUUID();
+  public T get(Row row, String colName) {
+    ByteBuffer byteBuffer = row.getBytes(colName);
+    if (byteBuffer == null) {
+      return null;
+    }
+    byte[] bytes = Bytes.getArray(byteBuffer);
+    return toValue(bytes);
+  }
+
+  @Override
+  public void set(BoundStatement boundStatement, String colName, T value) {
+    if (value == null) {
+      boundStatement.setBytes(colName, null);
+      return;
+    }
+    byte[] bytes = fromValue(value);
+    ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+    boundStatement.setBytes(colName, byteBuffer);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected abstract T toValue(byte[] bytes);
+
+  protected abstract byte[] fromValue(T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

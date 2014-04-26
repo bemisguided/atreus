@@ -26,15 +26,17 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
+
+import java.util.UUID;
 
 /**
- * Float Type Accessor.
+ * UUID Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(Float.class)
-public class FloatTypeAccessor implements AtreusTypeAccessor<Float> {
+@AtreusType(UUID.class)
+public class UUIDTypeStrategy implements AtreusTypeStrategy<UUID> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -45,13 +47,13 @@ public class FloatTypeAccessor implements AtreusTypeAccessor<Float> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Float get(Row row, String colName) {
-    return row.getFloat(colName);
+  public UUID get(Row row, String colName) {
+    return row.getUUID(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, Float value) {
-    boundStatement.setFloat(colName, value);
+  public void set(BoundStatement boundStatement, String colName, UUID value) {
+    boundStatement.setUUID(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

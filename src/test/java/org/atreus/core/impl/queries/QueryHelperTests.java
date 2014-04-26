@@ -62,6 +62,17 @@ public class QueryHelperTests {
   }
 
   @Test
+  public void testInsertWithTtl() {
+    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
+    managedEntity.setPrimaryKeyField(buildField("id"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.setTtlField(buildField("ttl1"));
+
+    assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2) USING TTL :ttl1;", QueryHelper.insertEntity(managedEntity, true).getQueryString());
+  }
+
+  @Test
   @Ignore
   public void testInsertWithCompositeKey() {
   }
@@ -89,6 +100,17 @@ public class QueryHelperTests {
     managedEntity.getFields().add(buildField("col2"));
 
     assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity).getQueryString());
+  }
+
+  @Test
+  public void testUpdateWithTtl() {
+    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
+    managedEntity.setPrimaryKeyField(buildField("id"));
+    managedEntity.getFields().add(buildField("col1"));
+    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.setTtlField(buildField("ttl1"));
+
+    assertEquals("UPDATE queryhelpertests.testUpdate USING TTL :ttl1 SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity, true).getQueryString());
   }
 
   @Test

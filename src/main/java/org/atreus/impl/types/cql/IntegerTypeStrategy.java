@@ -26,15 +26,15 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 /**
- * String Type Accessor.
+ * Integer Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(String.class)
-public class StringTypeAccessor implements AtreusTypeAccessor<String> {
+@AtreusType(Integer.class)
+public class IntegerTypeStrategy implements AtreusTypeStrategy<Integer> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -45,13 +45,13 @@ public class StringTypeAccessor implements AtreusTypeAccessor<String> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public String get(Row row, String colName) {
-    return row.getString(colName);
+  public Integer get(Row row, String colName) {
+    return row.getInt(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, String value) {
-    boundStatement.setString(colName, value);
+  public void set(BoundStatement boundStatement, String colName, Integer value) {
+    boundStatement.setInt(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

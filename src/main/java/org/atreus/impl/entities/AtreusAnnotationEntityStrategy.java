@@ -99,7 +99,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
 
     if (fieldTypeAnnotation != null) {
       try {
-        managedField.setTypeAccessor(fieldTypeAnnotation.value().newInstance());
+        managedField.setTypeStrategy(fieldTypeAnnotation.value().newInstance());
       }
       catch (InstantiationException | IllegalAccessException e) {
         throw new RuntimeException(e);
@@ -125,7 +125,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
 
     if (fieldTypeAnnotation != null) {
       try {
-        managedField.setTypeAccessor(fieldTypeAnnotation.value().newInstance());
+        managedField.setTypeStrategy(fieldTypeAnnotation.value().newInstance());
       }
       catch (InstantiationException | IllegalAccessException e) {
         throw new RuntimeException(e);

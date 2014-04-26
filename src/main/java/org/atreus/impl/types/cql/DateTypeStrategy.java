@@ -21,55 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.generators;
+package org.atreus.impl.types.cql;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
-import java.util.Random;
+import java.util.Date;
 
 /**
- * String Primary Key Generator.
+ * Date Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(String.class)
-public class StringPrimaryKeyGenerator implements AtreusPrimaryKeyGenerator<String> {
+@AtreusType(Date.class)
+public class DateTypeStrategy implements AtreusTypeStrategy<Date> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(StringPrimaryKeyGenerator.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private static char[] symbols;
-
-  private final Random random = new Random();
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  static {
-    StringBuilder tmp = new StringBuilder();
-    for (char ch = '0'; ch <= '9'; ++ch) {
-      tmp.append(ch);
-    }
-    for (char ch = 'a'; ch <= 'z'; ++ch) {
-      tmp.append(ch);
-    }
-    symbols = tmp.toString().toCharArray();
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public String generate() {
-    char[] buf = new char[10];
-    for (int idx = 0; idx < buf.length; ++idx) {
-      buf[idx] = symbols[random.nextInt(symbols.length)];
-    }
-    return new String(buf);
+  public Date get(Row row, String colName) {
+    return row.getDate(colName);
+  }
+
+  @Override
+  public void set(BoundStatement boundStatement, String colName, Date value) {
+    boundStatement.setDate(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -78,4 +62,4 @@ public class StringPrimaryKeyGenerator implements AtreusPrimaryKeyGenerator<Stri
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+}

@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   private Field javaField;
 
-  private AtreusTypeAccessor typeAccessor;
+  private AtreusTypeStrategy typeStrategy;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -117,13 +117,13 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
   }
 
   @Override
-  public AtreusTypeAccessor getTypeAccessor() {
-    return typeAccessor;
+  public AtreusTypeStrategy getTypeStrategy() {
+    return typeStrategy;
   }
 
   @Override
-  public void setTypeAccessor(AtreusTypeAccessor typeAccessor) {
-    this.typeAccessor = typeAccessor;
+  public void setTypeStrategy(AtreusTypeStrategy typeStrategy) {
+    this.typeStrategy = typeStrategy;
   }
 
 } // end of class

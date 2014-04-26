@@ -23,7 +23,7 @@
  */
 package org.atreus.core.annotations;
 
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -40,10 +40,10 @@ import java.lang.annotation.Target;
 public @interface AtreusFieldType {
 
   /**
-   * Sets the type accessor for this field. Default is based on the type of the field itself.
+   * Sets the type strategy for this field. Default is based on the type of the field itself.
    *
    * @return
    */
-  public Class<? extends AtreusTypeAccessor> value();
+  public Class<? extends AtreusTypeStrategy> value();
 
 }

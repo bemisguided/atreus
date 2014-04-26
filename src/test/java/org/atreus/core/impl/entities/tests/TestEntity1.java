@@ -27,7 +27,7 @@ import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusField;
 import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.impl.types.cql.LongTypeAccessor;
+import org.atreus.impl.types.cql.LongTypeStrategy;
 
 /**
  * Test Entity 1.
@@ -52,7 +52,7 @@ public class TestEntity1 {
   private transient String field3;
 
   @AtreusField(value = "field4field")
-  @AtreusFieldType(LongTypeAccessor.class)
+  @AtreusFieldType(LongTypeStrategy.class)
   private Integer field4;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors

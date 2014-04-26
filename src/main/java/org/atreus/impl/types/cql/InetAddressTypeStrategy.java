@@ -26,15 +26,17 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
+
+import java.net.InetAddress;
 
 /**
- * Boolean Type Accessor.
+ * InetAddress Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(Boolean.class)
-public class BooleanTypeAccessor implements AtreusTypeAccessor<Boolean> {
+@AtreusType(InetAddress.class)
+public class InetAddressTypeStrategy implements AtreusTypeStrategy<InetAddress> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -45,13 +47,13 @@ public class BooleanTypeAccessor implements AtreusTypeAccessor<Boolean> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Boolean get(Row row, String colName) {
-    return row.getBool(colName);
+  public InetAddress get(Row row, String colName) {
+    return row.getInet(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, Boolean value) {
-    boundStatement.setBool(colName, value);
+  public void set(BoundStatement boundStatement, String colName, InetAddress value) {
+    boundStatement.setInet(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -26,15 +26,15 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 /**
- * Long Type Accessor.
+ * Float Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(Long.class)
-public class LongTypeAccessor implements AtreusTypeAccessor<Long> {
+@AtreusType(Float.class)
+public class FloatTypeStrategy implements AtreusTypeStrategy<Float> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -45,13 +45,13 @@ public class LongTypeAccessor implements AtreusTypeAccessor<Long> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Long get(Row row, String colName) {
-    return row.getLong(colName);
+  public Float get(Row row, String colName) {
+    return row.getFloat(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, Long value) {
-    boundStatement.setLong(colName, value);
+  public void set(BoundStatement boundStatement, String colName, Float value) {
+    boundStatement.setFloat(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

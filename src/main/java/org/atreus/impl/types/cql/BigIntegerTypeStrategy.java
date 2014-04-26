@@ -26,18 +26,17 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
-import java.util.Date;
-import java.util.UUID;
+import java.math.BigInteger;
 
 /**
- * Date Type Accessor.
+ * BigInteger Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(Date.class)
-public class DateTypeAccessor implements AtreusTypeAccessor<Date> {
+@AtreusType(BigInteger.class)
+public class BigIntegerTypeStrategy implements AtreusTypeStrategy<BigInteger> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -48,13 +47,13 @@ public class DateTypeAccessor implements AtreusTypeAccessor<Date> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Date get(Row row, String colName) {
-    return row.getDate(colName);
+  public BigInteger get(Row row, String colName) {
+    return row.getVarint(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, Date value) {
-    boundStatement.setDate(colName, value);
+  public void set(BoundStatement boundStatement, String colName, BigInteger value) {
+    boundStatement.setVarint(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

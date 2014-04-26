@@ -25,10 +25,10 @@ package org.atreus.core.impl.types;
 
 import org.atreus.core.BaseAtreusTests;
 import org.atreus.impl.types.TypeManager;
-import org.atreus.impl.types.atreus.ShortTypeAccessor;
-import org.atreus.impl.types.cql.IntegerTypeAccessor;
-import org.atreus.impl.types.cql.LongTypeAccessor;
-import org.atreus.impl.types.cql.StringTypeAccessor;
+import org.atreus.impl.types.atreus.ShortTypeStrategy;
+import org.atreus.impl.types.cql.IntegerTypeStrategy;
+import org.atreus.impl.types.cql.LongTypeStrategy;
+import org.atreus.impl.types.cql.StringTypeStrategy;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,17 +55,17 @@ public class TypeManagerTests extends BaseAtreusTests {
   public void testDefaultTypes() {
     TypeManager typeManager = getEnvironment().getTypeManager();
 
-    Assert.notNull(typeManager.findTypeAccessor(String.class), "StringTypeAccessor expected");
-    Assert.isInstanceOf(StringTypeAccessor.class, typeManager.findTypeAccessor(String.class));
+    Assert.notNull(typeManager.findTypeStrategy(String.class), "StringTypeAccessor expected");
+    Assert.isInstanceOf(StringTypeStrategy.class, typeManager.findTypeStrategy(String.class));
 
-    Assert.notNull(typeManager.findTypeAccessor(Integer.class), "IntegerTypeAccessor expected");
-    Assert.isInstanceOf(IntegerTypeAccessor.class, typeManager.findTypeAccessor(Integer.class));
+    Assert.notNull(typeManager.findTypeStrategy(Integer.class), "IntegerTypeAccessor expected");
+    Assert.isInstanceOf(IntegerTypeStrategy.class, typeManager.findTypeStrategy(Integer.class));
 
-    Assert.notNull(typeManager.findTypeAccessor(Long.class), "LongTypeAccessor expected");
-    Assert.isInstanceOf(LongTypeAccessor.class, typeManager.findTypeAccessor(Long.class));
+    Assert.notNull(typeManager.findTypeStrategy(Long.class), "LongTypeAccessor expected");
+    Assert.isInstanceOf(LongTypeStrategy.class, typeManager.findTypeStrategy(Long.class));
 
-    Assert.notNull(typeManager.findTypeAccessor(Short.class), "ShortTypeAccessor expected");
-    Assert.isInstanceOf(ShortTypeAccessor.class, typeManager.findTypeAccessor(Short.class));
+    Assert.notNull(typeManager.findTypeStrategy(Short.class), "ShortTypeAccessor expected");
+    Assert.isInstanceOf(ShortTypeStrategy.class, typeManager.findTypeStrategy(Short.class));
 
   }
 

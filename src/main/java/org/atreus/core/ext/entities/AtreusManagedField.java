@@ -23,7 +23,7 @@
  */
 package org.atreus.core.ext.entities;
 
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 import java.lang.reflect.Field;
 
@@ -40,8 +40,8 @@ public interface AtreusManagedField {
 
   public Field getJavaField();
 
-  public AtreusTypeAccessor getTypeAccessor();
+  public AtreusTypeStrategy getTypeStrategy();
 
-  public void setTypeAccessor(AtreusTypeAccessor typeAccessor);
+  public void setTypeStrategy(AtreusTypeStrategy typeStrategy);
 
 }

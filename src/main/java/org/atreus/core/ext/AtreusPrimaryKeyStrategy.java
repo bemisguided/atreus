@@ -26,11 +26,11 @@ package org.atreus.core.ext;
 import java.io.Serializable;
 
 /**
- * Interface for an Atreus Primary Key Generator.
+ * Interface for an Atreus Primary Key Strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusPrimaryKeyGenerator<T extends Serializable> {
+public interface AtreusPrimaryKeyStrategy<T extends Serializable> {
 
   public T generate();
 

@@ -52,12 +52,20 @@ public class QueryHelper {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   public static RegularStatement insertEntity(AtreusManagedEntity managedEntity) {
+    return insertEntity(managedEntity, false);
+  }
+
+  public static RegularStatement insertEntity(AtreusManagedEntity managedEntity, boolean withTtl) {
     Insert insert = insertInto(managedEntity.getKeySpace(), managedEntity.getTable());
     String columnName = managedEntity.getPrimaryKeyField().getColumn();
     insert.value(columnName, bindMarker(columnName));
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       columnName = managedField.getColumn();
       insert.value(columnName, bindMarker(columnName));
+    }
+    AtreusManagedField ttlField = managedEntity.getTtlField();
+    if (ttlField != null && withTtl) {
+      insert.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return insert;
   }
@@ -70,12 +78,20 @@ public class QueryHelper {
   }
 
   public static RegularStatement updateEntity(AtreusManagedEntity managedEntity) {
+    return updateEntity(managedEntity, false);
+  }
+
+  public static RegularStatement updateEntity(AtreusManagedEntity managedEntity, boolean withTtl) {
     Update update = update(managedEntity.getKeySpace(), managedEntity.getTable());
     String columnName = managedEntity.getPrimaryKeyField().getColumn();
     Update.Where where = update.where(eq(columnName, bindMarker(columnName)));
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       columnName = managedField.getColumn();
       where.with(set(columnName, bindMarker(columnName)));
+    }
+    AtreusManagedField ttlField = managedEntity.getTtlField();
+    if (ttlField != null && withTtl) {
+      update.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return update;
   }

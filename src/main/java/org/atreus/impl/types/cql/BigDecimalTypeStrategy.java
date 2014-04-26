@@ -21,28 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.utils.Bytes;
-import org.atreus.core.ext.AtreusTypeAccessor;
-import org.atreus.impl.util.ByteUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
-import java.nio.ByteBuffer;
+import java.math.BigDecimal;
 
 /**
- * Base class for Type Accessors mapped by a byte array.
+ * BigDecimal Type Strategy.
  *
  * @author Martin Crawford
  */
-public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccessor<T> {
+@AtreusType(BigDecimal.class)
+public class BigDecimalTypeStrategy implements AtreusTypeStrategy<BigDecimal> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseByteBufferTypeAccessor.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -51,34 +47,19 @@ public abstract class BaseByteBufferTypeAccessor<T> implements AtreusTypeAccesso
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public T get(Row row, String colName) {
-    ByteBuffer byteBuffer = row.getBytes(colName);
-    if (byteBuffer == null) {
-      return null;
-    }
-    byte[] bytes = Bytes.getArray(byteBuffer);
-    return toValue(bytes);
+  public BigDecimal get(Row row, String colName) {
+    return row.getDecimal(colName);
   }
 
   @Override
-  public void set(BoundStatement boundStatement, String colName, T value) {
-    if (value == null) {
-      boundStatement.setBytes(colName, null);
-      return;
-    }
-    byte[] bytes = fromValue(value);
-    ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    boundStatement.setBytes(colName, byteBuffer);
+  public void set(BoundStatement boundStatement, String colName, BigDecimal value) {
+    boundStatement.setDecimal(colName, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected abstract T toValue(byte[] bytes);
-
-  protected abstract byte[] fromValue(T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+}

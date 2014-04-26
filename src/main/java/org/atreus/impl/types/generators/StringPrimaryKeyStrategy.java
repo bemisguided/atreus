@@ -21,37 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.types.generators;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Random;
 
 /**
- * Integer Type Accessor.
+ * String Primary Key Generator.
  *
  * @author Martin Crawford
  */
-@AtreusType(Integer.class)
-public class IntegerTypeAccessor implements AtreusTypeAccessor<Integer> {
+@AtreusType(String.class)
+public class StringPrimaryKeyStrategy implements AtreusPrimaryKeyStrategy<String> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(StringPrimaryKeyStrategy.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private static char[] symbols;
+
+  private final Random random = new Random();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  static {
+    StringBuilder tmp = new StringBuilder();
+    for (char ch = '0'; ch <= '9'; ++ch) {
+      tmp.append(ch);
+    }
+    for (char ch = 'a'; ch <= 'z'; ++ch) {
+      tmp.append(ch);
+    }
+    symbols = tmp.toString().toCharArray();
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Integer get(Row row, String colName) {
-    return row.getInt(colName);
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, Integer value) {
-    boundStatement.setInt(colName, value);
+  public String generate() {
+    char[] buf = new char[10];
+    for (int idx = 0; idx < buf.length; ++idx) {
+      buf[idx] = symbols[random.nextInt(symbols.length)];
+    }
+    return new String(buf);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -60,4 +78,4 @@ public class IntegerTypeAccessor implements AtreusTypeAccessor<Integer> {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

@@ -21,20 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl.types.generators;
 
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.impl.util.ByteUtils;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 /**
- * Integer Type Accessor.
+ * UUID Primary Key Generator.
  *
  * @author Martin Crawford
  */
-@AtreusType(Short.class)
-public class ShortTypeAccessor extends BaseByteBufferTypeAccessor<Short> {
+@AtreusType(UUID.class)
+public class UuidPrimaryKeyStrategy implements AtreusPrimaryKeyStrategy<UUID> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(UuidPrimaryKeyStrategy.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -42,20 +48,15 @@ public class ShortTypeAccessor extends BaseByteBufferTypeAccessor<Short> {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  @Override
+  public UUID generate() {
+    return UUID.randomUUID();
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Short toValue(byte[] bytes) {
-    return ByteUtils.toShort(bytes);
-  }
-
-  @Override
-  protected byte[] fromValue(Short value) {
-    return ByteUtils.toBytes(value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

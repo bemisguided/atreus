@@ -26,15 +26,15 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.annotations.AtreusType;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusTypeStrategy;
 
 /**
- * Double Type Accessor.
+ * Double Type Strategy.
  *
  * @author Martin Crawford
  */
 @AtreusType(Double.class)
-public class DoubleTypeAccessor implements AtreusTypeAccessor<Double> {
+public class DoubleTypeStrategy implements AtreusTypeStrategy<Double> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 

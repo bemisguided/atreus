@@ -25,8 +25,8 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.AtreusEntityStrategy;
-import org.atreus.core.ext.AtreusPrimaryKeyGenerator;
-import org.atreus.core.ext.AtreusTypeAccessor;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.types.TypeManager;
@@ -148,18 +148,18 @@ public class EntityManager {
     ManagedFieldImpl managedField = new ManagedFieldImpl();
     managedField.setColumn(fieldName);
     managedField.setJavaField(javaField);
-    AtreusTypeAccessor typeAccessor = typeManager.findTypeAccessor(javaField.getType());
+    AtreusTypeStrategy typeStrategy = typeManager.findTypeStrategy(javaField.getType());
     LOG.trace("{}", javaField.getType());
-    if (typeAccessor != null) {
-      LOG.trace("Resolved typeAccessor={}", typeAccessor.getClass());
-      managedField.setTypeAccessor(typeAccessor);
+    if (typeStrategy != null) {
+      LOG.trace("Resolved typeStrategy={}", typeStrategy.getClass());
+      managedField.setTypeStrategy(typeStrategy);
     }
 
     // Iterate the entity strategies and process
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
       if (entityStrategy.isPrimaryKeyField(managedField)) {
         LOG.trace("Identified a primary key field entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
-        AtreusPrimaryKeyGenerator primaryKeyGenerator = typeManager.findPrimaryKeyGenerator(javaField.getType());
+        AtreusPrimaryKeyStrategy primaryKeyGenerator = typeManager.findPrimaryKeyGenerator(javaField.getType());
         if (primaryKeyGenerator != null) {
           managedEntity.setPrimaryKeyGenerator(primaryKeyGenerator);
         }
@@ -175,7 +175,7 @@ public class EntityManager {
       }
     }
 
-    // TODO validation: type accessor, primary keys & generator are serializable, validate ttl
+    // TODO validation: Type Strategy, primary keys & generator are serializable, validate ttl
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
