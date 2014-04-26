@@ -60,6 +60,12 @@ public abstract class BaseCassandraTests extends BaseAtreusTests {
 
   @AfterClass
   public static void afterClass() throws Exception {
+    try {
+      Thread.sleep(5 * 1000);
+    }
+    catch (InterruptedException e) {
+
+    }
     cluster.close();
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
   }
