@@ -67,7 +67,11 @@ public class SaveCommand extends BaseWriteCommand {
 
   @Override
   public RegularStatement prepareStatement(AtreusSession session) {
-    return QueryHelper.insertEntity(managedEntity);
+    boolean hasTtl = false;
+    if (managedEntity.getTtlField() != null && BindingHelper.isNull(managedEntity.getTtlField(), entity)) {
+      hasTtl = true;
+    }
+    return QueryHelper.insertEntity(managedEntity, hasTtl);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

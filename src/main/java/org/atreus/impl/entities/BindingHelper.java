@@ -66,6 +66,10 @@ public class BindingHelper {
     }
   }
 
+  public static boolean isNull(AtreusManagedField managedField, Object entity) {
+    return getField(managedField, entity) == null;
+  }
+
   public static void bindFromPrimaryKeys(AtreusManagedEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
     AtreusManagedField managedField = managedEntity.getPrimaryKeyField();
     managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), primaryKey);
