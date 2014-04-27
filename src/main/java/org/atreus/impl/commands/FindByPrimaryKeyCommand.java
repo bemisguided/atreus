@@ -23,12 +23,9 @@
  */
 package org.atreus.impl.commands;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.*;
+import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.impl.AtreusEnvironment;
-import org.atreus.impl.AtreusSessionImpl;
 import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
@@ -41,7 +38,7 @@ import java.io.Serializable;
  *
  * @author Martin Crawford
  */
-public class FindByPrimaryKeyCommand extends BaseCommand {
+public class FindByPrimaryKeyCommand extends BaseReadCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -55,23 +52,21 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public FindByPrimaryKeyCommand(AtreusEnvironment environment, AtreusSessionImpl session) {
-    super(environment, session);
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void prepare() {
-    RegularStatement statement = QueryHelper.selectEntity(managedEntity);
-    setBoundStatement(getQueryManager().generate(statement));
-    BindingHelper.bindFromPrimaryKeys(managedEntity, getBoundStatement(), primaryKey);
+  public void bindStatement(BoundStatement boundStatement) {
+    BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
   }
 
   @Override
-  public Object execute() {
-    getBoundStatement().setConsistencyLevel(getSession().getReadConsistencyLevel());
-    ResultSet resultSet = getCassandraSession().execute(getBoundStatement());
+  public RegularStatement prepareStatement(AtreusSession session) {
+    return QueryHelper.selectEntity(managedEntity);
+  }
+
+  @Override
+  public Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement) {
+    ResultSet resultSet = cassandraSession.execute(boundStatement);
     Row row = resultSet.one();
     if (row == null) {
       return null;

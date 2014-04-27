@@ -24,6 +24,8 @@
 package org.atreus.impl.commands;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusSession;
 import org.atreus.impl.AtreusEnvironment;
@@ -44,51 +46,22 @@ public abstract class BaseCommand {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-  private final AtreusSession session;
-  private BoundStatement boundStatement;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  protected BaseCommand(AtreusEnvironment environment, AtreusSession session) {
-    this.environment = environment;
-    this.session = session;
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public abstract void prepare();
+  public abstract void bindStatement(BoundStatement boundStatement);
 
-  public abstract Object execute();
+  public abstract Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement);
+
+  public abstract void prepareBoundStatement(AtreusSession session, BoundStatement boundStatement);
+
+  public abstract RegularStatement prepareStatement(AtreusSession session);
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  public Session getCassandraSession() {
-    return environment.getCassandraSession();
-  }
-
-  public AtreusEnvironment getEnvironment() {
-    return environment;
-  }
-
-  public AtreusSession getSession() {
-    return session;
-  }
-
-  protected BoundStatement getBoundStatement() {
-    return boundStatement;
-  }
-
-  protected void setBoundStatement(BoundStatement boundStatement) {
-    this.boundStatement = boundStatement;
-  }
-
-  protected QueryManager getQueryManager() {
-    return environment.getQueryManager();
-  }
 
 } // end of class

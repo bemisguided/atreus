@@ -199,6 +199,7 @@
 						<exclude>*.markdown</exclude>
 						<exclude>*.gitignore</exclude>
             <exclude>*.yaml</exclude>
+            <exclude>**/*.html</exclude>
 					</excludes>
 					<useDefaultExcludes>true</useDefaultExcludes>
 					<useDefaultMapping>true</useDefaultMapping>

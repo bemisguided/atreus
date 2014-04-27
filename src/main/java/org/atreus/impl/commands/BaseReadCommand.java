@@ -24,50 +24,30 @@
 package org.atreus.impl.commands;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.impl.entities.BindingHelper;
-import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Save command.
+ * Base class for all read commands.
  *
  * @author Martin Crawford
  */
-public class SaveCommand extends BaseWriteCommand {
+public abstract class BaseReadCommand extends BaseCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(SaveCommand.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseReadCommand.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private Object entity;
-
-  private AtreusManagedEntity managedEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void bindStatement(BoundStatement boundStatement) {
-    BindingHelper.bindFromEntity(managedEntity, entity, boundStatement);
-  }
-
-  @Override
-  public Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement) {
-    cassandraSession.execute(boundStatement);
-    return null;
-  }
-
-  @Override
-  public RegularStatement prepareStatement(AtreusSession session) {
-    return QueryHelper.insertEntity(managedEntity);
+  public void prepareBoundStatement(AtreusSession session, BoundStatement boundStatement) {
+    boundStatement.setConsistencyLevel(session.getReadConsistencyLevel());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -75,21 +55,5 @@ public class SaveCommand extends BaseWriteCommand {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  public Object getEntity() {
-    return entity;
-  }
-
-  public void setEntity(Object entity) {
-    this.entity = entity;
-  }
-
-  public AtreusManagedEntity getManagedEntity() {
-    return managedEntity;
-  }
-
-  public void setManagedEntity(AtreusManagedEntity managedEntity) {
-    this.managedEntity = managedEntity;
-  }
 
 } // end of class

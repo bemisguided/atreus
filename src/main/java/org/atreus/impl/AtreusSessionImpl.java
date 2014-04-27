@@ -23,7 +23,9 @@
  */
 package org.atreus.impl;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.impl.commands.BaseCommand;
@@ -74,7 +76,7 @@ public class AtreusSessionImpl implements AtreusSession {
     }
 
     // Build command
-    FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand(environment, this);
+    FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand();
     command.setManagedEntity(managedEntity);
     command.setPrimaryKey(primaryKey);
 
@@ -92,7 +94,7 @@ public class AtreusSessionImpl implements AtreusSession {
     }
 
     // Build command
-    SaveCommand command = new SaveCommand(environment, this);
+    SaveCommand command = new SaveCommand();
     command.setManagedEntity(managedEntity);
     command.setEntity(entity);
 
@@ -109,8 +111,11 @@ public class AtreusSessionImpl implements AtreusSession {
 
   @SuppressWarnings("unchecked")
   protected <T> T doExecute(BaseCommand command, Class<T> type) {
-    command.prepare();
-    return (T) command.execute();
+    RegularStatement regularStatement = command.prepareStatement(this);
+    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
+    command.bindStatement(boundStatement);
+    command.prepareBoundStatement(this, boundStatement);
+    return (T) command.execute(this, environment.getCassandraSession(), boundStatement);
   }
 
   @SuppressWarnings("unchecked")
