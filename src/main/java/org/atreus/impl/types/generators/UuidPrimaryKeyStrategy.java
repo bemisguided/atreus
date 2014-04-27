@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.types.generators;
 
-import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

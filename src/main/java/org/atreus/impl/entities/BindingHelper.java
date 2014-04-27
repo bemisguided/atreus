@@ -25,8 +25,8 @@ package org.atreus.impl.entities;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.entities.AtreusManagedEntity;
-import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

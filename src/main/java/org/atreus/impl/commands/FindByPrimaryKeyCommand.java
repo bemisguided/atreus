@@ -26,7 +26,7 @@ package org.atreus.impl.commands;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.AtreusSessionImpl;
 import org.atreus.impl.entities.BindingHelper;

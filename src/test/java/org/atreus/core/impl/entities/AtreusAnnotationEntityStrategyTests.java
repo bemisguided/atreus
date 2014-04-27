@@ -23,8 +23,8 @@
  */
 package org.atreus.core.impl.entities;
 
-import org.atreus.core.ext.entities.AtreusManagedEntity;
-import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedField;
 import org.atreus.core.BaseAtreusTests;
 import org.atreus.core.impl.entities.tests.TestEntity1;
 import org.atreus.impl.entities.EntityManager;

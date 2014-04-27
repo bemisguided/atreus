@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.types.atreus;
 
-import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusType;
 import org.atreus.impl.util.ByteUtils;
 
 /**

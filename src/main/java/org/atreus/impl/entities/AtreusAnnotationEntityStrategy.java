@@ -29,16 +29,14 @@ import org.atreus.core.ext.AtreusEntityStrategy;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.entities.AtreusManagedEntity;
-import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedField;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-
-import static org.atreus.impl.util.StringUtils.isNotNullOrEmpty;
 
 /**
  * Implements an entity strategy for the Atreus Annotations set.

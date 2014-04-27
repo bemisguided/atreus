@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.entities;
+package org.atreus.core.ext;
 
 import org.atreus.core.ext.AtreusTypeStrategy;
 

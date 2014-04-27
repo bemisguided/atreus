@@ -29,7 +29,7 @@ import org.atreus.core.ext.AtreusEntityStrategy;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.StringUtils;

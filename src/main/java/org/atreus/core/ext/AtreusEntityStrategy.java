@@ -23,9 +23,6 @@
  */
 package org.atreus.core.ext;
 
-import org.atreus.core.ext.entities.AtreusManagedEntity;
-import org.atreus.core.ext.entities.AtreusManagedField;
-
 import java.util.Collection;
 
 /**

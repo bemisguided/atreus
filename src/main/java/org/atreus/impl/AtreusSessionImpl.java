@@ -25,7 +25,7 @@ package org.atreus.impl;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.entities.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.impl.commands.BaseCommand;
 import org.atreus.impl.commands.FindByPrimaryKeyCommand;
 import org.atreus.impl.commands.SaveCommand;

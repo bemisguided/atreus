@@ -23,7 +23,7 @@
  */
 package org.atreus.core.impl.queries;
 
-import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.core.ext.AtreusManagedField;
 import org.atreus.impl.entities.ManagedEntityImpl;
 import org.atreus.impl.entities.ManagedFieldImpl;
 import org.atreus.impl.queries.QueryHelper;

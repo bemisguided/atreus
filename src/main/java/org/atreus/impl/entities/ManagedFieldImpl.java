@@ -24,7 +24,7 @@
 package org.atreus.impl.entities;
 
 import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.entities.AtreusManagedField;
+import org.atreus.core.ext.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

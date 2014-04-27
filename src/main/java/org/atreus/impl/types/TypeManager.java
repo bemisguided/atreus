@@ -24,7 +24,7 @@
 package org.atreus.impl.types;
 
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusTypeStrategy;

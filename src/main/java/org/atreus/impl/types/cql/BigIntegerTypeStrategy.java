@@ -25,7 +25,7 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.annotations.AtreusType;
+import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusTypeStrategy;
 
 import java.math.BigInteger;
