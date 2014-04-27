@@ -35,16 +35,28 @@ import java.util.Collection;
  */
 public interface AtreusEntityStrategy {
 
+  public String getEntityName(AtreusManagedEntity managedEntity);
+
+  public String getEntityKeySpace(AtreusManagedEntity managedEntity);
+
+  public String getEntityTable(AtreusManagedEntity managedEntity);
+
+  public String getFieldColumn( AtreusManagedField managedField);
+
+  public String getPrimaryKeyColumn( AtreusManagedField managedField);
+
   public Collection<Class<?>> findEntities(String path);
 
   public boolean isPrimaryKeyField(AtreusManagedField managedField);
 
+  public boolean isPrimaryKeyGenerated(AtreusManagedField managedField);
+
   public boolean isTtlField(AtreusManagedField managedField);
 
-  public void processEntity(AtreusManagedEntity managedEntity);
+  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusManagedField managedField);
 
-  public void processField(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
+  public AtreusTtlStrategy resolveTtlStrategy(AtreusManagedField managedField);
 
-  public void processPrimaryKeyField(AtreusManagedEntity managedEntity, AtreusManagedField managedField);
+  public AtreusTypeStrategy resolveTypeStrategy(AtreusManagedField managedField);
 
 }

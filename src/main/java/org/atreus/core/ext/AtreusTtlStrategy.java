@@ -21,36 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.entities;
+package org.atreus.core.ext;
 
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
-
-import java.util.Set;
+import java.util.Date;
 
 /**
- * Interface for a managed entity.
+ * Interface for a time-to-live strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusTtlStrategy<T> {
 
-  public Class<?> getEntityType();
-
-  public Set<AtreusManagedField> getFields();
-
-  public String getKeySpace();
-
-  public String getName();
-
-  public AtreusManagedField getPrimaryKeyField();
-
-  public AtreusPrimaryKeyStrategy getPrimaryKeyStrategy();
-
-  public String getTable();
-
-  public AtreusManagedField getTtlField();
-
-  public AtreusTtlStrategy getTtlStrategy();
+  public Long translate(Date now, T value);
 
 }

@@ -44,6 +44,6 @@ public @interface AtreusPrimaryKeyGenerator {
    *
    * @return
    */
-  public Class<AtreusPrimaryKeyStrategy> value();
+  public Class<? extends AtreusPrimaryKeyStrategy> value();
 
 }

@@ -47,12 +47,13 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   private Field javaField;
 
+  private ManagedEntityImpl managedEntity;
+
   private AtreusTypeStrategy typeStrategy;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
 
   @Override
   public int compareTo(ManagedFieldImpl o) {
@@ -91,6 +92,11 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
     return column != null ? column.hashCode() : 0;
   }
 
+  @Override
+  public String toString() {
+    return managedEntity.getName() + "." + javaField.getName();
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
@@ -116,12 +122,19 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
     this.javaField = javaField;
   }
 
+  public ManagedEntityImpl getManagedEntity() {
+    return managedEntity;
+  }
+
+  public void setManagedEntity(ManagedEntityImpl managedEntity) {
+    this.managedEntity = managedEntity;
+  }
+
   @Override
   public AtreusTypeStrategy getTypeStrategy() {
     return typeStrategy;
   }
 
-  @Override
   public void setTypeStrategy(AtreusTypeStrategy typeStrategy) {
     this.typeStrategy = typeStrategy;
   }

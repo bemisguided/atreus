@@ -74,8 +74,8 @@ public class BindingHelper {
   public static void bindFromEntity(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
     AtreusManagedField managedPrimaryKey = managedEntity.getPrimaryKeyField();
     Object primaryKey = getField(managedPrimaryKey, entity);
-    if (primaryKey == null && managedEntity.getPrimaryKeyGenerator() != null) {
-      primaryKey = managedEntity.getPrimaryKeyGenerator().generate();
+    if (primaryKey == null && managedEntity.getPrimaryKeyStrategy() != null) {
+      primaryKey = managedEntity.getPrimaryKeyStrategy().generate();
       setField(managedPrimaryKey, entity, primaryKey);
     }
     bindFromField(managedPrimaryKey, entity, boundStatement);

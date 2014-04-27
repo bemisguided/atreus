@@ -23,8 +23,12 @@
  */
 package org.atreus.impl.entities;
 
+import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.*;
 import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.AtreusTtlStrategy;
+import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.core.ext.entities.AtreusManagedField;
 import org.reflections.Reflections;
@@ -53,6 +57,43 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+
+  @Override
+  public String getEntityName(AtreusManagedEntity managedEntity) {
+    AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    return entityAnnotation.value();
+  }
+
+  @Override
+  public String getEntityKeySpace(AtreusManagedEntity managedEntity) {
+    AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    return entityAnnotation.keySpace();
+  }
+
+  @Override
+  public String getEntityTable(AtreusManagedEntity managedEntity) {
+    AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    return entityAnnotation.table();
+  }
+
+  @Override
+  public String getFieldColumn(AtreusManagedField managedField) {
+    AtreusField fieldAnnotation = managedField.getJavaField().getAnnotation(AtreusField.class);
+    if (fieldAnnotation == null) {
+      return null;
+    }
+    return fieldAnnotation.value();
+  }
+
+  @Override
+  public String getPrimaryKeyColumn(AtreusManagedField managedField) {
+    AtreusPrimaryKey primaryKeyAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKey.class);
+    if (primaryKeyAnnotation == null) {
+      return null;
+    }
+    return primaryKeyAnnotation.value();
+  }
+
   @Override
   public Collection<Class<?>> findEntities(String path) {
     Reflections reflections = new Reflections(path);
@@ -66,84 +107,84 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
+  public boolean isPrimaryKeyGenerated(AtreusManagedField managedField) {
+    AtreusPrimaryKey primaryKeyAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKey.class);
+    return primaryKeyAnnotation.generated();
+  }
+
+  @Override
   public boolean isTtlField(AtreusManagedField managedField) {
     Field javaField = managedField.getJavaField();
     return javaField.getAnnotation(AtreusTtl.class) != null;
   }
 
   @Override
-  public void processEntity(AtreusManagedEntity managedEntity) {
-    Class<?> entityType = managedEntity.getEntityType();
-    AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
-    if (isNotNullOrEmpty(entityAnnotation.value())) {
-      managedEntity.setName(entityAnnotation.value());
+  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusManagedField managedField) {
+
+    // Query for @AtreusPrimaryKeyGenerator
+    AtreusPrimaryKeyGenerator primaryKeyGeneratorAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKeyGenerator.class);
+
+    // None exists return
+    if (primaryKeyGeneratorAnnotation == null) {
+      return null;
     }
-    if (isNotNullOrEmpty(entityAnnotation.table())) {
-      managedEntity.setTable(entityAnnotation.table());
+
+    // Attempt to assign the Type Strategy
+    Class<? extends AtreusPrimaryKeyStrategy> primaryKeyStrategyClass = primaryKeyGeneratorAnnotation.value();
+    try {
+      return primaryKeyStrategyClass.newInstance();
     }
-    if (isNotNullOrEmpty(entityAnnotation.keySpace())) {
-      managedEntity.setKeySpace(entityAnnotation.keySpace());
+    catch (InstantiationException | IllegalAccessException e) {
+      // Instantiation exception translate to Atreus Exception
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID,
+          managedField.toString(), primaryKeyStrategyClass.getCanonicalName(), e);
     }
   }
 
   @Override
-  public void processField(AtreusManagedEntity managedEntity, AtreusManagedField managedField) {
-    Field javaField = managedField.getJavaField();
-    AtreusField fieldAnnotation = javaField.getAnnotation(AtreusField.class);
+  public AtreusTtlStrategy resolveTtlStrategy(AtreusManagedField managedField) {
 
-    if (fieldAnnotation != null && isNotNullOrEmpty(fieldAnnotation.value())) {
-      managedField.setColumn(fieldAnnotation.value());
+    // Query for @AtreusTtlTranslator
+    AtreusTtlTranslator ttlTranslatorAnnotation = managedField.getJavaField().getAnnotation(AtreusTtlTranslator.class);
+
+    // None exists return
+    if (ttlTranslatorAnnotation == null) {
+      return null;
     }
 
-    AtreusFieldType fieldTypeAnnotation = javaField.getAnnotation(AtreusFieldType.class);
-
-    if (fieldTypeAnnotation != null) {
-      try {
-        managedField.setTypeStrategy(fieldTypeAnnotation.value().newInstance());
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
+    // Attempt to assign the Type Strategy
+    Class<? extends AtreusTtlStrategy> ttlStrategy = ttlTranslatorAnnotation.value();
+    try {
+      return ttlStrategy.newInstance();
     }
-    managedEntity.getFields().add(managedField);
+    catch (InstantiationException | IllegalAccessException e) {
+      // Instantiation exception translate to Atreus Exception
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_TTL_STRATEGY_INVALID,
+          managedField.toString(), ttlStrategy.getCanonicalName(), e);
+    }
   }
 
   @Override
-  public void processPrimaryKeyField(AtreusManagedEntity managedEntity, AtreusManagedField managedField) {
-    Field javaField = managedField.getJavaField();
-    AtreusPrimaryKey primaryKeyAnnotation = javaField.getAnnotation(AtreusPrimaryKey.class);
+  public AtreusTypeStrategy resolveTypeStrategy(AtreusManagedField managedField) {
 
-    if (primaryKeyAnnotation == null) {
-      return;
+    // Query for @AtreusFieldType
+    AtreusFieldType fieldTypeAnnotation = managedField.getJavaField().getAnnotation(AtreusFieldType.class);
+
+    // None exists return
+    if (fieldTypeAnnotation == null) {
+      return null;
     }
 
-    if (isNotNullOrEmpty(primaryKeyAnnotation.value())) {
-      managedField.setColumn(primaryKeyAnnotation.value());
+    // Attempt to assign the Type Strategy
+    Class<? extends AtreusTypeStrategy> typeStrategyClass = fieldTypeAnnotation.value();
+    try {
+      return typeStrategyClass.newInstance();
     }
+    catch (InstantiationException | IllegalAccessException e) {
 
-    if (primaryKeyAnnotation.generated()) {
-      AtreusPrimaryKeyGenerator primaryKeyGeneratorAnnotation = javaField.getAnnotation(AtreusPrimaryKeyGenerator.class);
-      if (primaryKeyGeneratorAnnotation != null) {
-        try {
-          managedEntity.setPrimaryKeyGenerator(primaryKeyGeneratorAnnotation.value().newInstance());
-        }
-        catch (InstantiationException | IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    } else {
-      managedEntity.setPrimaryKeyGenerator(null);
-    }
-
-    AtreusFieldType fieldTypeAnnotation = javaField.getAnnotation(AtreusFieldType.class);
-
-    if (fieldTypeAnnotation != null) {
-      try {
-        managedField.setTypeStrategy(fieldTypeAnnotation.value().newInstance());
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
+      // Instantiation exception translate to Atreus Exception
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_TYPE_STRATEGY_INVALID,
+          managedField.toString(), typeStrategyClass.getCanonicalName(), e);
     }
   }
 

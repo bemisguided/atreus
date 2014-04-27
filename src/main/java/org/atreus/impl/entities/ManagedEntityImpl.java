@@ -24,6 +24,7 @@
 package org.atreus.impl.entities;
 
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.entities.AtreusManagedEntity;
 import org.atreus.core.ext.entities.AtreusManagedField;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   private AtreusManagedField ttlField;
 
+  private AtreusTtlStrategy ttlStrategy;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -78,7 +81,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     return name;
   }
 
-  @Override
   public void setName(String name) {
     this.name = name;
   }
@@ -97,7 +99,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     return keySpace;
   }
 
-  @Override
   public void setKeySpace(String keySpace) {
     this.keySpace = keySpace;
   }
@@ -107,7 +108,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     return table;
   }
 
-  @Override
   public void setTable(String table) {
     this.table = table;
   }
@@ -126,11 +126,10 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   @Override
-  public AtreusPrimaryKeyStrategy getPrimaryKeyGenerator() {
+  public AtreusPrimaryKeyStrategy getPrimaryKeyStrategy() {
     return primaryKeyGenerator;
   }
 
-  @Override
   public void setPrimaryKeyGenerator(AtreusPrimaryKeyStrategy primaryKeyGenerator) {
     this.primaryKeyGenerator = primaryKeyGenerator;
   }
@@ -142,6 +141,15 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   public void setTtlField(AtreusManagedField ttlField) {
     this.ttlField = ttlField;
+  }
+
+  @Override
+  public AtreusTtlStrategy getTtlStrategy() {
+    return ttlStrategy;
+  }
+
+  public void setTtlStrategy(AtreusTtlStrategy ttlStrategy) {
+    this.ttlStrategy = ttlStrategy;
   }
 
 }

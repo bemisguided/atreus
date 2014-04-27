@@ -21,36 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.entities;
+package org.atreus.core.annotations;
 
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.AtreusTtlStrategy;
 
-import java.util.Set;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface for a managed entity.
+ * Annotation indicates the time-to-live translation strategy for the managed entity by Atreus.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface AtreusTtlTranslator {
 
-  public Class<?> getEntityType();
-
-  public Set<AtreusManagedField> getFields();
-
-  public String getKeySpace();
-
-  public String getName();
-
-  public AtreusManagedField getPrimaryKeyField();
-
-  public AtreusPrimaryKeyStrategy getPrimaryKeyStrategy();
-
-  public String getTable();
-
-  public AtreusManagedField getTtlField();
-
-  public AtreusTtlStrategy getTtlStrategy();
+  /**
+   * Sets the time-to-live translation strategy for this field. Default is based on the type of the field itself.
+   *
+   * @return
+   */
+  public Class<? extends AtreusTtlStrategy> value();
 
 }

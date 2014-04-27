@@ -42,6 +42,4 @@ public interface AtreusManagedField {
 
   public AtreusTypeStrategy getTypeStrategy();
 
-  public void setTypeStrategy(AtreusTypeStrategy typeStrategy);
-
 }

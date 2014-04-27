@@ -23,8 +23,10 @@
  */
 package org.atreus.impl.types;
 
+import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusType;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.impl.AtreusEnvironment;
 import org.reflections.Reflections;
@@ -50,8 +52,9 @@ public class TypeManager {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
+  private Map<Class<?>, AtreusPrimaryKeyStrategy<?>> primaryKeyStrategyMap = new HashMap<>();
+  private Map<Class<?>, AtreusTtlStrategy<?>> ttlStrategyMap = new HashMap<>();
   private Map<Class<?>, AtreusTypeStrategy<?>> typeStrategyMap = new HashMap<>();
-  private Map<Class<?>, AtreusPrimaryKeyStrategy<?>> primaryKeyGeneratorMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -74,12 +77,16 @@ public class TypeManager {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addPrimaryKeyGenerator(Class<?> typeClass, AtreusPrimaryKeyStrategy<?> primaryKeyGenerator) {
-    primaryKeyGeneratorMap.put(typeClass, primaryKeyGenerator);
+  public void addPrimaryKeyStrategy(Class<?> typeClass, AtreusPrimaryKeyStrategy<?> primaryKeyStrategy) {
+    primaryKeyStrategyMap.put(typeClass, primaryKeyStrategy);
   }
 
-  public void addTypeAccessor(Class<?> typeClass, AtreusTypeStrategy<?> typeAccessor) {
-    typeStrategyMap.put(typeClass, typeAccessor);
+  public void addTtlStrategy(Class<?> typeClass, AtreusTtlStrategy<?> ttlStrategy) {
+    ttlStrategyMap.put(typeClass, ttlStrategy);
+  }
+
+  public void addTypeStrategy(Class<?> typeClass, AtreusTypeStrategy<?> typeStrategy) {
+    typeStrategyMap.put(typeClass, typeStrategy);
   }
 
   public AtreusPrimaryKeyStrategy<?> findPrimaryKeyGenerator(Class<?> typeClass) {
@@ -89,9 +96,24 @@ public class TypeManager {
     }
 
     // Iterate the registry and find the first assignable class
-    for (Class<?> key : primaryKeyGeneratorMap.keySet()) {
+    for (Class<?> key : primaryKeyStrategyMap.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
-        return primaryKeyGeneratorMap.get(key);
+        return primaryKeyStrategyMap.get(key);
+      }
+    }
+    return null;
+  }
+
+  public AtreusTtlStrategy<?> findTtlStrategy(Class<?> typeClass) {
+    // Handle primitive types
+    if (typeClass.isPrimitive()) {
+      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
+    }
+
+    // Iterate the registry and find the first assignable class
+    for (Class<?> key : ttlStrategyMap.keySet()) {
+      if (key.isAssignableFrom(typeClass)) {
+        return ttlStrategyMap.get(key);
       }
     }
     return null;
@@ -123,6 +145,9 @@ public class TypeManager {
       if (AtreusPrimaryKeyStrategy.class.isAssignableFrom(clazz)) {
         registerPrimaryKeyGenerator(clazz, annotation);
       }
+      if (AtreusTtlStrategy.class.isAssignableFrom(clazz)) {
+        registerTtlStrategy(clazz, annotation);
+      }
     }
   }
 
@@ -135,10 +160,24 @@ public class TypeManager {
       AtreusPrimaryKeyStrategy<?> primaryKeyGenerator = (AtreusPrimaryKeyStrategy) clazz.newInstance();
       Class<?> typeClass = annotation.value();
       LOG.debug("Registered primaryKeyGenerator={} for typeClass={}", primaryKeyGenerator.getClass(), typeClass);
-      addPrimaryKeyGenerator(typeClass, primaryKeyGenerator);
+      addPrimaryKeyStrategy(typeClass, primaryKeyGenerator);
     }
     catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY,
+          clazz.getCanonicalName());
+    }
+  }
+
+  private void registerTtlStrategy(Class<?> clazz, AtreusType annotation) {
+    try {
+      AtreusTtlStrategy<?> ttlStrategy = (AtreusTtlStrategy) clazz.newInstance();
+      Class<?> typeClass = annotation.value();
+      LOG.debug("Registered ttlStrategy={} for typeClass={}", ttlStrategy.getClass(), typeClass);
+      addTtlStrategy(typeClass, ttlStrategy);
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_TTL_STRATEGY,
+          clazz.getCanonicalName());
     }
   }
 
@@ -147,10 +186,11 @@ public class TypeManager {
       AtreusTypeStrategy<?> typeStrategy = (AtreusTypeStrategy) clazz.newInstance();
       Class<?> typeClass = annotation.value();
       LOG.debug("Registered typeStrategy={} for typeClass={}", typeStrategy.getClass(), typeClass);
-      addTypeAccessor(typeClass, typeStrategy);
+      addTypeStrategy(typeClass, typeStrategy);
     }
     catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_TYPE_STRATEGY,
+          clazz.getCanonicalName());
     }
   }
 
