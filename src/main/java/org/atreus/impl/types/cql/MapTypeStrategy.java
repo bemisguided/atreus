@@ -30,7 +30,6 @@ import org.atreus.core.ext.AtreusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +64,7 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
 
   @Override
   public Map get(Row row, String colName) {
-    return row.getMap(colName, getValueClass(), getKeyClass());
+    return row.getMap(colName, getKeyClass(), getValueClass());
   }
 
   @Override

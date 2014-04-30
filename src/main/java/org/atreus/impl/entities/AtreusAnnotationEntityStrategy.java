@@ -92,6 +92,15 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
+  public Class<?> getMapKey(AtreusManagedField managedField) {
+    AtreusMap mapAnnotation = managedField.getJavaField().getAnnotation(AtreusMap.class);
+    if (mapAnnotation != null) {
+      return mapAnnotation.key();
+    }
+    return null;
+  }
+
+  @Override
   public String getPrimaryKeyColumn(AtreusManagedField managedField) {
     AtreusPrimaryKey primaryKeyAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKey.class);
     if (primaryKeyAnnotation == null) {

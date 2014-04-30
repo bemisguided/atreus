@@ -206,6 +206,15 @@ public class EntityManager {
             collectionTypeStrategy.setValueClass(valueClass);
           }
         }
+        if (Map.class.isAssignableFrom(managedField.getJavaField().getType())) {
+          if (AtreusMapTypeStrategy.class.isAssignableFrom(managedField.getTypeStrategy().getClass())) {
+            AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) managedField.getTypeStrategy();
+            Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
+            Class<?> keyClass = entityStrategy.getMapKey(managedField);
+            mapTypeStrategy.setValueClass(valueClass);
+            mapTypeStrategy.setKeyClass(keyClass);
+          }
+        }
         else {
           updateField(managedField, entityStrategy);
         }

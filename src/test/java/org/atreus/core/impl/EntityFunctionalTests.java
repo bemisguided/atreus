@@ -184,6 +184,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
         "id text, " +
         "setField set<bigint>, " +
         "listField list<text>, " +
+        "mapField map<text,bigint>, " +
         "PRIMARY KEY(id))");
 
     CollectionTestEntity testEntity = new CollectionTestEntity();
@@ -198,8 +199,12 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     listValue.add("value1");
     listValue.add("value2");
 
-    getSession().save(testEntity);
+    Map<String, Long> mapValue = new HashMap<>();
+    testEntity.setMapField(mapValue);
+    mapValue.put("value1", (long) 123456);
+    mapValue.put("value2", (long) 654321);
 
+    getSession().save(testEntity);
     String primaryKey = testEntity.getId();
 
     CollectionTestEntity otherEntity = getSession().findByPrimaryKey(CollectionTestEntity.class, primaryKey);
@@ -207,6 +212,8 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect to be not null", otherEntity);
     Assert.assertThat(otherEntity.getListField(), JUnitMatchers.hasItems("value1", "value2"));
     Assert.assertThat(otherEntity.getSetField(), JUnitMatchers.hasItems((long) 123456, (long) 654321));
+    Assert.assertNotNull("Expect value for 'value1'", otherEntity.getMapField().get("value1"));
+    Assert.assertNotNull("Expect value for 'value2'", otherEntity.getMapField().get("value2"));
 
     executeCQL("DROP TABLE default.CollectionTestEntity");
   }

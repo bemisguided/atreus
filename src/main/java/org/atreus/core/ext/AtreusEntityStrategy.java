@@ -42,6 +42,8 @@ public interface AtreusEntityStrategy {
 
   public String getFieldColumn( AtreusManagedField managedField);
 
+  public Class<?> getMapKey(AtreusManagedField managedField);
+
   public String getPrimaryKeyColumn( AtreusManagedField managedField);
 
   public Collection<Class<?>> findEntities(String path);

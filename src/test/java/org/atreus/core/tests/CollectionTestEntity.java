@@ -25,9 +25,11 @@ package org.atreus.core.tests;
 
 import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusMap;
 import org.atreus.core.annotations.AtreusPrimaryKey;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -50,6 +52,10 @@ public class CollectionTestEntity {
 
   @AtreusCollection(type=String.class)
   private List<String> listField;
+
+  @AtreusCollection(type = Long.class)
+  @AtreusMap(key=String.class)
+  private Map<String, Long> mapField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -83,6 +89,14 @@ public class CollectionTestEntity {
 
   public void setListField(List<String> listField) {
     this.listField = listField;
+  }
+
+  public Map<String, Long> getMapField() {
+    return mapField;
+  }
+
+  public void setMapField(Map<String, Long> mapField) {
+    this.mapField = mapField;
   }
 
 }
