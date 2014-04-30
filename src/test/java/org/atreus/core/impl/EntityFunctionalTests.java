@@ -25,8 +25,8 @@ package org.atreus.core.impl;
 
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.impl.entities.tests.TtlTestEntity;
-import org.atreus.core.impl.entities.tests.TypeConversionTestEntity;
+import org.atreus.core.tests.TtlTestEntity;
+import org.atreus.core.tests.TypeConversionTestEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -57,6 +57,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test
   public void testCQLPrimitiveTypes() throws Exception {
+    init("org.atreus.core.tests");
 
     executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
         "id text, " +
@@ -73,7 +74,6 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
         "aUuid uuid, " +
         "PRIMARY KEY(id))");
 
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
     TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
     testEntity.setaBigDecimal(new BigDecimal("1.23"));
@@ -111,13 +111,12 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test
   public void testTimeToLiveEntity() throws Exception {
+    init("org.atreus.core.tests");
 
     executeCQL("CREATE TABLE default.TtlTestEntity (" +
         "id text, " +
         "value text, " +
         "PRIMARY KEY(id))");
-
-    getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
     // Test with a time-to-live set
     TtlTestEntity testEntity = new TtlTestEntity();
@@ -155,13 +154,14 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test(expected = AtreusDataBindingException.class)
   public void testTimeToLiveEntityBadValue() throws Exception {
+    init("org.atreus.core.tests");
+
     try {
       executeCQL("CREATE TABLE default.TtlTestEntity (" +
           "id text, " +
           "value text, " +
           "PRIMARY KEY(id))");
 
-      getEnvironment().getEntityManager().scanPath("org.atreus.core.impl.entities.tests");
 
       // Test with a time-to-live set
       TtlTestEntity testEntity = new TtlTestEntity();

@@ -25,6 +25,7 @@ package org.atreus.core;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import junit.framework.Assert;
+import org.atreus.core.tests.TestEntity;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class AtreusSessionBuilderTests extends BaseCassandraTests {
 
   @Test
   public void testBuildFactory() {
-    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
     Assert.assertEquals(CLUSTER_HOST_NAME, sessionFactory.getHosts()[0]);
     Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());
     Assert.assertEquals(DEFAULT_KEY_SPACE, sessionFactory.getKeySpace());
@@ -58,7 +59,7 @@ public class AtreusSessionBuilderTests extends BaseCassandraTests {
   @Test
   public void testBuildFactoryWithMultipleHosts() {
     String[] hosts = new String[]{CLUSTER_HOST_NAME, "127.0.0.1"};
-    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(hosts, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(hosts, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
     Assert.assertEquals(hosts, sessionFactory.getHosts());
     Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());
     Assert.assertEquals(DEFAULT_KEY_SPACE, sessionFactory.getKeySpace());
@@ -67,7 +68,7 @@ public class AtreusSessionBuilderTests extends BaseCassandraTests {
 
   @Test
   public void testBuildFactoryWithConfiguration() {
-    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
     configuration.setDefaultBatchWriting(false);
     configuration.setDefaultConsistencyLevelRead(ConsistencyLevel.EACH_QUORUM);
     configuration.setDefaultConsistencyLevelWrite(ConsistencyLevel.QUORUM);
@@ -78,6 +79,49 @@ public class AtreusSessionBuilderTests extends BaseCassandraTests {
     Assert.assertTrue("Expected sessionFactory.isConnected to be true", sessionFactory.isConnected());
   }
 
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMisconfigurationHost() {
+    try {
+      AtreusSessionFactoryBuilder.buildFactory(new String[0], 0, null);
+    }
+    catch (AtreusInitialisationException e) {
+      org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMisconfigurationPort() {
+    try {
+      AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, 0, null);
+    }
+    catch (AtreusInitialisationException e) {
+      org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMisconfigurationKeySpace() {
+    try {
+      AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, null);
+    }
+    catch (AtreusInitialisationException e) {
+      org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMisconfigurationScanPath() {
+    try {
+      AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+    }
+    catch (AtreusInitialisationException e) {
+      org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED, e.getErrorCode());
+      throw e;
+    }
+  }
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

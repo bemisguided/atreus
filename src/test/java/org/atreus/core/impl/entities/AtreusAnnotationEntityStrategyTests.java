@@ -26,7 +26,7 @@ package org.atreus.core.impl.entities;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusManagedField;
 import org.atreus.core.BaseAtreusTests;
-import org.atreus.core.impl.entities.tests.TestEntity1;
+import org.atreus.core.tests.TestEntity;
 import org.atreus.impl.entities.EntityManager;
 import org.atreus.impl.types.cql.IntegerTypeStrategy;
 import org.atreus.impl.types.cql.LongTypeStrategy;
@@ -56,28 +56,28 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
   @Test
   public void testScanPath() {
     EntityManager entityManager = getEnvironment().getEntityManager();
-    entityManager.scanPath("org.atreus.core.impl.entities.tests");
+    entityManager.scanPath("org.atreus.core.tests");
 
-    // Assert TestEntity1 registry
-    AtreusManagedEntity managedEntity = entityManager.getEntity(TestEntity1.class);
+    // Assert TestEntity registry
+    AtreusManagedEntity managedEntity = entityManager.getEntity(TestEntity.class);
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
-    managedEntity = entityManager.getEntity("TestEntity1");
+    managedEntity = entityManager.getEntity("TestEntity");
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
 
-    // Assert TestEntity1 entity
+    // Assert TestEntity entity
     Assert.assertEquals(getEnvironment().getConfiguration().getKeySpace(), managedEntity.getKeySpace());
-    Assert.assertEquals("TestEntity1", managedEntity.getName());
-    Assert.assertEquals("TestEntity1", managedEntity.getTable());
-    Assert.assertEquals(TestEntity1.class, managedEntity.getEntityType());
+    Assert.assertEquals("TestEntity", managedEntity.getName());
+    Assert.assertEquals("TestEntity", managedEntity.getTable());
+    Assert.assertEquals(TestEntity.class, managedEntity.getEntityType());
 
-    // Assert TestEntity1 primary key
+    // Assert TestEntity primary key
     Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getColumn());
     Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getJavaField().getName());
     Assert.assertTrue("accessibility should be true", managedEntity.getPrimaryKeyField().getJavaField().isAccessible());
     Assert.assertNotNull("Expected not null TypeAccessor", managedEntity.getPrimaryKeyField().getTypeStrategy());
     Assert.assertEquals(StringTypeStrategy.class, managedEntity.getPrimaryKeyField().getTypeStrategy().getClass());
 
-    // Assert TestEntity1 fields
+    // Assert TestEntity fields
     Assert.assertEquals(3, managedEntity.getFields().size());
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       if ("field1".equals(managedField.getColumn())) {

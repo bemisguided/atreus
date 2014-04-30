@@ -52,6 +52,7 @@ public class AtreusSessionFactoryBuilder {
   public static AtreusSessionFactory buildFactory(AtreusConfiguration configuration) {
     AtreusSessionFactoryImpl factory = new AtreusSessionFactoryImpl(configuration);
     factory.connect();
+    factory.init();
     return factory;
   }
 
@@ -61,23 +62,25 @@ public class AtreusSessionFactoryBuilder {
    * @param host     a node host name in the Cassandra cluster
    * @param port     port of the CQL protocol for the Cassandra cluster
    * @param keySpace the default key space in the Cassandra cluster
+   * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */
-  public static AtreusSessionFactory buildFactory(String host, int port, String keySpace) {
-    AtreusConfiguration configuration = new AtreusConfiguration(host, port, keySpace);
+  public static AtreusSessionFactory buildFactory(String host, int port, String keySpace, String... scanPaths) {
+    AtreusConfiguration configuration = new AtreusConfiguration(host, port, keySpace, scanPaths);
     return buildFactory(configuration);
   }
 
   /**
    * Builds a new Atreus Session Factory.
    *
-   * @param hosts    an array of node host names in the Cassandra cluster
-   * @param port     port of the CQL protocol for the Cassandra cluster
-   * @param keySpace the default key space in the Cassandra cluster
+   * @param hosts     an array of node host names in the Cassandra cluster
+   * @param port      port of the CQL protocol for the Cassandra cluster
+   * @param keySpace  the default key space in the Cassandra cluster
+   * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */
-  public static AtreusSessionFactory buildFactory(String hosts[], int port, String keySpace) {
-    AtreusConfiguration configuration = new AtreusConfiguration(hosts, port, keySpace);
+  public static AtreusSessionFactory buildFactory(String hosts[], int port, String keySpace, String... scanPaths) {
+    AtreusConfiguration configuration = new AtreusConfiguration(hosts, port, keySpace, scanPaths);
     return buildFactory(configuration);
   }
 

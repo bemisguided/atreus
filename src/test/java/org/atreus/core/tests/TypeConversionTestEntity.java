@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.entities.tests;
+package org.atreus.core.tests;
 
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusPrimaryKey;

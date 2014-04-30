@@ -37,6 +37,10 @@ public class AtreusInitialisationException extends AtreusException {
 
   private static final transient Logger LOG = LoggerFactory.getLogger(AtreusInitialisationException.class);
 
+  public static int ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED = 90;
+  public static int ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED = 91;
+  public static int ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED = 92;
+  public static int ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED = 93;
   public static int ERROR_CODE_TYPE_STRATEGY_INVALID = 100;
   public static int ERROR_CODE_TTL_STRATEGY_INVALID = 101;
   public static int ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID = 102;

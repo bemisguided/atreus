@@ -71,6 +71,12 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
     return session;
   }
 
+  protected void init(String... scanPaths) {
+    getEnvironment().getConfiguration().setScanPaths(scanPaths);
+    getEnvironment().getTypeManager().scanPaths(scanPaths);
+    getEnvironment().getEntityManager().scanPaths(scanPaths);
+  }
+
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

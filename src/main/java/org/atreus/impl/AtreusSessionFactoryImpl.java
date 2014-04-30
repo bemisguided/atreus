@@ -24,10 +24,11 @@
 package org.atreus.impl;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
 import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.AtreusSessionFactory;
+import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,13 +60,37 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   public void connect() {
+
+    // Validate the Cassandra configuration
+    AtreusConfiguration configuration = environment.getConfiguration();
+    if (configuration.getHosts() == null || configuration.getHosts().length < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED);
+    }
+
+    if (configuration.getPort() < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED);
+    }
+
+    if (StringUtils.isNullOrEmpty(configuration.getKeySpace())) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
+    }
+
     Cluster cluster = Cluster.builder()
-        .addContactPoints(environment.getConfiguration().getHosts())
-        .withPort(environment.getConfiguration().getPort())
+        .addContactPoints(configuration.getHosts())
+        .withPort(configuration.getPort())
         .build();
     cluster.connect();
     environment.setCassandraCluster(cluster);
     environment.setCassandraSession(cluster.newSession());
+  }
+
+  public void init() {
+    AtreusConfiguration configuration = environment.getConfiguration();
+    if (configuration.getScanPaths() == null || configuration.getScanPaths().length < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED);
+    }
+    environment.getTypeManager().scanPaths(configuration.getScanPaths());
+    environment.getEntityManager().scanPaths(environment.getConfiguration().getScanPaths());
   }
 
   @Override

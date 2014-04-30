@@ -21,37 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.entities.tests;
+package org.atreus.core.tests;
 
 import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.core.annotations.AtreusTtl;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.util.Date;
-import java.util.UUID;
+import org.atreus.impl.types.cql.LongTypeStrategy;
 
 /**
- * TtlTestEntity.
+ * Test Entity 1.
  *
  * @author Martin Crawford
  */
 @AtreusEntity()
-public class TtlTestEntity {
+public class TestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   @AtreusPrimaryKey
-  private String id;
+  private String primaryKey;
 
-  private String value;
+  @AtreusField
+  private String field1;
 
-  @AtreusTtl
-  private Integer ttl;
+  private int field2;
+
+  private transient String field3;
+
+  @AtreusField(value = "field4field")
+  @AtreusFieldType(LongTypeStrategy.class)
+  private Integer field4;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -63,27 +65,43 @@ public class TtlTestEntity {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getId() {
-    return id;
+  public String getPrimaryKey() {
+    return primaryKey;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public void setPrimaryKey(String primaryKey) {
+    this.primaryKey = primaryKey;
   }
 
-  public String getValue() {
-    return value;
+  public String getField1() {
+    return field1;
   }
 
-  public void setValue(String value) {
-    this.value = value;
+  public void setField1(String field1) {
+    this.field1 = field1;
   }
 
-  public Integer getTtl() {
-    return ttl;
+  public int getField2() {
+    return field2;
   }
 
-  public void setTtl(Integer ttl) {
-    this.ttl = ttl;
+  public void setField2(int field2) {
+    this.field2 = field2;
+  }
+
+  public String getField3() {
+    return field3;
+  }
+
+  public void setField3(String field3) {
+    this.field3 = field3;
+  }
+
+  public Integer getField4() {
+    return field4;
+  }
+
+  public void setField4(Integer field4) {
+    this.field4 = field4;
   }
 }

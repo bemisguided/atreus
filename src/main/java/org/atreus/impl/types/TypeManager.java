@@ -134,6 +134,12 @@ public class TypeManager {
     return null;
   }
 
+  public void scanPaths(String[] paths) {
+    for(String path : paths) {
+      scanPath(path);
+    }
+  }
+
   public void scanPath(String path) {
     Reflections reflections = new Reflections(path);
     Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);

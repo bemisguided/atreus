@@ -81,6 +81,12 @@ public class EntityManager {
     return classRegistry.get(entityType);
   }
 
+  public void scanPaths(String[] paths) {
+    for(String path : paths) {
+      scanPath(path);
+    }
+  }
+
   public void scanPath(String path) {
     LOG.trace("Scanning classpath path={}", path);
 

@@ -48,22 +48,25 @@ public class AtreusConfiguration {
   private String[] hosts;
   private String keySpace;
   private int port;
+  private String[] scanPaths;
   private AtreusEntityStrategy[] entityStrategies = new AtreusEntityStrategy[]{new AtreusAnnotationEntityStrategy()};
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public AtreusConfiguration(String host, int port, String keySpace) {
+  public AtreusConfiguration(String host, int port, String keySpace, String... scanPaths) {
     this.hosts = new String[]{host};
     this.keySpace = keySpace;
     this.port = port;
+    this.scanPaths = scanPaths;
   }
 
-  public AtreusConfiguration(String[] hosts, int port, String keySpace) {
+  public AtreusConfiguration(String[] hosts, int port, String keySpace, String... scanPaths) {
     this.hosts = hosts;
     this.keySpace = keySpace;
     this.port = port;
+    this.scanPaths = scanPaths;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -114,6 +117,14 @@ public class AtreusConfiguration {
 
   public int getPort() {
     return port;
+  }
+
+  public String[] getScanPaths() {
+    return scanPaths;
+  }
+
+  public void setScanPaths(String... scanPaths) {
+    this.scanPaths = scanPaths;
   }
 
 }
