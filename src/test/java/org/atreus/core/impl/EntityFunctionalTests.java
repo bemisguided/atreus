@@ -25,18 +25,19 @@ package org.atreus.core.impl;
 
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.BaseAtreusCassandraTests;
+import org.atreus.core.tests.CollectionTestEntity;
 import org.atreus.core.tests.TtlTestEntity;
 import org.atreus.core.tests.TypeConversionTestEntity;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.matchers.JUnitMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Functional Tests for various entity mappings.
@@ -173,6 +174,41 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     finally {
       executeCQL("DROP TABLE default.TtlTestEntity");
     }
+  }
+
+  @Test
+  public void testCollectionsEntity() throws Exception {
+    init("org.atreus.core.tests");
+
+    executeCQL("CREATE TABLE default.CollectionTestEntity (" +
+        "id text, " +
+        "setField set<bigint>, " +
+        "listField list<text>, " +
+        "PRIMARY KEY(id))");
+
+    CollectionTestEntity testEntity = new CollectionTestEntity();
+
+    Set<Long> setValue = new HashSet<>();
+    testEntity.setSetField(setValue);
+    setValue.add((long) 123456);
+    setValue.add((long) 654321);
+
+    List<String> listValue = new ArrayList<>();
+    testEntity.setListField(listValue);
+    listValue.add("value1");
+    listValue.add("value2");
+
+    getSession().save(testEntity);
+
+    String primaryKey = testEntity.getId();
+
+    CollectionTestEntity otherEntity = getSession().findByPrimaryKey(CollectionTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect to be not null", otherEntity);
+    Assert.assertThat(otherEntity.getListField(), JUnitMatchers.hasItems("value1", "value2"));
+    Assert.assertThat(otherEntity.getSetField(), JUnitMatchers.hasItems((long) 123456, (long) 654321));
+
+    executeCQL("DROP TABLE default.CollectionTestEntity");
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

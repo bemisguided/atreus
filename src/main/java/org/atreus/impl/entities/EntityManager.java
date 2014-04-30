@@ -25,11 +25,7 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.ext.AtreusEntityStrategy;
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
-import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.*;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.StringUtils;
@@ -38,10 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Registry of managed entities.
@@ -82,7 +75,7 @@ public class EntityManager {
   }
 
   public void scanPaths(String[] paths) {
-    for(String path : paths) {
+    for (String path : paths) {
       scanPath(path);
     }
   }
@@ -163,6 +156,7 @@ public class EntityManager {
     addEntity(managedEntity);
   }
 
+  @SuppressWarnings("unchecked")
   private void doProcessField(ManagedEntityImpl managedEntity, Field javaField) {
     String fieldName = javaField.getName();
     LOG.trace("Processing Field for Entity entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
@@ -200,11 +194,21 @@ public class EntityManager {
       }
       // Time-to-live
       else if (entityStrategy.isTtlField(managedField)) {
-        resolveTtlStrategy(managedEntity, managedField,entityStrategy);
+        resolveTtlStrategy(managedEntity, managedField, entityStrategy);
         managedEntity.setTtlField(managedField);
       }
       else {
-        updateField(managedField, entityStrategy);
+        // TODO clean-up include validation, also setting a value to a singleton need it's own instance
+        if (Collection.class.isAssignableFrom(managedField.getJavaField().getType())) {
+          if (AtreusCollectionTypeStrategy.class.isAssignableFrom(managedField.getTypeStrategy().getClass())) {
+            AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) managedField.getTypeStrategy();
+            Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
+            collectionTypeStrategy.setValueClass(valueClass);
+          }
+        }
+        else {
+          updateField(managedField, entityStrategy);
+        }
         managedEntity.getFields().add(managedField);
       }
     }

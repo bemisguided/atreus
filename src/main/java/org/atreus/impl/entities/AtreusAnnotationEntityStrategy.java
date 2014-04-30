@@ -55,6 +55,14 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  @Override
+  public Class<?> getCollectionValue(AtreusManagedField managedField) {
+    AtreusCollection collectionAnnotation = managedField.getJavaField().getAnnotation(AtreusCollection.class);
+    if (collectionAnnotation != null) {
+      return collectionAnnotation.type();
+    }
+    return null;
+  }
 
   @Override
   public String getEntityName(AtreusManagedEntity managedEntity) {

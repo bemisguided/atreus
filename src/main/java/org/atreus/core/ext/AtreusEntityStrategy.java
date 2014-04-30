@@ -32,6 +32,8 @@ import java.util.Collection;
  */
 public interface AtreusEntityStrategy {
 
+  public Class<?> getCollectionValue(AtreusManagedField managedField);
+
   public String getEntityName(AtreusManagedEntity managedEntity);
 
   public String getEntityKeySpace(AtreusManagedEntity managedEntity);
