@@ -198,7 +198,7 @@ public class EntityManager {
         managedEntity.setTtlField(managedField);
       }
       else {
-        // TODO clean-up include validation, also setting a value to a singleton need it's own instance
+        // TODO clean-up include validation,
         if (Collection.class.isAssignableFrom(managedField.getJavaField().getType())) {
           if (AtreusCollectionTypeStrategy.class.isAssignableFrom(managedField.getTypeStrategy().getClass())) {
             AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) managedField.getTypeStrategy();

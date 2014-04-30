@@ -24,9 +24,9 @@
 package org.atreus.impl.types;
 
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.AtreusTtlStrategy;
+import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.impl.AtreusEnvironment;
 import org.reflections.Reflections;
@@ -52,9 +52,9 @@ public class TypeManager {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusPrimaryKeyStrategy<?>> primaryKeyStrategyMap = new HashMap<>();
-  private Map<Class<?>, AtreusTtlStrategy<?>> ttlStrategyMap = new HashMap<>();
-  private Map<Class<?>, AtreusTypeStrategy<?>> typeStrategyMap = new HashMap<>();
+  private Map<Class<?>, Class<? extends AtreusPrimaryKeyStrategy>> primaryKeyStrategyMap = new HashMap<>();
+  private Map<Class<?>, Class<? extends AtreusTtlStrategy>> ttlStrategyMap = new HashMap<>();
+  private Map<Class<?>, Class<? extends AtreusTypeStrategy>> typeStrategyMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -77,15 +77,15 @@ public class TypeManager {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addPrimaryKeyStrategy(Class<?> typeClass, AtreusPrimaryKeyStrategy<?> primaryKeyStrategy) {
+  public void addPrimaryKeyStrategy(Class<?> typeClass, Class<? extends AtreusPrimaryKeyStrategy> primaryKeyStrategy) {
     primaryKeyStrategyMap.put(typeClass, primaryKeyStrategy);
   }
 
-  public void addTtlStrategy(Class<?> typeClass, AtreusTtlStrategy<?> ttlStrategy) {
+  public void addTtlStrategy(Class<?> typeClass, Class<? extends AtreusTtlStrategy> ttlStrategy) {
     ttlStrategyMap.put(typeClass, ttlStrategy);
   }
 
-  public void addTypeStrategy(Class<?> typeClass, AtreusTypeStrategy<?> typeStrategy) {
+  public void addTypeStrategy(Class<?> typeClass, Class<? extends AtreusTypeStrategy> typeStrategy) {
     typeStrategyMap.put(typeClass, typeStrategy);
   }
 
@@ -98,7 +98,7 @@ public class TypeManager {
     // Iterate the registry and find the first assignable class
     for (Class<?> key : primaryKeyStrategyMap.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
-        return primaryKeyStrategyMap.get(key);
+        return createPrimaryKeyStrategy(primaryKeyStrategyMap.get(key));
       }
     }
     return null;
@@ -113,7 +113,7 @@ public class TypeManager {
     // Iterate the registry and find the first assignable class
     for (Class<?> key : ttlStrategyMap.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
-        return ttlStrategyMap.get(key);
+        return createTtlStrategyInstance(ttlStrategyMap.get(key));
       }
     }
     return null;
@@ -128,31 +128,34 @@ public class TypeManager {
     // Iterate the registry and find the first assignable class
     for (Class<?> key : typeStrategyMap.keySet()) {
       if (key.isAssignableFrom(typeClass)) {
-        return typeStrategyMap.get(key);
+        Class<? extends AtreusTypeStrategy> typeStrategyClass = typeStrategyMap.get(key);
+        LOG.trace("Resolved typeStrategyClass={} for typeClass={}", typeStrategyClass, typeClass);
+        return createTypeStrategyInstance(typeStrategyClass);
       }
     }
     return null;
   }
 
   public void scanPaths(String[] paths) {
-    for(String path : paths) {
+    for (String path : paths) {
       scanPath(path);
     }
   }
 
+  @SuppressWarnings("unchecked")
   public void scanPath(String path) {
     Reflections reflections = new Reflections(path);
     Set<Class<?>> classes = reflections.getTypesAnnotatedWith(AtreusType.class);
     for (Class<?> clazz : classes) {
       AtreusType annotation = clazz.getAnnotation(AtreusType.class);
       if (AtreusTypeStrategy.class.isAssignableFrom(clazz)) {
-        registerTypeStrategy(clazz, annotation);
+        registerTypeStrategy((Class<? extends AtreusTypeStrategy>) clazz, annotation);
       }
       if (AtreusPrimaryKeyStrategy.class.isAssignableFrom(clazz)) {
-        registerPrimaryKeyGenerator(clazz, annotation);
+        registerPrimaryKeyStrategy((Class<? extends AtreusPrimaryKeyStrategy>) clazz, annotation);
       }
       if (AtreusTtlStrategy.class.isAssignableFrom(clazz)) {
-        registerTtlStrategy(clazz, annotation);
+        registerTtlStrategy((Class<? extends AtreusTtlStrategy>) clazz, annotation);
       }
     }
   }
@@ -161,43 +164,53 @@ public class TypeManager {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void registerPrimaryKeyGenerator(Class<?> clazz, AtreusType annotation) {
+  private AtreusPrimaryKeyStrategy createPrimaryKeyStrategy(Class<? extends AtreusPrimaryKeyStrategy> primaryKeyStrategyClass) {
     try {
-      AtreusPrimaryKeyStrategy<?> primaryKeyGenerator = (AtreusPrimaryKeyStrategy) clazz.newInstance();
-      Class<?> typeClass = annotation.value();
-      LOG.trace("Registered primaryKeyGenerator={} for typeClass={}", primaryKeyGenerator.getClass(), typeClass);
-      addPrimaryKeyStrategy(typeClass, primaryKeyGenerator);
+      return primaryKeyStrategyClass.newInstance();
     }
     catch (InstantiationException | IllegalAccessException e) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY,
-          clazz.getCanonicalName());
+          primaryKeyStrategyClass.getCanonicalName());
     }
   }
 
-  private void registerTtlStrategy(Class<?> clazz, AtreusType annotation) {
+  private AtreusTtlStrategy createTtlStrategyInstance(Class<? extends AtreusTtlStrategy> ttlStrategyClass) {
     try {
-      AtreusTtlStrategy<?> ttlStrategy = (AtreusTtlStrategy) clazz.newInstance();
-      Class<?> typeClass = annotation.value();
-      LOG.trace("Registered ttlStrategy={} for typeClass={}", ttlStrategy.getClass(), typeClass);
-      addTtlStrategy(typeClass, ttlStrategy);
+      return ttlStrategyClass.newInstance();
     }
     catch (InstantiationException | IllegalAccessException e) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_TTL_STRATEGY,
-          clazz.getCanonicalName());
+          ttlStrategyClass.getCanonicalName());
     }
   }
 
-  private void registerTypeStrategy(Class<?> clazz, AtreusType annotation) {
+  private AtreusTypeStrategy createTypeStrategyInstance(Class<? extends AtreusTypeStrategy> typeStrategyClass) {
     try {
-      AtreusTypeStrategy<?> typeStrategy = (AtreusTypeStrategy) clazz.newInstance();
-      Class<?> typeClass = annotation.value();
-      LOG.trace("Registered typeStrategy={} for typeClass={}", typeStrategy.getClass(), typeClass);
-      addTypeStrategy(typeClass, typeStrategy);
+      return typeStrategyClass.newInstance();
     }
     catch (InstantiationException | IllegalAccessException e) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_TYPE_STRATEGY,
-          clazz.getCanonicalName());
+          typeStrategyClass.getCanonicalName());
     }
+  }
+
+  private void registerPrimaryKeyStrategy(Class<? extends AtreusPrimaryKeyStrategy> primaryKeyStrategyClass, AtreusType annotation) {
+    Class<?> typeClass = annotation.value();
+    LOG.trace("Registered primaryKeyStrategyClass={} for typeClass={}", primaryKeyStrategyClass, typeClass);
+    addPrimaryKeyStrategy(typeClass, primaryKeyStrategyClass);
+  }
+
+  private void registerTtlStrategy(Class<? extends AtreusTtlStrategy> ttlStrategyClass, AtreusType annotation) {
+    Class<?> typeClass = annotation.value();
+    LOG.trace("Registered ttlStrategyClass={} for typeClass={}", ttlStrategyClass, typeClass);
+    addTtlStrategy(typeClass, ttlStrategyClass);
+  }
+
+  private void registerTypeStrategy(Class<? extends AtreusTypeStrategy> typeStrategyClass, AtreusType annotation) {
+    Class<?> typeClass = annotation.value();
+    LOG.trace("Registered typeStrategyClass={} for typeClass={}", typeStrategyClass, typeClass);
+    addTypeStrategy(typeClass, typeStrategyClass);
+
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
