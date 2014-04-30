@@ -159,7 +159,7 @@ public class TypeManager {
     try {
       AtreusPrimaryKeyStrategy<?> primaryKeyGenerator = (AtreusPrimaryKeyStrategy) clazz.newInstance();
       Class<?> typeClass = annotation.value();
-      LOG.debug("Registered primaryKeyGenerator={} for typeClass={}", primaryKeyGenerator.getClass(), typeClass);
+      LOG.trace("Registered primaryKeyGenerator={} for typeClass={}", primaryKeyGenerator.getClass(), typeClass);
       addPrimaryKeyStrategy(typeClass, primaryKeyGenerator);
     }
     catch (InstantiationException | IllegalAccessException e) {
@@ -172,7 +172,7 @@ public class TypeManager {
     try {
       AtreusTtlStrategy<?> ttlStrategy = (AtreusTtlStrategy) clazz.newInstance();
       Class<?> typeClass = annotation.value();
-      LOG.debug("Registered ttlStrategy={} for typeClass={}", ttlStrategy.getClass(), typeClass);
+      LOG.trace("Registered ttlStrategy={} for typeClass={}", ttlStrategy.getClass(), typeClass);
       addTtlStrategy(typeClass, ttlStrategy);
     }
     catch (InstantiationException | IllegalAccessException e) {
@@ -185,7 +185,7 @@ public class TypeManager {
     try {
       AtreusTypeStrategy<?> typeStrategy = (AtreusTypeStrategy) clazz.newInstance();
       Class<?> typeClass = annotation.value();
-      LOG.debug("Registered typeStrategy={} for typeClass={}", typeStrategy.getClass(), typeClass);
+      LOG.trace("Registered typeStrategy={} for typeClass={}", typeStrategy.getClass(), typeClass);
       addTypeStrategy(typeClass, typeStrategy);
     }
     catch (InstantiationException | IllegalAccessException e) {

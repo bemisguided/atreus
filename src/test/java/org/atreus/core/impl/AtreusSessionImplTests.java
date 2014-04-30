@@ -60,7 +60,6 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
         "anInetAddress inet, " +
         "aInteger int, " +
         "aLong bigint, " +
-        "aShort blob, " +
         "aString text, " +
         "aUuid uuid, " +
         "PRIMARY KEY(id))");
@@ -68,7 +67,7 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
 
     TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
     testEntity.setaString("field1Value");
-    testEntity.setaShort((short) 321);
+    testEntity.setaInteger(321);
 
     getSession().save(testEntity);
     String primaryKey = testEntity.getId();
@@ -78,7 +77,7 @@ public class AtreusSessionImplTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals(primaryKey, otherEntity.getId());
     Assert.assertEquals("field1Value", otherEntity.getaString());
-    Assert.assertEquals(321, otherEntity.getaShort());
+    Assert.assertEquals(321, otherEntity.getaInteger());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -25,12 +25,14 @@ package org.atreus.impl.entities;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
+import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Helper class to bind data to and from Cassandra rows and statements.
@@ -86,6 +88,26 @@ public class BindingHelper {
     for (AtreusManagedField managedField : managedEntity.getFields()) {
       bindFromField(managedField, entity, boundStatement);
     }
+
+    bindFromEntityTtl(managedEntity, entity, boundStatement);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static void bindFromEntityTtl(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
+    AtreusManagedField ttlField = managedEntity.getTtlField();
+    if (ttlField == null) {
+      return;
+    }
+    Object value = getField(ttlField, entity);
+    if (value == null) {
+      return;
+    }
+
+    Integer ttlValue = managedEntity.getTtlStrategy().translate(new Date(), value);
+    if (ttlValue == null || ttlValue < 1) {
+      throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlField, ttlValue);
+    }
+    boundStatement.setInt(ttlField.getColumn(), ttlValue);
   }
 
   public static void bindFromField(AtreusManagedField managedField, Object entity, BoundStatement boundStatement) {

@@ -65,8 +65,6 @@ public class TypeConversionTestEntity {
 
   private long aLong;
 
-  private short aShort;
-
   private String aString;
 
   private UUID aUuid;
@@ -88,14 +86,6 @@ public class TypeConversionTestEntity {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public short getaShort() {
-    return aShort;
-  }
-
-  public void setaShort(short aShort) {
-    this.aShort = aShort;
   }
 
   public BigDecimal getaBigDecimal() {

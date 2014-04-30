@@ -21,57 +21,70 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core.impl.types.ttl;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusMapTypeStrategy;
-import org.atreus.core.ext.AtreusType;
+import junit.framework.Assert;
+import org.atreus.impl.types.ttl.DateTtlStrategy;
+import org.atreus.impl.types.ttl.LongTtlStrategy;
+import org.atreus.impl.types.ttl.ShortTtlStrategy;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
- * List Type Strategy.
+ * Unit tests for time-to-live strategy implementations.
  *
  * @author Martin Crawford
  */
-@AtreusType(Map.class)
-public class MapTypeStrategy extends BaseCollectionTypeStrategy implements AtreusMapTypeStrategy<Map> {
+public class TtlStrategyTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(MapTypeStrategy.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(TtlStrategyTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private Class<?> keyClass;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public Class<?> getKeyClass() {
-    return keyClass;
+  @Test
+  public void testLongTtlStrategy() {
+    LongTtlStrategy ttlStrategy = new LongTtlStrategy();
+    Assert.assertEquals(1234, (int) ttlStrategy.translate(new Date(), (long) 1234));
   }
 
-  @Override
-  public void setKeyClass(Class<?> keyClass) {
-    this.keyClass = keyClass;
+  @Test(expected = IllegalArgumentException.class)
+  public void testLongTtlStrategyWithOutOfRangeMax() {
+    LongTtlStrategy ttlStrategy = new LongTtlStrategy();
+    ttlStrategy.translate(new Date(), Long.MAX_VALUE);
   }
 
-  @Override
-  public Map get(Row row, String colName) {
-    return row.getMap(colName, getValueClass(), getKeyClass());
+  @Test(expected = IllegalArgumentException.class)
+  public void testLongTtlStrategyWithOutOfRangeMin() {
+    LongTtlStrategy ttlStrategy = new LongTtlStrategy();
+    ttlStrategy.translate(new Date(), Long.MIN_VALUE);
   }
 
-  @Override
-  public void set(BoundStatement boundStatement, String colName, Map value) {
-    boundStatement.setMap(colName, value);
+  @Test
+  public void testShortTtlStrategy() {
+    ShortTtlStrategy ttlStrategy = new ShortTtlStrategy();
+    Assert.assertEquals(1234, (int) ttlStrategy.translate(new Date(), (short) 1234));
   }
+
+  @Test
+  public void testDateTtlStrategy() {
+    DateTtlStrategy ttlStrategy = new DateTtlStrategy();
+    Calendar now = Calendar.getInstance();
+    Calendar future = Calendar.getInstance();
+    future.setTimeInMillis(now.getTimeInMillis());
+    future.add(Calendar.HOUR, 1);
+    Assert.assertEquals(60 * 60, (int) ttlStrategy.translate(now.getTime(), future.getTime()));
+  }
+
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

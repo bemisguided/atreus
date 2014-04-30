@@ -32,6 +32,6 @@ import java.util.Date;
  */
 public interface AtreusTtlStrategy<T> {
 
-  public Long translate(Date now, T value);
+  public Integer translate(Date now, T value);
 
 }

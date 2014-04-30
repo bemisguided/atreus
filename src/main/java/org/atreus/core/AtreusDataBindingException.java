@@ -21,57 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusMapTypeStrategy;
-import org.atreus.core.ext.AtreusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * List Type Strategy.
+ * Exception thrown if an error occurred while attempting to bind data to or from a managed entity.
  *
  * @author Martin Crawford
  */
-@AtreusType(Map.class)
-public class MapTypeStrategy extends BaseCollectionTypeStrategy implements AtreusMapTypeStrategy<Map> {
+public class AtreusDataBindingException extends AtreusException {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(MapTypeStrategy.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusDataBindingException.class);
+
+  public static int ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE = 200;
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> keyClass;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public AtreusDataBindingException(int errorCode, Object... details) {
+    super(errorCode, details);
+  }
+
+  public AtreusDataBindingException(int errorCode, Throwable cause, Object... details) {
+    super(errorCode, cause, details);
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public Class<?> getKeyClass() {
-    return keyClass;
-  }
-
-  @Override
-  public void setKeyClass(Class<?> keyClass) {
-    this.keyClass = keyClass;
-  }
-
-  @Override
-  public Map get(Row row, String colName) {
-    return row.getMap(colName, getValueClass(), getKeyClass());
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, Map value) {
-    boundStatement.setMap(colName, value);
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

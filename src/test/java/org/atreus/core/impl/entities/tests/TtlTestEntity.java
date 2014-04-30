@@ -21,57 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core.impl.entities.tests;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusMapTypeStrategy;
-import org.atreus.core.ext.AtreusType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.core.annotations.AtreusTtl;
 
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.util.Date;
+import java.util.UUID;
 
 /**
- * List Type Strategy.
+ * TtlTestEntity.
  *
  * @author Martin Crawford
  */
-@AtreusType(Map.class)
-public class MapTypeStrategy extends BaseCollectionTypeStrategy implements AtreusMapTypeStrategy<Map> {
+@AtreusEntity()
+public class TtlTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(MapTypeStrategy.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> keyClass;
+  @AtreusPrimaryKey
+  private String id;
+
+  private String value;
+
+  @AtreusTtl
+  private Integer ttl;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public Class<?> getKeyClass() {
-    return keyClass;
-  }
-
-  @Override
-  public void setKeyClass(Class<?> keyClass) {
-    this.keyClass = keyClass;
-  }
-
-  @Override
-  public Map get(Row row, String colName) {
-    return row.getMap(colName, getValueClass(), getKeyClass());
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, Map value) {
-    boundStatement.setMap(colName, value);
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -79,4 +63,27 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public Integer getTtl() {
+    return ttl;
+  }
+
+  public void setTtl(Integer ttl) {
+    this.ttl = ttl;
+  }
+}

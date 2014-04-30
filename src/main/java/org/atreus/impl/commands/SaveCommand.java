@@ -28,6 +28,7 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedField;
 import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ public class SaveCommand extends BaseWriteCommand {
   @Override
   public RegularStatement prepareStatement(AtreusSession session) {
     boolean hasTtl = false;
-    if (managedEntity.getTtlField() != null && BindingHelper.isNull(managedEntity.getTtlField(), entity)) {
+    AtreusManagedField ttlField = managedEntity.getTtlField();
+    if (ttlField != null && !BindingHelper.isNull(ttlField, entity)) {
       hasTtl = true;
     }
     return QueryHelper.insertEntity(managedEntity, hasTtl);

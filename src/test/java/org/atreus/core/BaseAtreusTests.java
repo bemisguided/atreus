@@ -58,6 +58,14 @@ public abstract class BaseAtreusTests {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
+  protected static void sleepSeconds(int seconds) {
+    try {
+      Thread.sleep(seconds * 1000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

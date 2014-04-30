@@ -267,7 +267,7 @@ public class EntityManager {
       return;
     }
 
-    if (managedField.getTypeStrategy() != null) {
+    if (managedEntity.getTtlStrategy() != null) {
       return;
     }
 
