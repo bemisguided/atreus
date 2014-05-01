@@ -29,10 +29,10 @@ import org.atreus.impl.types.atreus.ShortTypeStrategy;
 import org.atreus.impl.types.cql.IntegerTypeStrategy;
 import org.atreus.impl.types.cql.LongTypeStrategy;
 import org.atreus.impl.types.cql.StringTypeStrategy;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 /**
  * Unit tests for the Type Manager.
@@ -55,17 +55,17 @@ public class TypeManagerTests extends BaseAtreusTests {
   public void testDefaultTypes() {
     TypeManager typeManager = getEnvironment().getTypeManager();
 
-    Assert.notNull(typeManager.findTypeStrategy(String.class), "StringTypeAccessor expected");
-    Assert.isInstanceOf(StringTypeStrategy.class, typeManager.findTypeStrategy(String.class));
+    Assert.assertNotNull("StringTypeAccessor expected", typeManager.findTypeStrategy(String.class));
+    Assert.assertEquals(StringTypeStrategy.class, typeManager.findTypeStrategy(String.class).getClass());
 
-    Assert.notNull(typeManager.findTypeStrategy(Integer.class), "IntegerTypeAccessor expected");
-    Assert.isInstanceOf(IntegerTypeStrategy.class, typeManager.findTypeStrategy(Integer.class));
+    Assert.assertNotNull("IntegerTypeAccessor expected", typeManager.findTypeStrategy(Integer.class));
+    Assert.assertEquals(IntegerTypeStrategy.class, typeManager.findTypeStrategy(Integer.class).getClass());
 
-    Assert.notNull(typeManager.findTypeStrategy(Long.class), "LongTypeAccessor expected");
-    Assert.isInstanceOf(LongTypeStrategy.class, typeManager.findTypeStrategy(Long.class));
+    Assert.assertNotNull("LongTypeAccessor expected", typeManager.findTypeStrategy(Long.class));
+    Assert.assertEquals(LongTypeStrategy.class, typeManager.findTypeStrategy(Long.class).getClass());
 
-    Assert.notNull(typeManager.findTypeStrategy(Short.class), "ShortTypeAccessor expected");
-    Assert.isInstanceOf(ShortTypeStrategy.class, typeManager.findTypeStrategy(Short.class));
+    Assert.assertNotNull("ShortTypeAccessor expected", typeManager.findTypeStrategy(Short.class));
+    Assert.assertEquals(ShortTypeStrategy.class, typeManager.findTypeStrategy(Short.class).getClass());
 
   }
 

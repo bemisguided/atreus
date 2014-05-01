@@ -11,13 +11,13 @@
 		<java-version>1.7</java-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<org.springframework.version>3.0.6.RELEASE</org.springframework.version>
     <com.datastax.cassandra.driver-version>2.0.1</com.datastax.cassandra.driver-version>
     <org.reflections-version>0.9.9-RC1</org.reflections-version>
-		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
-    <org.slf4j-version>1.7.6</org.slf4j-version>
-		<org.easymock-version>3.1</org.easymock-version>
+    <org.javassist-version>3.18.1-GA</org.javassist-version>
     <org.antlr-version>4.2.2</org.antlr-version>
+    <org.slf4j-version>1.7.6</org.slf4j-version>
+		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
+		<org.easymock-version>3.1</org.easymock-version>
 	</properties>
 
 	<dependencies>
@@ -36,31 +36,12 @@
       <version>${org.reflections-version}</version>
     </dependency>
 
-    <!-- Spring (Provided) -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${org.springframework.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>${org.springframework.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${org.springframework.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-			<version>${org.springframework.version}</version>
-			<scope>provided</scope>
-		</dependency>
+    <!-- Javassist -->
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>${org.javassist-version}</version>
+    </dependency>
 
     <!-- ANTLR4 -->
     <dependency>
