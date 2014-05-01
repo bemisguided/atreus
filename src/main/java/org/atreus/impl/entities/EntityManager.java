@@ -28,6 +28,7 @@ import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.ext.*;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.types.TypeManager;
+import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +51,8 @@ public class EntityManager {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
-  private Map<Class<?>, AtreusManagedEntity> classRegistry = new HashMap<>();
-  private Map<String, AtreusManagedEntity> nameRegistry = new HashMap<>();
+  private Map<Class<?>, ManagedEntityImpl> classRegistry = new HashMap<>();
+  private Map<String, ManagedEntityImpl> nameRegistry = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -60,11 +61,6 @@ public class EntityManager {
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public void addEntity(AtreusManagedEntity managedEntity) {
-    classRegistry.put(managedEntity.getEntityType(), managedEntity);
-    nameRegistry.put(managedEntity.getName(), managedEntity);
-  }
 
   public AtreusManagedEntity getEntity(String name) {
     return nameRegistry.get(name);
@@ -97,11 +93,31 @@ public class EntityManager {
       doProcessEntity(entityType);
     }
 
+    // Iterate and process fields for each manged entity
+    for (ManagedEntityImpl managedEntity : classRegistry.values()) {
+      Class<?> entityType = managedEntity.getEntityType();
+      // Process the fields
+      for (Field javaField : entityType.getDeclaredFields()) {
+
+        // Ignore transient field
+        if (Modifier.isTransient(javaField.getModifiers())) {
+          continue;
+        }
+
+        doProcessField(managedEntity, javaField);
+      }
+    }
+
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void addEntity(ManagedEntityImpl managedEntity) {
+    classRegistry.put(managedEntity.getEntityType(), managedEntity);
+    nameRegistry.put(managedEntity.getName(), managedEntity);
+  }
 
   private void assertSinglePrimaryKey(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField) {
     if (managedEntity.getPrimaryKeyField() != null && !managedEntity.getPrimaryKeyField().equals(managedField)) {
@@ -141,18 +157,7 @@ public class EntityManager {
       updateManagedEntity(managedEntity, entityStrategy);
     }
 
-    // Process the fields
-    for (Field javaField : entityType.getDeclaredFields()) {
-
-      // Ignore transient field
-      if (Modifier.isTransient(javaField.getModifiers())) {
-        continue;
-      }
-
-      doProcessField(managedEntity, javaField);
-    }
-
-    LOG.debug("Registered Entity name={} entityClass={}", managedEntity.getName(), managedEntity.getEntityType());
+    LOG.debug("Registered Entity name={} {}", managedEntity.getName(), managedEntity.getEntityType());
     addEntity(managedEntity);
   }
 
@@ -172,57 +177,123 @@ public class EntityManager {
     // Iterate the entity strategies and process
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
 
+      if (classRegistry.containsKey(javaField.getType())) {
+        LOG.debug("Relationship detected {}", managedField.getJavaField());
+        continue;
+      }
       // Resolve the default Type Strategy (if available)
       resolveTypeStrategy(managedField, entityStrategy);
 
+      // Special fields
+
       // Primary Key
       if (entityStrategy.isPrimaryKeyField(managedField)) {
-
-        // Assert there is not already an existing primary key
-        assertSinglePrimaryKey(managedEntity, managedField);
-
-        // Update the Primary Key
-        updatePrimaryKey(managedField, entityStrategy);
-
-        // If primary key is generated resolve a generation strategy
-        if (entityStrategy.isPrimaryKeyGenerated(managedField)) {
-          resolvePrimaryKeyStrategy(managedEntity, managedField, entityStrategy);
-        }
-
-        // Mark as a Primary Key
-        managedEntity.setPrimaryKeyField(managedField);
+        processPrimaryKeyField(managedEntity, managedField, entityStrategy);
+        continue;
       }
+
       // Time-to-live
-      else if (entityStrategy.isTtlField(managedField)) {
-        resolveTtlStrategy(managedEntity, managedField, entityStrategy);
-        managedEntity.setTtlField(managedField);
+      if (entityStrategy.isTtlField(managedField)) {
+        processTimeToLiveField(managedEntity, managedField, entityStrategy);
+        continue;
       }
-      else {
-        // TODO clean-up include validation,
-        if (Collection.class.isAssignableFrom(managedField.getJavaField().getType())) {
-          if (AtreusCollectionTypeStrategy.class.isAssignableFrom(managedField.getTypeStrategy().getClass())) {
-            AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) managedField.getTypeStrategy();
-            Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
-            collectionTypeStrategy.setValueClass(valueClass);
-          }
-        }
-        if (Map.class.isAssignableFrom(managedField.getJavaField().getType())) {
-          if (AtreusMapTypeStrategy.class.isAssignableFrom(managedField.getTypeStrategy().getClass())) {
-            AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) managedField.getTypeStrategy();
-            Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
-            Class<?> keyClass = entityStrategy.getMapKey(managedField);
-            mapTypeStrategy.setValueClass(valueClass);
-            mapTypeStrategy.setKeyClass(keyClass);
-          }
-        }
-        else {
-          updateField(managedField, entityStrategy);
-        }
-        managedEntity.getFields().add(managedField);
+
+      // Managed Fields
+      managedEntity.getFields().add(managedField);
+
+      // Collection
+      if (Collection.class.isAssignableFrom(javaField.getType())) {
+        processCollectionField(managedField, entityStrategy);
+        continue;
       }
+
+      // Map
+      if (Map.class.isAssignableFrom(javaField.getType())) {
+        processMapField(managedField, entityStrategy);
+        continue;
+      }
+
+      updateField(managedField, entityStrategy);
+
     }
 
+
     // TODO validation: Type Strategy, primary keys & generator are serializable, validate ttl
+  }
+
+  @SuppressWarnings("unchecked")
+  private void processCollectionField(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+    Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
+    if (valueClass == null) {
+      valueClass = ReflectionUtils.findCollectionValueClass(managedField.getJavaField());
+    }
+
+    if (valueClass == null) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
+          managedField);
+    }
+
+    if (!(managedField.getTypeStrategy() instanceof AtreusCollectionTypeStrategy)) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID,
+          managedField, managedField.getTypeStrategy());
+    }
+
+    AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) managedField.getTypeStrategy();
+    collectionTypeStrategy.setValueClass(valueClass);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void processMapField(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+    Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
+    Class<?> keyClass = entityStrategy.getMapKey(managedField);
+
+    if (valueClass == null) {
+      valueClass = ReflectionUtils.findMapValueClass(managedField.getJavaField());
+    }
+
+    if (keyClass == null) {
+      keyClass = ReflectionUtils.findMapKeyClass(managedField.getJavaField());
+    }
+
+    if (valueClass == null) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
+          managedField);
+    }
+
+    if (keyClass == null) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE,
+          managedField);
+    }
+
+    if (!(managedField.getTypeStrategy() instanceof AtreusMapTypeStrategy)) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MAP_TYPE_STRATEGY_INVALID,
+          managedField, managedField.getTypeStrategy());
+    }
+
+    AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) managedField.getTypeStrategy();
+    mapTypeStrategy.setValueClass(valueClass);
+    mapTypeStrategy.setKeyClass(keyClass);
+  }
+
+  private void processPrimaryKeyField(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+    // Assert there is not already an existing primary key
+    assertSinglePrimaryKey(managedEntity, managedField);
+
+    // Update the Primary Key
+    updatePrimaryKey(managedField, entityStrategy);
+
+    // If primary key is generated resolve a generation strategy
+    if (entityStrategy.isPrimaryKeyGenerated(managedField)) {
+      resolvePrimaryKeyStrategy(managedEntity, managedField, entityStrategy);
+    }
+
+    // Mark as a Primary Key
+    managedEntity.setPrimaryKeyField(managedField);
+  }
+
+  private void processTimeToLiveField(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+    resolveTtlStrategy(managedEntity, managedField, entityStrategy);
+    managedEntity.setTtlField(managedField);
   }
 
   private void updateManagedEntity(ManagedEntityImpl managedEntity, AtreusEntityStrategy entityStrategy) {

@@ -42,12 +42,16 @@ public class AtreusInitialisationException extends AtreusException {
   public static int ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED = 92;
   public static int ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED = 93;
   public static int ERROR_CODE_TYPE_STRATEGY_INVALID = 100;
-  public static int ERROR_CODE_TTL_STRATEGY_INVALID = 101;
-  public static int ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID = 102;
-  public static int ERROR_CODE_PRIMARY_KEY_MULTIPLE = 103;
-  public static int ERROR_CODE_REGISTER_TYPE_STRATEGY = 110;
-  public static int ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY = 111;
-  public static int ERROR_CODE_REGISTER_TTL_STRATEGY = 112;
+  public static int ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID = 101;
+  public static int ERROR_CODE_MAP_TYPE_STRATEGY_INVALID = 102;
+  public static int ERROR_CODE_TTL_STRATEGY_INVALID = 104;
+  public static int ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID = 105;
+  public static int ERROR_CODE_PRIMARY_KEY_MULTIPLE = 106;
+  public static int ERROR_CODE_REGISTER_TYPE_STRATEGY = 120;
+  public static int ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY = 121;
+  public static int ERROR_CODE_REGISTER_TTL_STRATEGY = 122;
+  public static int ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE = 130;
+  public static int ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE = 131;
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 

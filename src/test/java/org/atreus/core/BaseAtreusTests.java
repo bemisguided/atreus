@@ -60,6 +60,7 @@ public abstract class BaseAtreusTests {
 
   protected static void sleepSeconds(int seconds) {
     try {
+      LOG.debug("Sleeping for {} second(s)", seconds);
       Thread.sleep(seconds * 1000);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);

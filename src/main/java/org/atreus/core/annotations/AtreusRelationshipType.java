@@ -23,25 +23,13 @@
  */
 package org.atreus.core.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Annotation that provides the details of a managed map by Atreus.
  *
  * @author Martin Crawford
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface AtreusMap {
+public enum AtreusRelationshipType {
 
-  /**
-   * Sets the type of the key for this map.
-   *
-   * @return
-   */
-  public Class<?> key() default NullType.class;
-
+  COMPOSITION,
+  AGGREGATION;
+  
 }

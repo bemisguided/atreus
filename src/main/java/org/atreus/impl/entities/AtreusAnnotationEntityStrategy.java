@@ -25,12 +25,7 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.*;
-import org.atreus.core.ext.AtreusEntityStrategy;
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
-import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
+import org.atreus.core.ext.*;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +53,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   @Override
   public Class<?> getCollectionValue(AtreusManagedField managedField) {
     AtreusCollection collectionAnnotation = managedField.getJavaField().getAnnotation(AtreusCollection.class);
-    if (collectionAnnotation != null) {
+    if (collectionAnnotation != null && !NullType.class.isAssignableFrom(collectionAnnotation.type())) {
       return collectionAnnotation.type();
     }
     return null;
@@ -94,7 +89,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   @Override
   public Class<?> getMapKey(AtreusManagedField managedField) {
     AtreusMap mapAnnotation = managedField.getJavaField().getAnnotation(AtreusMap.class);
-    if (mapAnnotation != null) {
+    if (mapAnnotation != null && !NullType.class.isAssignableFrom(mapAnnotation.key())) {
       return mapAnnotation.key();
     }
     return null;

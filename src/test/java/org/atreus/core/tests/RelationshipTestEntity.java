@@ -21,57 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.queries;
+package org.atreus.core.tests;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import org.atreus.impl.AtreusEnvironment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusPrimaryKey;
 
 /**
- * Manages queries and the caching of prepared statements.
+ * RelationshipTestEntity.
  *
  * @author Martin Crawford
  */
-public class QueryManager {
+@AtreusEntity
+public class RelationshipTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(QueryManager.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-
-  private Map<String, PreparedStatement> preparedStatementMap = new HashMap<>();
+  @AtreusPrimaryKey
+  private String id;
+  
+  private TestEntity testEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public QueryManager(AtreusEnvironment environment) {
-    this.environment = environment;
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public BoundStatement generate(RegularStatement cassandraStatement) {
-    return generate(cassandraStatement.getQueryString());
-  }
-
-  public BoundStatement generate(String cqlQueryString) {
-    LOG.debug("CQL Statement: {}", cqlQueryString);
-    PreparedStatement preparedStatement = preparedStatementMap.get(cqlQueryString);
-
-    if (preparedStatement == null) {
-      preparedStatement = environment.getCassandraSession().prepare(cqlQueryString);
-      preparedStatementMap.put(cqlQueryString, preparedStatement);
-    }
-    return new BoundStatement(preparedStatement);
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

@@ -47,15 +47,18 @@ public class CollectionTestEntity {
   @AtreusPrimaryKey
   private String id;
 
-  @AtreusCollection(type=Long.class)
+  @AtreusCollection(type = Long.class)
   private Set<Long> setField;
 
-  @AtreusCollection(type=String.class)
   private List<String> listField;
 
   @AtreusCollection(type = Long.class)
-  @AtreusMap(key=String.class)
-  private Map<String, Long> mapField;
+  @AtreusMap(key = String.class)
+  private Map<String, Long> mapField1;
+
+  @AtreusCollection
+  @AtreusMap
+  private Map<String, Long> mapField2;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -91,12 +94,20 @@ public class CollectionTestEntity {
     this.listField = listField;
   }
 
-  public Map<String, Long> getMapField() {
-    return mapField;
+  public Map<String, Long> getMapField1() {
+    return mapField1;
   }
 
-  public void setMapField(Map<String, Long> mapField) {
-    this.mapField = mapField;
+  public void setMapField1(Map<String, Long> mapField1) {
+    this.mapField1 = mapField1;
+  }
+
+  public Map<String, Long> getMapField2() {
+    return mapField2;
+  }
+
+  public void setMapField2(Map<String, Long> mapField2) {
+    this.mapField2 = mapField2;
   }
 
 }

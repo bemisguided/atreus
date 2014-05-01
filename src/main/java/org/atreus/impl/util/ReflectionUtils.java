@@ -21,56 +21,76 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.queries;
+package org.atreus.impl.util;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import org.atreus.impl.AtreusEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 
 /**
- * Manages queries and the caching of prepared statements.
+ * Utility class the handle reflection related functions.
  *
  * @author Martin Crawford
  */
-public class QueryManager {
+public class ReflectionUtils {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(QueryManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ReflectionUtils.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
-
-  private Map<String, PreparedStatement> preparedStatementMap = new HashMap<>();
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  public QueryManager(AtreusEnvironment environment) {
-    this.environment = environment;
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public BoundStatement generate(RegularStatement cassandraStatement) {
-    return generate(cassandraStatement.getQueryString());
+  public static Class<?> findCollectionValueClass(Field field) {
+    if (!Collection.class.isAssignableFrom(field.getType())) {
+      return null;
+    }
+
+    Type[] genericTypes = findGenericTypes(field);
+    if (genericTypes == null || genericTypes.length != 1) {
+      return null;
+    }
+    return (Class) genericTypes[0];
   }
 
-  public BoundStatement generate(String cqlQueryString) {
-    LOG.debug("CQL Statement: {}", cqlQueryString);
-    PreparedStatement preparedStatement = preparedStatementMap.get(cqlQueryString);
-
-    if (preparedStatement == null) {
-      preparedStatement = environment.getCassandraSession().prepare(cqlQueryString);
-      preparedStatementMap.put(cqlQueryString, preparedStatement);
+  public static Class<?> findMapKeyClass(Field field) {
+    if (!Map.class.isAssignableFrom(field.getType())) {
+      return null;
     }
-    return new BoundStatement(preparedStatement);
+
+    Type[] genericTypes = findGenericTypes(field);
+    if (genericTypes == null || genericTypes.length != 2) {
+      return null;
+    }
+    return (Class) genericTypes[0];
+  }
+
+  public static Class<?> findMapValueClass(Field field) {
+    if (!Map.class.isAssignableFrom(field.getType())) {
+      return null;
+    }
+
+    Type[] genericTypes = findGenericTypes(field);
+    if (genericTypes == null || genericTypes.length != 2) {
+      return null;
+    }
+    return (Class) genericTypes[1];
+  }
+
+  public static Type[] findGenericTypes(Field field) {
+    if (!(field.getGenericType() instanceof ParameterizedType)) {
+      return null;
+    }
+    ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+    return parameterizedType.getActualTypeArguments();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

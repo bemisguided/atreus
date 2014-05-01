@@ -42,6 +42,8 @@ public @interface AtreusCollection {
    *
    * @return
    */
-  public Class<?> type();
+  public Class<?> type() default NullType.class;
+
+  public AtreusRelationshipType relationship() default AtreusRelationshipType.COMPOSITION;
 
 }

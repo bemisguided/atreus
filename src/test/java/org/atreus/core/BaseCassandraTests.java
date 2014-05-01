@@ -53,6 +53,7 @@ public abstract class BaseCassandraTests extends BaseAtreusTests {
   @BeforeClass
   public static void beforeClass() throws Exception {
     EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+    sleepSeconds(3);
     cluster = Cluster.builder().addContactPoint(CLUSTER_HOST_NAME).withPort(CLUSTER_PORT).build();
     executeCQL("CREATE KEYSPACE " + DEFAULT_KEY_SPACE + " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
   }
