@@ -23,15 +23,15 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusManagedField;
+import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.AtreusTtlStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 ;
 
@@ -50,7 +50,9 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   private Class<?> entityType;
 
-  private Set<AtreusManagedField> fields = new TreeSet<>();
+  private Map<String, AtreusManagedField> fieldsByName = new TreeMap<>();
+
+  private Map<String, AtreusManagedField> fieldsByColumnName = new TreeMap<>();
 
   private String keySpace;
 
@@ -69,6 +71,12 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public void addField(AtreusManagedField managedField) {
+    fieldsByName.put(managedField.getFieldName(), managedField);
+    fieldsByColumnName.put(managedField.getColumn(), managedField);
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -113,8 +121,19 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   @Override
-  public Set<AtreusManagedField> getFields() {
-    return fields;
+  public AtreusManagedField[] getFields() {
+    AtreusManagedField[] result = new AtreusManagedField[fieldsByName.size()];
+    return fieldsByName.values().toArray(result);
+  }
+
+  @Override
+  public AtreusManagedField getFieldByName(String name) {
+    return fieldsByName.get(name);
+  }
+
+  @Override
+  public AtreusManagedField getFieldByColumnName(String columnName) {
+    return fieldsByColumnName.get(columnName);
   }
 
   public AtreusManagedField getPrimaryKeyField() {

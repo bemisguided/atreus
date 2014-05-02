@@ -53,20 +53,22 @@ public class QueryHelperTests {
 
   @Test
   public void testInsert() {
+    LOG.info("Running testInsert");
     ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
     managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.getFields().add(buildField("col1"));
-    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.addField(buildField("col1"));
+    managedEntity.addField(buildField("col2"));
 
     assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2);", QueryHelper.insertEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testInsertWithTtl() {
+    LOG.info("Running testInsertWithTtl");
     ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
     managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.getFields().add(buildField("col1"));
-    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.addField(buildField("col1"));
+    managedEntity.addField(buildField("col2"));
     managedEntity.setTtlField(buildField("ttl1"));
 
     assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2) USING TTL :ttl1;", QueryHelper.insertEntity(managedEntity, true).getQueryString());
@@ -75,14 +77,16 @@ public class QueryHelperTests {
   @Test
   @Ignore
   public void testInsertWithCompositeKey() {
+    LOG.info("Running testInsertWithCompositeKey");
   }
 
   @Test
   public void testSelect() {
+    LOG.info("Running testSelect");
     ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testSelect");
     managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.getFields().add(buildField("col1"));
-    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.addField(buildField("col1"));
+    managedEntity.addField(buildField("col2"));
 
     assertEquals("SELECT * FROM queryhelpertests.testSelect WHERE id=:id;", QueryHelper.selectEntity(managedEntity).getQueryString());
   }
@@ -90,24 +94,27 @@ public class QueryHelperTests {
   @Test
   @Ignore
   public void testSelectWithCompositeKey() {
+    LOG.info("Running testSelectWithCompositeKey");
   }
 
   @Test
   public void testUpdate() {
+    LOG.info("Running testUpdate");
     ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
     managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.getFields().add(buildField("col1"));
-    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.addField(buildField("col1"));
+    managedEntity.addField(buildField("col2"));
 
     assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity).getQueryString());
   }
 
   @Test
   public void testUpdateWithTtl() {
+    LOG.info("Running testUpdateWithTtl");
     ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
     managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.getFields().add(buildField("col1"));
-    managedEntity.getFields().add(buildField("col2"));
+    managedEntity.addField(buildField("col1"));
+    managedEntity.addField(buildField("col2"));
     managedEntity.setTtlField(buildField("ttl1"));
 
     assertEquals("UPDATE queryhelpertests.testUpdate USING TTL :ttl1 SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity, true).getQueryString());
@@ -116,6 +123,7 @@ public class QueryHelperTests {
   @Test
   @Ignore
   public void testUpdateWithCompositeKey() {
+    LOG.info("Running testUpdateWithCompositeKey");
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -130,7 +138,8 @@ public class QueryHelperTests {
   }
 
   private AtreusManagedField buildField(String columnName) {
-    AtreusManagedField managedField = new ManagedFieldImpl();
+    ManagedFieldImpl managedField = new ManagedFieldImpl();
+    managedField.setFieldName(columnName);
     managedField.setColumn(columnName);
     return managedField;
   }

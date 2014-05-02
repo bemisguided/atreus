@@ -24,6 +24,7 @@
 package org.atreus.core;
 
 import org.atreus.impl.AtreusSessionFactoryImpl;
+import org.atreus.impl.util.StringUtils;
 
 /**
  * Atreus Session Factory Builder.
@@ -51,7 +52,23 @@ public class AtreusSessionFactoryBuilder {
    */
   public static AtreusSessionFactory buildFactory(AtreusConfiguration configuration) {
     AtreusSessionFactoryImpl factory = new AtreusSessionFactoryImpl(configuration);
-    factory.connect();
+
+    // Validate the Cassandra configuration
+    if (configuration.getHosts() == null || configuration.getHosts().length < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED);
+    }
+
+    if (configuration.getPort() < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED);
+    }
+
+    if (StringUtils.isNullOrEmpty(configuration.getKeySpace())) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
+    }
+    if (configuration.getScanPaths() == null || configuration.getScanPaths().length < 1) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED);
+    }
+
     factory.init();
     return factory;
   }
@@ -59,9 +76,9 @@ public class AtreusSessionFactoryBuilder {
   /**
    * Builds a new Atreus Session Factory.
    *
-   * @param host     a node host name in the Cassandra cluster
-   * @param port     port of the CQL protocol for the Cassandra cluster
-   * @param keySpace the default key space in the Cassandra cluster
+   * @param host      a node host name in the Cassandra cluster
+   * @param port      port of the CQL protocol for the Cassandra cluster
+   * @param keySpace  the common key space in the Cassandra cluster
    * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */
@@ -75,7 +92,7 @@ public class AtreusSessionFactoryBuilder {
    *
    * @param hosts     an array of node host names in the Cassandra cluster
    * @param port      port of the CQL protocol for the Cassandra cluster
-   * @param keySpace  the default key space in the Cassandra cluster
+   * @param keySpace  the common key space in the Cassandra cluster
    * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */

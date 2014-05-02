@@ -67,14 +67,20 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
+  protected void addEntity(Class<?> entityType) {
+    getEnvironment().getEntityManager().addEntity(entityType);
+  }
+
   protected AtreusSession getSession() {
     return session;
   }
 
-  protected void init(String... scanPaths) {
+  protected void setScanPaths(String... scanPaths) {
     getEnvironment().getConfiguration().setScanPaths(scanPaths);
-    getEnvironment().getTypeManager().scanPaths(scanPaths);
-    getEnvironment().getEntityManager().scanPaths(scanPaths);
+  }
+
+  protected void initEnvironment() {
+    getEnvironment().init();
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

@@ -23,7 +23,7 @@
  */
 package org.atreus.core.ext;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Interface for a managed entity.
@@ -32,9 +32,15 @@ import java.util.Set;
  */
 public interface AtreusManagedEntity {
 
+  public void addField(AtreusManagedField managedField);
+
   public Class<?> getEntityType();
 
-  public Set<AtreusManagedField> getFields();
+  public AtreusManagedField[] getFields();
+
+  public AtreusManagedField getFieldByName(String name);
+
+  public AtreusManagedField getFieldByColumnName(String columnName);
 
   public String getKeySpace();
 

@@ -53,6 +53,7 @@ public class TypeManagerTests extends BaseAtreusTests {
 
   @Test
   public void testDefaultTypes() {
+    LOG.info("Running testDefaultTypes");
     TypeManager typeManager = getEnvironment().getTypeManager();
 
     Assert.assertNotNull("StringTypeAccessor expected", typeManager.findTypeStrategy(String.class));

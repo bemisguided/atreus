@@ -21,24 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.tests;
+package org.atreus.core.tests.entities.errors;
 
+import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusMap;
 import org.atreus.core.annotations.AtreusPrimaryKey;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.util.Date;
-import java.util.UUID;
+import java.util.Map;
 
 /**
- * TypeConversionTestEntity.
+ * MapKeyNotResolvableTestEntity
  *
  * @author Martin Crawford
  */
-@AtreusEntity()
-public class TypeConversionTestEntity {
+@AtreusEntity
+public class MapKeyNotResolvableTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,27 +45,8 @@ public class TypeConversionTestEntity {
   @AtreusPrimaryKey
   private String id;
 
-  private BigDecimal aBigDecimal;
-
-  private BigInteger aBigInteger;
-
-  private boolean aBoolean;
-
-  private Date aDate;
-
-  private double aDouble;
-
-  private float aFloat;
-
-  private InetAddress anInetAddress;
-
-  private int aInteger;
-
-  private long aLong;
-
-  private String aString;
-
-  private UUID aUuid;
+  @AtreusCollection(type = String.class)
+  private Map mapField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -79,7 +58,6 @@ public class TypeConversionTestEntity {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-
   public String getId() {
     return id;
   }
@@ -88,92 +66,12 @@ public class TypeConversionTestEntity {
     this.id = id;
   }
 
-  public BigDecimal getaBigDecimal() {
-    return aBigDecimal;
+  public Map getMapField() {
+    return mapField;
   }
 
-  public void setaBigDecimal(BigDecimal aBigDecimal) {
-    this.aBigDecimal = aBigDecimal;
+  public void setMapField(Map mapField) {
+    this.mapField = mapField;
   }
 
-  public BigInteger getaBigInteger() {
-    return aBigInteger;
-  }
-
-  public void setaBigInteger(BigInteger aBigInteger) {
-    this.aBigInteger = aBigInteger;
-  }
-
-  public boolean isaBoolean() {
-    return aBoolean;
-  }
-
-  public void setaBoolean(boolean aBoolean) {
-    this.aBoolean = aBoolean;
-  }
-
-  public Date getaDate() {
-    return aDate;
-  }
-
-  public void setaDate(Date aDate) {
-    this.aDate = aDate;
-  }
-
-  public double getaDouble() {
-    return aDouble;
-  }
-
-  public void setaDouble(double aDouble) {
-    this.aDouble = aDouble;
-  }
-
-  public float getaFloat() {
-    return aFloat;
-  }
-
-  public void setaFloat(float aFloat) {
-    this.aFloat = aFloat;
-  }
-
-  public InetAddress getAnInetAddress() {
-    return anInetAddress;
-  }
-
-  public void setAnInetAddress(InetAddress anInetAddress) {
-    this.anInetAddress = anInetAddress;
-  }
-
-  public int getaInteger() {
-    return aInteger;
-  }
-
-  public void setaInteger(int aInteger) {
-    this.aInteger = aInteger;
-  }
-
-  public long getaLong() {
-    return aLong;
-  }
-
-  public void setaLong(long aLong) {
-    this.aLong = aLong;
-  }
-
-  public String getaString() {
-    return aString;
-  }
-
-  public void setaString(String aString) {
-    this.aString = aString;
-  }
-
-  public UUID getaUuid() {
-    return aUuid;
-  }
-
-  public void setaUuid(UUID aUuid) {
-    this.aUuid = aUuid;
-  }
-
-}
+} // end of class

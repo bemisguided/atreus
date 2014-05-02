@@ -62,12 +62,33 @@ public class EntityManager {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  public void addEntity(Class<?> entityType) {
+    doProcessEntity(entityType);
+  }
+
   public AtreusManagedEntity getEntity(String name) {
     return nameRegistry.get(name);
   }
 
   public AtreusManagedEntity getEntity(Class<?> entityType) {
     return classRegistry.get(entityType);
+  }
+
+  public void processEntities() {
+    // Iterate and process fields for each manged entity
+    for (ManagedEntityImpl managedEntity : classRegistry.values()) {
+      Class<?> entityType = managedEntity.getEntityType();
+      // Process the fields
+      for (Field javaField : entityType.getDeclaredFields()) {
+
+        // Ignore transient field
+        if (Modifier.isTransient(javaField.getModifiers())) {
+          continue;
+        }
+
+        doProcessField(managedEntity, javaField);
+      }
+    }
   }
 
   public void scanPaths(String[] paths) {
@@ -90,31 +111,15 @@ public class EntityManager {
 
     // Iterate and process each found entity class
     for (Class<?> entityType : entityTypes) {
-      doProcessEntity(entityType);
+      addEntity(entityType);
     }
-
-    // Iterate and process fields for each manged entity
-    for (ManagedEntityImpl managedEntity : classRegistry.values()) {
-      Class<?> entityType = managedEntity.getEntityType();
-      // Process the fields
-      for (Field javaField : entityType.getDeclaredFields()) {
-
-        // Ignore transient field
-        if (Modifier.isTransient(javaField.getModifiers())) {
-          continue;
-        }
-
-        doProcessField(managedEntity, javaField);
-      }
-    }
-
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void addEntity(ManagedEntityImpl managedEntity) {
+  private void addManagedEntity(ManagedEntityImpl managedEntity) {
     classRegistry.put(managedEntity.getEntityType(), managedEntity);
     nameRegistry.put(managedEntity.getName(), managedEntity);
   }
@@ -158,7 +163,7 @@ public class EntityManager {
     }
 
     LOG.debug("Registered Entity name={} {}", managedEntity.getName(), managedEntity.getEntityType());
-    addEntity(managedEntity);
+    addManagedEntity(managedEntity);
   }
 
   @SuppressWarnings("unchecked")
@@ -171,7 +176,7 @@ public class EntityManager {
     // Set the accessibility of the field to true
     javaField.setAccessible(true);
 
-    // Build the Managed Field with default values
+    // Build the Managed Field with common values
     ManagedFieldImpl managedField = buildManagedField(managedEntity, javaField);
 
     // Iterate the entity strategies and process
@@ -181,7 +186,7 @@ public class EntityManager {
         LOG.debug("Relationship detected {}", managedField.getJavaField());
         continue;
       }
-      // Resolve the default Type Strategy (if available)
+      // Resolve the common Type Strategy (if available)
       resolveTypeStrategy(managedField, entityStrategy);
 
       // Special fields
@@ -199,7 +204,7 @@ public class EntityManager {
       }
 
       // Managed Fields
-      managedEntity.getFields().add(managedField);
+      managedEntity.addField(managedField);
 
       // Collection
       if (Collection.class.isAssignableFrom(javaField.getType())) {
@@ -299,7 +304,7 @@ public class EntityManager {
   private void updateManagedEntity(ManagedEntityImpl managedEntity, AtreusEntityStrategy entityStrategy) {
     String name = entityStrategy.getEntityName(managedEntity);
     String keySpace = entityStrategy.getEntityKeySpace(managedEntity);
-    String table = entityStrategy.getEntityName(managedEntity);
+    String table = entityStrategy.getEntityTable(managedEntity);
 
     if (StringUtils.isNotNullOrEmpty(name)) {
       managedEntity.setName(name);

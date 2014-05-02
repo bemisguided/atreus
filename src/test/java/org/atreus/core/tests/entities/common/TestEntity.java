@@ -21,63 +21,87 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.core.tests.entities.common;
 
-import org.atreus.impl.AtreusEnvironment;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.AtreusFieldType;
+import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.impl.types.cql.LongTypeStrategy;
 
 /**
- * Base class for Atreus without Cassandra unit tests.
+ * Test Entity 1.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+@AtreusEntity()
+public class TestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
-  protected static final String DEFAULT_SCAN_PATH = "org.atreus.core.tests.entities.common";
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusEnvironment environment;
+  @AtreusPrimaryKey
+  private String primaryKey;
+
+  @AtreusField
+  private String field1;
+
+  private int field2;
+
+  private transient String field3;
+
+  @AtreusField(value = "field4field")
+  @AtreusFieldType(LongTypeStrategy.class)
+  private Integer field4;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
-    environment = new AtreusEnvironment(configuration);
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static void sleepSeconds(int seconds) {
-    try {
-      LOG.debug("Sleeping for {} second(s)", seconds);
-      Thread.sleep(seconds * 1000);
-    }
-    catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected AtreusEnvironment getEnvironment() {
-    return environment;
+  public String getPrimaryKey() {
+    return primaryKey;
   }
 
-  protected void setEnvironment(AtreusEnvironment environment) {
-    this.environment = environment;
+  public void setPrimaryKey(String primaryKey) {
+    this.primaryKey = primaryKey;
+  }
+
+  public String getField1() {
+    return field1;
+  }
+
+  public void setField1(String field1) {
+    this.field1 = field1;
+  }
+
+  public int getField2() {
+    return field2;
+  }
+
+  public void setField2(int field2) {
+    this.field2 = field2;
+  }
+
+  public String getField3() {
+    return field3;
+  }
+
+  public void setField3(String field3) {
+    this.field3 = field3;
+  }
+
+  public Integer getField4() {
+    return field4;
+  }
+
+  public void setField4(Integer field4) {
+    this.field4 = field4;
   }
 }

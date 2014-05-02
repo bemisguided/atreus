@@ -62,18 +62,27 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   @Override
   public String getEntityName(AtreusManagedEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    if (entityAnnotation == null) {
+      return null;
+    }
     return entityAnnotation.value();
   }
 
   @Override
   public String getEntityKeySpace(AtreusManagedEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    if (entityAnnotation == null) {
+      return null;
+    }
     return entityAnnotation.keySpace();
   }
 
   @Override
   public String getEntityTable(AtreusManagedEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
+    if (entityAnnotation == null) {
+      return null;
+    }
     return entityAnnotation.table();
   }
 

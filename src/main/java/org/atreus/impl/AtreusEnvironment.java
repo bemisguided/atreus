@@ -25,10 +25,14 @@ package org.atreus.impl;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.DriverException;
+import org.atreus.core.AtreusClusterConnectivityException;
 import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.AtreusInitialisationException;
 import org.atreus.impl.entities.EntityManager;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
+import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,10 +67,38 @@ public class AtreusEnvironment {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  public void connect() {
+    try {
+      Cluster cluster = Cluster.builder()
+          .addContactPoints(configuration.getHosts())
+          .withPort(configuration.getPort())
+          .build();
+      cluster.connect();
+      setCassandraCluster(cluster);
+      setCassandraSession(cluster.newSession());
+    }catch (DriverException e) {
+      throw new AtreusClusterConnectivityException(AtreusClusterConnectivityException.ERROR_CODE_CANNOT_CONNECT, e);
+    }
+  }
+
+  public void init() {
+    initTypeManager();
+    initEntityManager();
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
+  private void initEntityManager() {
+    getEntityManager().scanPaths(getConfiguration().getScanPaths());
+    getEntityManager().processEntities();
+  }
+
+  private void initTypeManager() {
+    getTypeManager().scanPaths(getConfiguration().getScanPaths());
+  }
+  
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   public Cluster getCassandraCluster() {

@@ -21,24 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.tests;
+package org.atreus.core.tests.entities.functional;
 
-import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.annotations.AtreusMap;
 import org.atreus.core.annotations.AtreusPrimaryKey;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.atreus.core.tests.entities.common.TestEntity;
 
 /**
- * CollectionTestEntity.
+ * RelationshipTestEntity.
  *
  * @author Martin Crawford
  */
-@AtreusEntity()
-public class CollectionTestEntity {
+@AtreusEntity
+public class RelationshipTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -46,19 +41,8 @@ public class CollectionTestEntity {
 
   @AtreusPrimaryKey
   private String id;
-
-  @AtreusCollection(type = Long.class)
-  private Set<Long> setField;
-
-  private List<String> listField;
-
-  @AtreusCollection(type = Long.class)
-  @AtreusMap(key = String.class)
-  private Map<String, Long> mapField1;
-
-  @AtreusCollection
-  @AtreusMap
-  private Map<String, Long> mapField2;
+  
+  private TestEntity testEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -70,44 +54,4 @@ public class CollectionTestEntity {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public Set<Long> getSetField() {
-    return setField;
-  }
-
-  public void setSetField(Set<Long> setField) {
-    this.setField = setField;
-  }
-
-  public List<String> getListField() {
-    return listField;
-  }
-
-  public void setListField(List<String> listField) {
-    this.listField = listField;
-  }
-
-  public Map<String, Long> getMapField1() {
-    return mapField1;
-  }
-
-  public void setMapField1(Map<String, Long> mapField1) {
-    this.mapField1 = mapField1;
-  }
-
-  public Map<String, Long> getMapField2() {
-    return mapField2;
-  }
-
-  public void setMapField2(Map<String, Long> mapField2) {
-    this.mapField2 = mapField2;
-  }
-
-}
+} // end of class

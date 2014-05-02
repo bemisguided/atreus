@@ -48,14 +48,10 @@ public class AtreusExceptionTests extends BaseAtreusTests {
 
   @Test
   public void testMessage() {
+    LOG.info("Running testMessage");
     AtreusException e = new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, UuidPrimaryKeyStrategy.class);
     Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, e.getErrorCode());
     Assert.assertEquals("Unable to register primary key strategy [" + UuidPrimaryKeyStrategy.class + "]", e.getMessage());
-  }
-
-  @Test(expected = AtreusClusterConnectivityException.class)
-  public void testConnectFailure() {
-    AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, DEFAULT_SCAN_PATH);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

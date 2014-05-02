@@ -45,6 +45,8 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   private String column;
 
+  private String fieldName;
+
   private Field javaField;
 
   private ManagedEntityImpl managedEntity;
@@ -114,12 +116,22 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
   }
 
   @Override
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  @Override
   public Field getJavaField() {
     return javaField;
   }
 
   public void setJavaField(Field javaField) {
     this.javaField = javaField;
+    this.fieldName = javaField.getName();
   }
 
   public ManagedEntityImpl getManagedEntity() {

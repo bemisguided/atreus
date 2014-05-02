@@ -38,6 +38,8 @@ public interface AtreusManagedField {
 
   public void setColumn(String column);
 
+  public String getFieldName();
+
   public Field getJavaField();
 
   public AtreusTypeStrategy getTypeStrategy();

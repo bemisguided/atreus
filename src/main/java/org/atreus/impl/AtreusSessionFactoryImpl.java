@@ -57,42 +57,9 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void connect() {
-
-    // Validate the Cassandra configuration
-    AtreusConfiguration configuration = environment.getConfiguration();
-    if (configuration.getHosts() == null || configuration.getHosts().length < 1) {
-      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED);
-    }
-
-    if (configuration.getPort() < 1) {
-      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED);
-    }
-
-    if (StringUtils.isNullOrEmpty(configuration.getKeySpace())) {
-      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
-    }
-
-    try {
-      Cluster cluster = Cluster.builder()
-          .addContactPoints(configuration.getHosts())
-          .withPort(configuration.getPort())
-          .build();
-      cluster.connect();
-      environment.setCassandraCluster(cluster);
-      environment.setCassandraSession(cluster.newSession());
-    }catch (DriverException e) {
-      throw new AtreusClusterConnectivityException(AtreusClusterConnectivityException.ERROR_CODE_CANNOT_CONNECT, e);
-    }
-  }
-
   public void init() {
-    AtreusConfiguration configuration = environment.getConfiguration();
-    if (configuration.getScanPaths() == null || configuration.getScanPaths().length < 1) {
-      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED);
-    }
-    environment.getTypeManager().scanPaths(configuration.getScanPaths());
-    environment.getEntityManager().scanPaths(environment.getConfiguration().getScanPaths());
+    environment.connect();
+    environment.init();
   }
 
   @Override

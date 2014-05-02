@@ -53,30 +53,35 @@ public class TtlStrategyTests {
 
   @Test
   public void testLongTtlStrategy() {
+    LOG.info("Running testLongTtlStrategy");
     LongTtlStrategy ttlStrategy = new LongTtlStrategy();
     Assert.assertEquals(1234, (int) ttlStrategy.translate(new Date(), (long) 1234));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testLongTtlStrategyWithOutOfRangeMax() {
+    LOG.info("Running testLongTtlStrategyWithOutOfRangeMax");
     LongTtlStrategy ttlStrategy = new LongTtlStrategy();
     ttlStrategy.translate(new Date(), Long.MAX_VALUE);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testLongTtlStrategyWithOutOfRangeMin() {
+    LOG.info("Running testLongTtlStrategyWithOutOfRangeMin");
     LongTtlStrategy ttlStrategy = new LongTtlStrategy();
     ttlStrategy.translate(new Date(), Long.MIN_VALUE);
   }
 
   @Test
   public void testShortTtlStrategy() {
+    LOG.info("Running testShortTtlStrategy");
     ShortTtlStrategy ttlStrategy = new ShortTtlStrategy();
     Assert.assertEquals(1234, (int) ttlStrategy.translate(new Date(), (short) 1234));
   }
 
   @Test
   public void testDateTtlStrategy() {
+    LOG.info("Running testDateTtlStrategy");
     DateTtlStrategy ttlStrategy = new DateTtlStrategy();
     Calendar now = Calendar.getInstance();
     Calendar future = Calendar.getInstance();

@@ -24,10 +24,15 @@
 package org.atreus.core.impl;
 
 import org.atreus.core.AtreusDataBindingException;
+import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.tests.CollectionTestEntity;
-import org.atreus.core.tests.TtlTestEntity;
-import org.atreus.core.tests.TypeConversionTestEntity;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.tests.entities.functional.CQLPrimitiveTypesTestEntity;
+import org.atreus.core.tests.entities.errors.*;
+import org.atreus.core.tests.entities.functional.CollectionTestEntity;
+import org.atreus.core.tests.entities.functional.NameOverrideTestEntity;
+import org.atreus.core.tests.entities.functional.TtlTestEntity;
+import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.matchers.JUnitMatchers;
@@ -58,9 +63,11 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test
   public void testCQLPrimitiveTypes() throws Exception {
-    init("org.atreus.core.tests");
+    LOG.info("Running testCQLPrimitiveTypes");
+    addEntity(CQLPrimitiveTypesTestEntity.class);
+    initEnvironment();
 
-    executeCQL("CREATE TABLE default.TypeConversionTestEntity (" +
+    executeCQL("CREATE TABLE default.CQLPrimitiveTypesTestEntity (" +
         "id text, " +
         "aBigDecimal decimal, " +
         "aBigInteger varint, " +
@@ -76,7 +83,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
         "PRIMARY KEY(id))");
 
 
-    TypeConversionTestEntity testEntity = new TypeConversionTestEntity();
+    CQLPrimitiveTypesTestEntity testEntity = new CQLPrimitiveTypesTestEntity();
     testEntity.setaBigDecimal(new BigDecimal("1.23"));
     testEntity.setaBigInteger(new BigInteger("123"));
     testEntity.setaBoolean(true);
@@ -92,7 +99,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     getSession().save(testEntity);
     String primaryKey = testEntity.getId();
 
-    TypeConversionTestEntity otherEntity = getSession().findByPrimaryKey(TypeConversionTestEntity.class, primaryKey);
+    CQLPrimitiveTypesTestEntity otherEntity = getSession().findByPrimaryKey(CQLPrimitiveTypesTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals(primaryKey, otherEntity.getId());
@@ -112,7 +119,9 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test
   public void testTimeToLiveEntity() throws Exception {
-    init("org.atreus.core.tests");
+    LOG.info("Running testTimeToLiveEntity");
+    addEntity(TtlTestEntity.class);
+    initEnvironment();
 
     executeCQL("CREATE TABLE default.TtlTestEntity (" +
         "id text, " +
@@ -155,7 +164,9 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test(expected = AtreusDataBindingException.class)
   public void testTimeToLiveEntityBadValue() throws Exception {
-    init("org.atreus.core.tests");
+    LOG.info("Running testTimeToLiveEntityBadValue");
+    addEntity(TtlTestEntity.class);
+    initEnvironment();
 
     try {
       executeCQL("CREATE TABLE default.TtlTestEntity (" +
@@ -178,7 +189,9 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
   @Test
   public void testCollectionsEntity() throws Exception {
-    init("org.atreus.core.tests");
+    LOG.info("Running testCollectionsEntity");
+    addEntity(CollectionTestEntity.class);
+    initEnvironment();
 
     executeCQL("CREATE TABLE default.CollectionTestEntity (" +
         "id text, " +
@@ -220,6 +233,103 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect value for 'value2'", otherEntity.getMapField2().get("value2"));
 
     executeCQL("DROP TABLE default.CollectionTestEntity");
+  }
+
+  @Test
+  public void testNameOverrideEntity() throws Exception {
+    LOG.info("Running testNameOverrideEntity");
+    addEntity(NameOverrideTestEntity.class);
+    initEnvironment();
+
+    AtreusManagedEntity managedEntity = getEnvironment().getEntityManager().getEntity(NameOverrideTestEntity.class);
+    Assert.assertNotNull("Expect an entity", managedEntity);
+    Assert.assertEquals("EntityName", managedEntity.getName());
+    Assert.assertEquals("KeySpaceName", managedEntity.getKeySpace());
+    Assert.assertEquals("TableName", managedEntity.getTable());
+
+    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getColumn());
+    Assert.assertEquals(StringPrimaryKeyStrategy.class, managedEntity.getPrimaryKeyStrategy().getClass());
+
+    Assert.assertEquals("columnName", managedEntity.getFieldByName("field1").getColumn());
+
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testCollectionValueNotResolvable() {
+    LOG.info("Running testCollectionValueNotResolvable");
+    try {
+      addEntity(CollectionValueNotResolvableTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMapValueNotResolvable() {
+    LOG.info("Running testMapValueNotResolvable");
+    try {
+      addEntity(MapValueNotResolvableTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMapKeyNotResolvable() {
+    LOG.info("Running testMapKeyNotResolvable");
+    try {
+      addEntity(MapKeyNotResolvableTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testInvalidCollectionStrategy() {
+    LOG.info("Running testInvalidCollectionStrategy");
+    try {
+      addEntity(InvalidCollectionStrategyTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testInvalidMapStrategy() {
+    LOG.info("Running testInvalidMapStrategy");
+    try {
+      addEntity(InvalidMapStrategyTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MAP_TYPE_STRATEGY_INVALID, e.getErrorCode());
+      throw e;
+    }
+  }
+
+  @Test(expected = AtreusInitialisationException.class)
+  public void testMultiplePrimaryKeys() {
+    LOG.info("Running testMultiplePrimaryKeys");
+    try {
+      addEntity(MultiplePrimaryKeyTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_MULTIPLE, e.getErrorCode());
+      throw e;
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
