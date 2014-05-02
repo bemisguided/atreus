@@ -24,10 +24,8 @@
 package org.atreus.impl;
 
 import com.datastax.driver.core.Cluster;
-import org.atreus.core.AtreusConfiguration;
-import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.AtreusSession;
-import org.atreus.core.AtreusSessionFactory;
+import com.datastax.driver.core.exceptions.DriverException;
+import org.atreus.core.*;
 import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,13 +73,17 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
     }
 
-    Cluster cluster = Cluster.builder()
-        .addContactPoints(configuration.getHosts())
-        .withPort(configuration.getPort())
-        .build();
-    cluster.connect();
-    environment.setCassandraCluster(cluster);
-    environment.setCassandraSession(cluster.newSession());
+    try {
+      Cluster cluster = Cluster.builder()
+          .addContactPoints(configuration.getHosts())
+          .withPort(configuration.getPort())
+          .build();
+      cluster.connect();
+      environment.setCassandraCluster(cluster);
+      environment.setCassandraSession(cluster.newSession());
+    }catch (DriverException e) {
+      throw new AtreusClusterConnectivityException(AtreusClusterConnectivityException.ERROR_CODE_CANNOT_CONNECT, e);
+    }
   }
 
   public void init() {

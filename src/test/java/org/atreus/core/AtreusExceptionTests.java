@@ -30,11 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Unit test for Atreus Exceptions.
+ * Unit and functional tests for Atreus Exceptions.
  *
  * @author Martin Crawford
  */
-public class AtreusExceptionTests {
+public class AtreusExceptionTests extends BaseAtreusTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -51,6 +51,11 @@ public class AtreusExceptionTests {
     AtreusException e = new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, UuidPrimaryKeyStrategy.class);
     Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, e.getErrorCode());
     Assert.assertEquals("Unable to register primary key strategy [" + UuidPrimaryKeyStrategy.class + "]", e.getMessage());
+  }
+
+  @Test(expected = AtreusClusterConnectivityException.class)
+  public void testConnectFailure() {
+    AtreusSessionFactoryBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, DEFAULT_SCAN_PATH);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
