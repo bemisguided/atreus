@@ -23,40 +23,35 @@
  */
 package org.atreus.impl.types.cql;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusType;
+import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.CQLDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Long Type Strategy.
+ * Base class for Collection Type Strategies.
  *
  * @author Martin Crawford
  */
-@AtreusType(Long.class)
-public class LongTypeStrategy extends BaseSimpleTypeStrategy<Long> {
+public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseSimpleTypeStrategy.class);
+
+  private static CQLDataType[] NO_PARAM_TYPES = new CQLDataType[0];
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> valueClass;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Long get(Row row, String colName) {
-    return row.getLong(colName);
-  }
-
-  @Override
-  public CQLDataType getType() {
-    return CQLDataType.CQL_BIGINT;
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, Long value) {
-    boundStatement.setLong(colName, value);
+  public CQLDataType[] getParamTypes() {
+    return NO_PARAM_TYPES;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -65,4 +60,4 @@ public class LongTypeStrategy extends BaseSimpleTypeStrategy<Long> {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

@@ -27,6 +27,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusCollectionTypeStrategy;
 import org.atreus.core.ext.AtreusType;
+import org.atreus.core.ext.CQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,16 @@ public class SetTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
   @Override
   public Set get(Row row, String colName) {
     return row.getSet(colName, getValueClass());
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_SET;
+  }
+
+  @Override
+  public CQLDataType[] getParamTypes() {
+    return new CQLDataType[0];
   }
 
   @Override

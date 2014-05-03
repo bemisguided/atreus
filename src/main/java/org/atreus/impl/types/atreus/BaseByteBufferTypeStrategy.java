@@ -27,6 +27,8 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.Bytes;
 import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
+import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,7 @@ import java.nio.ByteBuffer;
  *
  * @author Martin Crawford
  */
-public abstract class BaseByteBufferTypeStrategy<T> implements AtreusTypeStrategy<T> {
+public abstract class BaseByteBufferTypeStrategy<T> extends BaseSimpleTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -57,6 +59,11 @@ public abstract class BaseByteBufferTypeStrategy<T> implements AtreusTypeStrateg
     }
     byte[] bytes = Bytes.getArray(byteBuffer);
     return toValue(bytes);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_BLOB;
   }
 
   @Override

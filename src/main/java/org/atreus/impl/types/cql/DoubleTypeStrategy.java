@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 /**
  * Double Type Strategy.
@@ -34,7 +34,7 @@ import org.atreus.core.ext.AtreusTypeStrategy;
  * @author Martin Crawford
  */
 @AtreusType(Double.class)
-public class DoubleTypeStrategy implements AtreusTypeStrategy<Double> {
+public class DoubleTypeStrategy extends BaseSimpleTypeStrategy<Double> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,6 +47,11 @@ public class DoubleTypeStrategy implements AtreusTypeStrategy<Double> {
   @Override
   public Double get(Row row, String colName) {
     return row.getDouble(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_DOUBLE;
   }
 
   @Override

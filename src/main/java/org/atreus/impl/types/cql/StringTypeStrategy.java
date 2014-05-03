@@ -27,6 +27,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 /**
  * String Type Strategy.
@@ -34,7 +35,7 @@ import org.atreus.core.ext.AtreusTypeStrategy;
  * @author Martin Crawford
  */
 @AtreusType(String.class)
-public class StringTypeStrategy implements AtreusTypeStrategy<String> {
+public class StringTypeStrategy extends BaseSimpleTypeStrategy<String> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,6 +48,11 @@ public class StringTypeStrategy implements AtreusTypeStrategy<String> {
   @Override
   public String get(Row row, String colName) {
     return row.getString(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_TEXT;
   }
 
   @Override

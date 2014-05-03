@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 /**
  * Boolean Type Strategy.
@@ -34,7 +34,7 @@ import org.atreus.core.ext.AtreusTypeStrategy;
  * @author Martin Crawford
  */
 @AtreusType(Boolean.class)
-public class BooleanTypeStrategy implements AtreusTypeStrategy<Boolean> {
+public class BooleanTypeStrategy extends BaseSimpleTypeStrategy<Boolean> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,6 +47,11 @@ public class BooleanTypeStrategy implements AtreusTypeStrategy<Boolean> {
   @Override
   public Boolean get(Row row, String colName) {
     return row.getBool(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_BOOLEAN;
   }
 
   @Override

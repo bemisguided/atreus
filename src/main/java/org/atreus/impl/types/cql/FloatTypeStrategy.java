@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 /**
  * Float Type Strategy.
@@ -34,7 +34,7 @@ import org.atreus.core.ext.AtreusTypeStrategy;
  * @author Martin Crawford
  */
 @AtreusType(Float.class)
-public class FloatTypeStrategy implements AtreusTypeStrategy<Float> {
+public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,6 +47,11 @@ public class FloatTypeStrategy implements AtreusTypeStrategy<Float> {
   @Override
   public Float get(Row row, String colName) {
     return row.getFloat(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_INET;
   }
 
   @Override

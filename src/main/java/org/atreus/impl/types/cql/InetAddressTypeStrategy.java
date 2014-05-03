@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 import java.net.InetAddress;
 
@@ -36,7 +36,7 @@ import java.net.InetAddress;
  * @author Martin Crawford
  */
 @AtreusType(InetAddress.class)
-public class InetAddressTypeStrategy implements AtreusTypeStrategy<InetAddress> {
+public class InetAddressTypeStrategy extends BaseSimpleTypeStrategy<InetAddress> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,6 +49,11 @@ public class InetAddressTypeStrategy implements AtreusTypeStrategy<InetAddress> 
   @Override
   public InetAddress get(Row row, String colName) {
     return row.getInet(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_INET;
   }
 
   @Override

@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 import java.util.UUID;
 
@@ -36,7 +36,7 @@ import java.util.UUID;
  * @author Martin Crawford
  */
 @AtreusType(UUID.class)
-public class UUIDTypeStrategy implements AtreusTypeStrategy<UUID> {
+public class UUIDTypeStrategy extends BaseSimpleTypeStrategy<UUID> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,6 +49,11 @@ public class UUIDTypeStrategy implements AtreusTypeStrategy<UUID> {
   @Override
   public UUID get(Row row, String colName) {
     return row.getUUID(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_UUID;
   }
 
   @Override

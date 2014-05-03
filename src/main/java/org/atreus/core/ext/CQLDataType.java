@@ -23,22 +23,53 @@
  */
 package org.atreus.core.ext;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
- * Interface for an Atreus Type Strategy.
+ * CQL Data Types.
  *
  * @author Martin Crawford
  */
-public interface AtreusTypeStrategy<T> {
+public enum CQLDataType {
 
-  public T get(Row row, String colName);
+  CQL_ASCII("ascii", String.class),
+  CQL_BIGINT("bigint", Long.class),
+  CQL_BLOB("blob", ByteBuffer.class),
+  CQL_BOOLEAN("boolean", Boolean.class),
+  CQL_COUNTER("counter", Integer.class),
+  CQL_DECIMAL("decimal", BigDecimal.class),
+  CQL_DOUBLE("double", Double.class),
+  CQL_FLOAT("float", Float.class),
+  CQL_INET("inet", InetAddress.class),
+  INT("int", Integer.class),
+  CQL_LIST("list", List.class),
+  CQL_MAP("map", Map.class),
+  CQL_SET("set", Set.class),
+  CQL_TEXT("text", String.class),
+  CQL_TIMESTAMP("timestamp", Date.class),
+  CQL_UUID("uuid", UUID.class),
+  CQL_TIMEUUID("timeuuid", UUID.class),
+  CQL_VARCHAR("varchar", String.class),
+  CQL_VARINT("varint", BigInteger.class);
 
-  public CQLDataType getType();
+  private final String text;
+  private final Class<?> defaultType;
 
-  public CQLDataType[] getParamTypes();
+  CQLDataType(String text, Class<?> defaultType) {
+    this.text = text;
+    this.defaultType = defaultType;
+  }
 
-  public void set(BoundStatement boundStatement, String colName, T value);
+  public String getText() {
+    return text;
+  }
+
+  public Class<?> getDefaultType() {
+    return defaultType;
+  }
 
 }

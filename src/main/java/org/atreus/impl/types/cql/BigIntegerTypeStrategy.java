@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 import java.math.BigInteger;
 
@@ -36,7 +36,7 @@ import java.math.BigInteger;
  * @author Martin Crawford
  */
 @AtreusType(BigInteger.class)
-public class BigIntegerTypeStrategy implements AtreusTypeStrategy<BigInteger> {
+public class BigIntegerTypeStrategy extends BaseSimpleTypeStrategy<BigInteger> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,6 +49,11 @@ public class BigIntegerTypeStrategy implements AtreusTypeStrategy<BigInteger> {
   @Override
   public BigInteger get(Row row, String colName) {
     return row.getVarint(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_BIGINT;
   }
 
   @Override

@@ -27,6 +27,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusMapTypeStrategy;
 import org.atreus.core.ext.AtreusType;
+import org.atreus.core.ext.CQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,16 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
   @Override
   public Map get(Row row, String colName) {
     return row.getMap(colName, getKeyClass(), getValueClass());
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_MAP;
+  }
+
+  @Override
+  public CQLDataType[] getParamTypes() {
+    return new CQLDataType[0];
   }
 
   @Override

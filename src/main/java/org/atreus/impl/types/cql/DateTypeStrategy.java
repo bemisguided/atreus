@@ -26,7 +26,7 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.CQLDataType;
 
 import java.util.Date;
 
@@ -36,7 +36,7 @@ import java.util.Date;
  * @author Martin Crawford
  */
 @AtreusType(Date.class)
-public class DateTypeStrategy implements AtreusTypeStrategy<Date> {
+public class DateTypeStrategy extends BaseSimpleTypeStrategy<Date> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,6 +49,11 @@ public class DateTypeStrategy implements AtreusTypeStrategy<Date> {
   @Override
   public Date get(Row row, String colName) {
     return row.getDate(colName);
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_TIMESTAMP;
   }
 
   @Override

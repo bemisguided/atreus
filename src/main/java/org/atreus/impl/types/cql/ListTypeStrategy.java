@@ -27,11 +27,11 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusCollectionTypeStrategy;
 import org.atreus.core.ext.AtreusType;
+import org.atreus.core.ext.CQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * List Type Strategy.
@@ -54,6 +54,16 @@ public class ListTypeStrategy extends BaseCollectionTypeStrategy implements Atre
   @Override
   public List get(Row row, String colName) {
     return row.getList(colName, getValueClass());
+  }
+
+  @Override
+  public CQLDataType getType() {
+    return CQLDataType.CQL_LIST;
+  }
+
+  @Override
+  public CQLDataType[] getParamTypes() {
+    return new CQLDataType[0];
   }
 
   @Override
