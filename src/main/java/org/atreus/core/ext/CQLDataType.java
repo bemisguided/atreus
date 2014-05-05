@@ -23,6 +23,8 @@
  */
 package org.atreus.core.ext;
 
+import org.atreus.impl.util.ReflectionUtils;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -36,6 +38,8 @@ import java.util.*;
  */
 public enum CQLDataType {
 
+  // Constants ---------------------------------------------------------------------------------------------- Constants
+
   CQL_ASCII("ascii", String.class),
   CQL_BIGINT("bigint", Long.class),
   CQL_BLOB("blob", ByteBuffer.class),
@@ -45,7 +49,7 @@ public enum CQLDataType {
   CQL_DOUBLE("double", Double.class),
   CQL_FLOAT("float", Float.class),
   CQL_INET("inet", InetAddress.class),
-  INT("int", Integer.class),
+  CQL_INT("int", Integer.class),
   CQL_LIST("list", List.class),
   CQL_MAP("map", Map.class),
   CQL_SET("set", Set.class),
@@ -56,20 +60,48 @@ public enum CQLDataType {
   CQL_VARCHAR("varchar", String.class),
   CQL_VARINT("varint", BigInteger.class);
 
-  private final String text;
-  private final Class<?> defaultType;
+  private static Map<Class<?>, CQLDataType> REGISTER_TYPE_CLASSES = new HashMap<>();
 
-  CQLDataType(String text, Class<?> defaultType) {
-    this.text = text;
-    this.defaultType = defaultType;
+  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private final String text;
+  private final Class<?> defaultClass;
+
+  // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  static {
+    for (CQLDataType cqlDataType : values()) {
+      REGISTER_TYPE_CLASSES.put(cqlDataType.defaultClass, cqlDataType);
+    }
   }
+
+  CQLDataType(String text, Class<?> defaultClass) {
+    this.text = text;
+    this.defaultClass = defaultClass;
+  }
+
+  // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  public static CQLDataType mapClassToDataType(Class<?> typeClass) {
+    if (typeClass == null) {
+      return null;
+    }
+    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
+    return REGISTER_TYPE_CLASSES.get(typeClass);
+  }
+
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   public String getText() {
     return text;
   }
 
-  public Class<?> getDefaultType() {
-    return defaultType;
+  public Class<?> getDefaultClass() {
+    return defaultClass;
   }
 
 }

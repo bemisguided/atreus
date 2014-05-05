@@ -26,7 +26,6 @@ package org.atreus.impl.types.cql;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.CQLDataType;
 
 /**
@@ -51,8 +50,8 @@ public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
   }
 
   @Override
-  public CQLDataType getType() {
-    return CQLDataType.INT;
+  public CQLDataType getDataType() {
+    return CQLDataType.CQL_INT;
   }
 
   @Override

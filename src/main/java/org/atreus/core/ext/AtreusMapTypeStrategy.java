@@ -32,12 +32,12 @@ import java.util.Map;
  */
 public interface AtreusMapTypeStrategy<T extends Map> extends AtreusTypeStrategy<T> {
 
-  public Class<?> getValueClass();
+  public CQLDataType getValueDataType();
 
-  public void setValueClass(Class<?> valueClass);
+  public void setValueDataType(CQLDataType valueDataType);
 
-  public Class<?> getKeyClass();
+  public CQLDataType getKeyDataType();
 
-  public void setKeyClass(Class<?> keyClass);
+  public void setKeyDataType(CQLDataType keyDataType);
 
 }

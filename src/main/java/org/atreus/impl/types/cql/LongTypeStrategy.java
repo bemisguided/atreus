@@ -50,7 +50,7 @@ public class LongTypeStrategy extends BaseSimpleTypeStrategy<Long> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_BIGINT;
   }
 

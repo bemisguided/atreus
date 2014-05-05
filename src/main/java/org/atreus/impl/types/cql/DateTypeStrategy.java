@@ -52,7 +52,7 @@ public class DateTypeStrategy extends BaseSimpleTypeStrategy<Date> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_TIMESTAMP;
   }
 

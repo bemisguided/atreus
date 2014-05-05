@@ -53,17 +53,12 @@ public class ListTypeStrategy extends BaseCollectionTypeStrategy implements Atre
 
   @Override
   public List get(Row row, String colName) {
-    return row.getList(colName, getValueClass());
+    return row.getList(colName, getValueDataType().getDefaultClass());
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_LIST;
-  }
-
-  @Override
-  public CQLDataType[] getParamTypes() {
-    return new CQLDataType[0];
   }
 
   @Override

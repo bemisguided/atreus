@@ -52,7 +52,7 @@ public class InetAddressTypeStrategy extends BaseSimpleTypeStrategy<InetAddress>
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_INET;
   }
 

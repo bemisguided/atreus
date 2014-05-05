@@ -47,35 +47,30 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> keyClass;
+  private CQLDataType keyDataType;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Class<?> getKeyClass() {
-    return keyClass;
+  public CQLDataType getKeyDataType() {
+    return keyDataType;
   }
 
   @Override
-  public void setKeyClass(Class<?> keyClass) {
-    this.keyClass = keyClass;
+  public void setKeyDataType(CQLDataType keyDataType) {
+    this.keyDataType = keyDataType;
   }
 
   @Override
   public Map get(Row row, String colName) {
-    return row.getMap(colName, getKeyClass(), getValueClass());
+    return row.getMap(colName, getKeyDataType().getDefaultClass(), getValueDataType().getDefaultClass());
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_MAP;
-  }
-
-  @Override
-  public CQLDataType[] getParamTypes() {
-    return new CQLDataType[0];
   }
 
   @Override

@@ -51,7 +51,7 @@ public class StringTypeStrategy extends BaseSimpleTypeStrategy<String> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_TEXT;
   }
 

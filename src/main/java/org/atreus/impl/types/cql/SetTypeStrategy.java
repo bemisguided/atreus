@@ -53,17 +53,12 @@ public class SetTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
 
   @Override
   public Set get(Row row, String colName) {
-    return row.getSet(colName, getValueClass());
+    return row.getSet(colName, getValueDataType().getDefaultClass());
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_SET;
-  }
-
-  @Override
-  public CQLDataType[] getParamTypes() {
-    return new CQLDataType[0];
   }
 
   @Override

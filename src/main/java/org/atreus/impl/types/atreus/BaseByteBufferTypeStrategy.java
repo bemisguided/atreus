@@ -62,7 +62,7 @@ public abstract class BaseByteBufferTypeStrategy<T> extends BaseSimpleTypeStrate
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_BLOB;
   }
 

@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -42,10 +43,23 @@ public class ReflectionUtils {
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(ReflectionUtils.class);
+  private static final Map<Class<?>, Class<?>> REGISTRY_PRIMITIVE_WRAPPERS = new HashMap<>();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  static {
+    REGISTRY_PRIMITIVE_WRAPPERS.put(boolean.class, Boolean.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(byte.class, Byte.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(char.class, Character.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(double.class, Double.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(float.class, Float.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(int.class, Integer.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(long.class, Long.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(short.class, Short.class);
+    REGISTRY_PRIMITIVE_WRAPPERS.put(void.class, Void.class);
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
@@ -91,6 +105,13 @@ public class ReflectionUtils {
     }
     ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
     return parameterizedType.getActualTypeArguments();
+  }
+
+  public static Class<?> toPrimitiveWrapper(Class<?> clazz) {
+    if (clazz.isPrimitive()) {
+      return REGISTRY_PRIMITIVE_WRAPPERS.get(clazz);
+    }
+    return clazz;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

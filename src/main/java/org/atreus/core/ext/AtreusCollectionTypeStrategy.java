@@ -32,8 +32,8 @@ import java.util.Collection;
  */
 public interface AtreusCollectionTypeStrategy<T extends Collection> extends AtreusTypeStrategy<T> {
 
-  public Class<?> getValueClass();
+  public CQLDataType getValueDataType();
 
-  public void setValueClass(Class<?> valueClass);
+  public void setValueDataType(CQLDataType valueDataType);
 
 }

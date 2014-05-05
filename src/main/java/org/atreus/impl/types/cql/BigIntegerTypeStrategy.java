@@ -52,7 +52,7 @@ public class BigIntegerTypeStrategy extends BaseSimpleTypeStrategy<BigInteger> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_BIGINT;
   }
 

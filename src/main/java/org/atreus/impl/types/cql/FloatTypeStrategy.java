@@ -50,7 +50,7 @@ public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_INET;
   }
 

@@ -52,7 +52,7 @@ public class UUIDTypeStrategy extends BaseSimpleTypeStrategy<UUID> {
   }
 
   @Override
-  public CQLDataType getType() {
+  public CQLDataType getDataType() {
     return CQLDataType.CQL_UUID;
   }
 

@@ -29,6 +29,7 @@ import org.atreus.core.ext.AtreusTtlStrategy;
 import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.util.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,6 @@ public class TypeManager {
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(TypeManager.class);
-  private static final Map<Class<?>, Class<?>> REGISTRY_PRIMITIVE_WRAPPERS = new HashMap<>();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -57,18 +57,6 @@ public class TypeManager {
   private Map<Class<?>, Class<? extends AtreusTypeStrategy>> typeStrategyMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  static {
-    REGISTRY_PRIMITIVE_WRAPPERS.put(boolean.class, Boolean.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(byte.class, Byte.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(char.class, Character.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(double.class, Double.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(float.class, Float.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(int.class, Integer.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(long.class, Long.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(short.class, Short.class);
-    REGISTRY_PRIMITIVE_WRAPPERS.put(void.class, Void.class);
-  }
 
   public TypeManager(AtreusEnvironment environment) {
     this.environment = environment;
@@ -91,9 +79,7 @@ public class TypeManager {
 
   public AtreusPrimaryKeyStrategy<?> findPrimaryKeyGenerator(Class<?> typeClass) {
     // Handle primitive types
-    if (typeClass.isPrimitive()) {
-      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
-    }
+    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
 
     // Iterate the registry and find the first assignable class
     for (Class<?> key : primaryKeyStrategyMap.keySet()) {
@@ -106,9 +92,7 @@ public class TypeManager {
 
   public AtreusTtlStrategy<?> findTtlStrategy(Class<?> typeClass) {
     // Handle primitive types
-    if (typeClass.isPrimitive()) {
-      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
-    }
+    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
 
     // Iterate the registry and find the first assignable class
     for (Class<?> key : ttlStrategyMap.keySet()) {
@@ -121,9 +105,7 @@ public class TypeManager {
 
   public AtreusTypeStrategy<?> findTypeStrategy(Class<?> typeClass) {
     // Handle primitive types
-    if (typeClass.isPrimitive()) {
-      typeClass = REGISTRY_PRIMITIVE_WRAPPERS.get(typeClass);
-    }
+    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
 
     // Iterate the registry and find the first assignable class
     for (Class<?> key : typeStrategyMap.keySet()) {

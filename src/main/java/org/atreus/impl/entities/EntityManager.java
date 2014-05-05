@@ -233,7 +233,9 @@ public class EntityManager {
       valueClass = ReflectionUtils.findCollectionValueClass(managedField.getJavaField());
     }
 
-    if (valueClass == null) {
+    CQLDataType valueDataType = CQLDataType.mapClassToDataType(valueClass);
+
+    if (valueClass == null || valueDataType == null) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
           managedField);
     }
@@ -244,7 +246,7 @@ public class EntityManager {
     }
 
     AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) managedField.getTypeStrategy();
-    collectionTypeStrategy.setValueClass(valueClass);
+    collectionTypeStrategy.setValueDataType(valueDataType);
   }
 
   @SuppressWarnings("unchecked")
@@ -260,12 +262,15 @@ public class EntityManager {
       keyClass = ReflectionUtils.findMapKeyClass(managedField.getJavaField());
     }
 
-    if (valueClass == null) {
+    CQLDataType valueDataType = CQLDataType.mapClassToDataType(valueClass);
+    CQLDataType keyDataType = CQLDataType.mapClassToDataType(keyClass);
+
+    if (valueClass == null || valueDataType == null) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
           managedField);
     }
 
-    if (keyClass == null) {
+    if (keyClass == null || keyDataType == null) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE,
           managedField);
     }
@@ -276,8 +281,8 @@ public class EntityManager {
     }
 
     AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) managedField.getTypeStrategy();
-    mapTypeStrategy.setValueClass(valueClass);
-    mapTypeStrategy.setKeyClass(keyClass);
+    mapTypeStrategy.setValueDataType(valueDataType);
+    mapTypeStrategy.setKeyDataType(keyDataType);
   }
 
   private void processPrimaryKeyField(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {

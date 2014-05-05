@@ -39,20 +39,11 @@ public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T>
 
   private static final transient Logger LOG = LoggerFactory.getLogger(BaseSimpleTypeStrategy.class);
 
-  private static CQLDataType[] NO_PARAM_TYPES = new CQLDataType[0];
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private Class<?> valueClass;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public CQLDataType[] getParamTypes() {
-    return NO_PARAM_TYPES;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.types.cql;
 
+import org.atreus.core.ext.CQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,24 +40,24 @@ public abstract class BaseCollectionTypeStrategy {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> valueClass;
+  private CQLDataType valueDataType;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public void setValueClass(Class<?> valueClass) {
-    this.valueClass = valueClass;
-  }
-
-  public Class<?> getValueClass() {
-    return valueClass;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public CQLDataType getValueDataType() {
+    return valueDataType;
+  }
+
+  public void setValueDataType(CQLDataType valueDataType) {
+    this.valueDataType = valueDataType;
+  }
 
 } // end of class
