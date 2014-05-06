@@ -380,10 +380,13 @@ public class EntityManager {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void resolveTypeStrategy(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+    Class<?> typeClass = managedField.getJavaField().getType();
     AtreusTypeStrategy typeStrategy = entityStrategy.resolveTypeStrategy(managedField);
 
     if (typeStrategy != null) {
+      typeStrategy.setValueClass(typeClass);
       managedField.setTypeStrategy(typeStrategy);
       return;
     }
@@ -394,9 +397,9 @@ public class EntityManager {
 
     TypeManager typeManager = environment.getTypeManager();
 
-    Field javaField = managedField.getJavaField();
-    typeStrategy = typeManager.findTypeStrategy(javaField.getType());
+    typeStrategy = typeManager.findTypeStrategy(typeClass);
     if (typeStrategy != null) {
+      typeStrategy.setValueClass(typeClass);
       managedField.setTypeStrategy(typeStrategy);
     }
   }

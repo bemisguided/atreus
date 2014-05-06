@@ -47,21 +47,21 @@ public class BigDecimalTypeStrategy extends BaseSimpleTypeStrategy<BigDecimal> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public BigDecimal get(Row row, String colName) {
-    return row.getDecimal(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_DECIMAL;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, BigDecimal value) {
-    boundStatement.setDecimal(colName, value);
+  protected BigDecimal doGet(Row row, String colName) {
+    return row.getDecimal(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, BigDecimal value) {
+    boundStatement.setDecimal(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -45,21 +45,21 @@ public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Integer get(Row row, String colName) {
-    return row.getInt(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_INT;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Integer value) {
-    boundStatement.setInt(colName, value);
+  protected Integer doGet(Row row, String colName) {
+    return row.getInt(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, Integer value) {
+    boundStatement.setInt(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

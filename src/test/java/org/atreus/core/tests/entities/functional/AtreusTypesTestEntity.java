@@ -21,48 +21,63 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core.tests.entities.functional;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusType;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusPrimaryKey;
 import org.atreus.core.ext.CQLDataType;
 
 /**
- * Float Type Strategy.
+ * AtreusTypesTestEntity.
  *
  * @author Martin Crawford
  */
-@AtreusType(Float.class)
-public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
+@AtreusEntity()
+public class AtreusTypesTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  @AtreusPrimaryKey
+  private String id;
+
+  private Short aShort;
+
+  private CQLDataType anEnum;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_INET;
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Float doGet(Row row, String colName) {
-    return row.getFloat(colName);
-  }
-
-  @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Float value) {
-    boundStatement.setFloat(colName, value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public Short getaShort() {
+    return aShort;
+  }
+
+  public void setaShort(Short aShort) {
+    this.aShort = aShort;
+  }
+
+  public CQLDataType getAnEnum() {
+    return anEnum;
+  }
+
+  public void setAnEnum(CQLDataType anEnum) {
+    this.anEnum = anEnum;
+  }
 
 }

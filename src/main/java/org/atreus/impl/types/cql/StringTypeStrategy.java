@@ -46,21 +46,21 @@ public class StringTypeStrategy extends BaseSimpleTypeStrategy<String> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public String get(Row row, String colName) {
-    return row.getString(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_TEXT;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, String value) {
-    boundStatement.setString(colName, value);
+  protected String doGet(Row row, String colName) {
+    return row.getString(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, String value) {
+    boundStatement.setString(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

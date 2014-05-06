@@ -39,7 +39,7 @@ import java.util.List;
  * @author Martin Crawford
  */
 @AtreusType(List.class)
-public class ListTypeStrategy extends BaseCollectionTypeStrategy implements AtreusCollectionTypeStrategy<List> {
+public class ListTypeStrategy extends BaseCollectionTypeStrategy<List> implements AtreusCollectionTypeStrategy<List> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -52,21 +52,21 @@ public class ListTypeStrategy extends BaseCollectionTypeStrategy implements Atre
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public List get(Row row, String colName) {
-    return row.getList(colName, getValueDataType().getDefaultClass());
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_LIST;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, List value) {
-    boundStatement.setList(colName, value);
+  protected List doGet(Row row, String colName) {
+    return row.getList(colName, getValueDataType().getDefaultClass());
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, List value) {
+    boundStatement.setList(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -21,22 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.types.atreus;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.CQLDataType;
+import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Float Type Strategy.
+ * Enum Type Strategy.
  *
  * @author Martin Crawford
  */
-@AtreusType(Float.class)
-public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
+@AtreusType(Enum.class)
+public class EnumTypeStrategy extends BaseSimpleTypeStrategy<Enum> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(EnumTypeStrategy.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -46,23 +51,25 @@ public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
 
   @Override
   public CQLDataType getDataType() {
-    return CQLDataType.CQL_INET;
+    return CQLDataType.CQL_TEXT;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   @Override
-  protected Float doGet(Row row, String colName) {
-    return row.getFloat(colName);
+  @SuppressWarnings("unchecked")
+  protected Enum doGet(Row row, String colName) {
+    String value = row.getString(colName);
+    return Enum.valueOf((Class<Enum>) getValueClass(), value);
   }
 
   @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Float value) {
-    boundStatement.setFloat(colName, value);
+  protected void doSet(BoundStatement boundStatement, String colName, Enum value) {
+    boundStatement.setString(colName, value.name());
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

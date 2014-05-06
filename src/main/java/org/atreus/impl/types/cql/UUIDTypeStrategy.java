@@ -47,21 +47,21 @@ public class UUIDTypeStrategy extends BaseSimpleTypeStrategy<UUID> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public UUID get(Row row, String colName) {
-    return row.getUUID(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_UUID;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, UUID value) {
-    boundStatement.setUUID(colName, value);
+  protected UUID doGet(Row row, String colName) {
+    return row.getUUID(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, UUID value) {
+    boundStatement.setUUID(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

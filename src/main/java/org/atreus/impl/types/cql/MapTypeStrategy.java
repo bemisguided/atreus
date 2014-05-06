@@ -39,7 +39,7 @@ import java.util.Map;
  * @author Martin Crawford
  */
 @AtreusType(Map.class)
-public class MapTypeStrategy extends BaseCollectionTypeStrategy implements AtreusMapTypeStrategy<Map> {
+public class MapTypeStrategy extends BaseCollectionTypeStrategy<Map> implements AtreusMapTypeStrategy<Map> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -64,21 +64,21 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
   }
 
   @Override
-  public Map get(Row row, String colName) {
-    return row.getMap(colName, getKeyDataType().getDefaultClass(), getValueDataType().getDefaultClass());
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_MAP;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Map value) {
-    boundStatement.setMap(colName, value);
+  protected Map doGet(Row row, String colName) {
+    return row.getMap(colName, getKeyDataType().getDefaultClass(), getValueDataType().getDefaultClass());
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  public void doSet(BoundStatement boundStatement, String colName, Map value) {
+    boundStatement.setMap(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

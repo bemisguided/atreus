@@ -39,7 +39,7 @@ import java.util.Set;
  * @author Martin Crawford
  */
 @AtreusType(Set.class)
-public class SetTypeStrategy extends BaseCollectionTypeStrategy implements AtreusCollectionTypeStrategy<Set> {
+public class SetTypeStrategy extends BaseCollectionTypeStrategy<Set> implements AtreusCollectionTypeStrategy<Set> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -52,21 +52,21 @@ public class SetTypeStrategy extends BaseCollectionTypeStrategy implements Atreu
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Set get(Row row, String colName) {
-    return row.getSet(colName, getValueDataType().getDefaultClass());
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_SET;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Set value) {
-    boundStatement.setSet(colName, value);
+  protected Set doGet(Row row, String colName) {
+    return row.getSet(colName, getValueDataType().getDefaultClass());
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  public void doSet(BoundStatement boundStatement, String colName, Set value) {
+    boundStatement.setSet(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

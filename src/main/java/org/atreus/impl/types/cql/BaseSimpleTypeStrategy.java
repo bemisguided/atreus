@@ -23,6 +23,8 @@
  */
 package org.atreus.impl.types.cql;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.CQLDataType;
 import org.slf4j.Logger;
@@ -41,11 +43,43 @@ public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T>
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Class<?> valueClass;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  @Override
+  public final T get(Row row, String colName) {
+    if (row.isNull(colName)){
+      return null;
+    }
+    return doGet(row, colName);
+  }
+
+  @Override
+  public Class<?> getValueClass() {
+    return valueClass;
+  }
+
+  @Override
+  public final void set(BoundStatement boundStatement, String colName, T value) {
+    if (value == null) {
+      return;
+    }
+    doSet(boundStatement, colName, value);
+  }
+
+  @Override
+  public void setValueClass(Class<?> valueClass) {
+    this.valueClass = valueClass;
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected abstract T doGet(Row row, String colName);
+
+  protected abstract void doSet(BoundStatement boundStatement, String colName, T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

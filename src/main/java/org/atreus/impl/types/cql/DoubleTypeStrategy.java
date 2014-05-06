@@ -45,21 +45,21 @@ public class DoubleTypeStrategy extends BaseSimpleTypeStrategy<Double> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Double get(Row row, String colName) {
-    return row.getDouble(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_DOUBLE;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Double value) {
-    boundStatement.setDouble(colName, value);
+  protected Double doGet(Row row, String colName) {
+    return row.getDouble(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, Double value) {
+    boundStatement.setDouble(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

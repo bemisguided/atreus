@@ -35,8 +35,12 @@ public interface AtreusTypeStrategy<T> {
 
   public T get(Row row, String colName);
 
+  public Class<?> getValueClass();
+
   public CQLDataType getDataType();
 
   public void set(BoundStatement boundStatement, String colName, T value);
+
+  public void setValueClass(Class<?> valueClass);
 
 }

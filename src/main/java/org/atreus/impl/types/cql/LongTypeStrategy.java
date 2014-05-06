@@ -45,21 +45,21 @@ public class LongTypeStrategy extends BaseSimpleTypeStrategy<Long> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Long get(Row row, String colName) {
-    return row.getLong(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_BIGINT;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Long value) {
-    boundStatement.setLong(colName, value);
+  protected Long doGet(Row row, String colName) {
+    return row.getLong(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, Long value) {
+    boundStatement.setLong(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

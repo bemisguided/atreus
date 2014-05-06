@@ -47,21 +47,21 @@ public class BigIntegerTypeStrategy extends BaseSimpleTypeStrategy<BigInteger> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public BigInteger get(Row row, String colName) {
-    return row.getVarint(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_BIGINT;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, BigInteger value) {
-    boundStatement.setVarint(colName, value);
+  protected BigInteger doGet(Row row, String colName) {
+    return row.getVarint(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, BigInteger value) {
+    boundStatement.setVarint(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

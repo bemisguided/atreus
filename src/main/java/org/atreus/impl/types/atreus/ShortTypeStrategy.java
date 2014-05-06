@@ -23,8 +23,11 @@
  */
 package org.atreus.impl.types.atreus;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusType;
-import org.atreus.impl.util.ByteUtils;
+import org.atreus.core.ext.CQLDataType;
+import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
 
 /**
  * Integer Type Strategy.
@@ -32,7 +35,7 @@ import org.atreus.impl.util.ByteUtils;
  * @author Martin Crawford
  */
 @AtreusType(Short.class)
-public class ShortTypeStrategy extends BaseByteBufferTypeStrategy<Short> {
+public class ShortTypeStrategy extends BaseSimpleTypeStrategy<Short> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -42,16 +45,25 @@ public class ShortTypeStrategy extends BaseByteBufferTypeStrategy<Short> {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  @Override
+  public CQLDataType getDataType() {
+    return CQLDataType.CQL_INT;
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   @Override
-  protected Short toValue(byte[] bytes) {
-    return ByteUtils.toShort(bytes);
+  protected Short doGet(Row row, String colName) {
+    Integer integer = row.getInt(colName);
+    if (integer > Short.MAX_VALUE || integer < Short.MIN_VALUE) {
+      throw new IllegalArgumentException(integer + " is out of range for short");
+    }
+    return integer.shortValue();
   }
 
   @Override
-  protected byte[] fromValue(Short value) {
-    return ByteUtils.toBytes(value);
+  protected void doSet(BoundStatement boundStatement, String colName, Short value) {
+    boundStatement.setInt(colName, value);
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

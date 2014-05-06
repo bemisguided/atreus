@@ -45,21 +45,21 @@ public class BooleanTypeStrategy extends BaseSimpleTypeStrategy<Boolean> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Boolean get(Row row, String colName) {
-    return row.getBool(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_BOOLEAN;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Boolean value) {
-    boundStatement.setBool(colName, value);
+  protected Boolean doGet(Row row, String colName) {
+    return row.getBool(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, Boolean value) {
+    boundStatement.setBool(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -47,21 +47,21 @@ public class InetAddressTypeStrategy extends BaseSimpleTypeStrategy<InetAddress>
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public InetAddress get(Row row, String colName) {
-    return row.getInet(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_INET;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, InetAddress value) {
-    boundStatement.setInet(colName, value);
+  protected InetAddress doGet(Row row, String colName) {
+    return row.getInet(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, InetAddress value) {
+    boundStatement.setInet(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

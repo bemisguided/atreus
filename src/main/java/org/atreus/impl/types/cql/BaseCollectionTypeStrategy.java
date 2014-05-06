@@ -32,13 +32,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public abstract class BaseCollectionTypeStrategy {
+public abstract class BaseCollectionTypeStrategy<T> extends BaseSimpleTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(BaseCollectionTypeStrategy.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> valueClass;
 
   private CQLDataType valueDataType;
 
@@ -51,6 +53,14 @@ public abstract class BaseCollectionTypeStrategy {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public Class<?> getValueClass() {
+    return valueClass;
+  }
+
+  public void setValueClass(Class<?> valueClass) {
+    this.valueClass = valueClass;
+  }
 
   public CQLDataType getValueDataType() {
     return valueDataType;

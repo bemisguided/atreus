@@ -27,11 +27,9 @@ import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.BaseAtreusCassandraTests;
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.tests.entities.functional.CQLPrimitiveTypesTestEntity;
+import org.atreus.core.ext.CQLDataType;
 import org.atreus.core.tests.entities.errors.*;
-import org.atreus.core.tests.entities.functional.CollectionTestEntity;
-import org.atreus.core.tests.entities.functional.NameOverrideTestEntity;
-import org.atreus.core.tests.entities.functional.TtlTestEntity;
+import org.atreus.core.tests.entities.functional.*;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,6 +58,44 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Test
+  public void testAtreusTypes() throws Exception {
+    LOG.info("Running testAtreusTypes");
+    addEntity(AtreusTypesTestEntity.class);
+    initEnvironment();
+
+    executeCQL("CREATE TABLE default.AtreusTypesTestEntity (" +
+        "id text, " +
+        "aShort int, " +
+        "anEnum text, " +
+        "PRIMARY KEY(id))");
+
+    AtreusTypesTestEntity testEntity = new AtreusTypesTestEntity();
+    testEntity.setaShort((short) 1234);
+    testEntity.setAnEnum(CQLDataType.CQL_ASCII);
+
+    getSession().save(testEntity);
+    String primaryKey = testEntity.getId();
+
+    AtreusTypesTestEntity otherEntity = getSession().findByPrimaryKey(AtreusTypesTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertEquals(primaryKey, otherEntity.getId());
+    Assert.assertEquals(1234, (short) otherEntity.getaShort());
+    Assert.assertEquals(CQLDataType.CQL_ASCII, otherEntity.getAnEnum());
+
+    // Null values
+    testEntity = new AtreusTypesTestEntity();
+    getSession().save(testEntity);
+    primaryKey = testEntity.getId();
+
+    otherEntity = getSession().findByPrimaryKey(AtreusTypesTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertNull("Expect null short", otherEntity.getaShort());
+    Assert.assertNull("Expect null enum", otherEntity.getAnEnum());
+  }
 
   @Test
   public void testCQLPrimitiveTypes() throws Exception {

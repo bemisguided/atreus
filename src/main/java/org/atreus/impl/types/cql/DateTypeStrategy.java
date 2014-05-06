@@ -47,21 +47,21 @@ public class DateTypeStrategy extends BaseSimpleTypeStrategy<Date> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Date get(Row row, String colName) {
-    return row.getDate(colName);
-  }
-
-  @Override
   public CQLDataType getDataType() {
     return CQLDataType.CQL_TIMESTAMP;
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
   @Override
-  public void set(BoundStatement boundStatement, String colName, Date value) {
-    boundStatement.setDate(colName, value);
+  protected Date doGet(Row row, String colName) {
+    return row.getDate(colName);
   }
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+  @Override
+  protected void doSet(BoundStatement boundStatement, String colName, Date value) {
+    boundStatement.setDate(colName, value);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

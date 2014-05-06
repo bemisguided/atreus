@@ -26,7 +26,6 @@ package org.atreus.impl.types.atreus;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.Bytes;
-import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.CQLDataType;
 import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
 import org.slf4j.Logger;
@@ -52,7 +51,14 @@ public abstract class BaseByteBufferTypeStrategy<T> extends BaseSimpleTypeStrate
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public T get(Row row, String colName) {
+  public CQLDataType getDataType() {
+    return CQLDataType.CQL_BLOB;
+  }
+
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  @Override
+  protected T doGet(Row row, String colName) {
     ByteBuffer byteBuffer = row.getBytes(colName);
     if (byteBuffer == null) {
       return null;
@@ -62,12 +68,7 @@ public abstract class BaseByteBufferTypeStrategy<T> extends BaseSimpleTypeStrate
   }
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_BLOB;
-  }
-
-  @Override
-  public void set(BoundStatement boundStatement, String colName, T value) {
+  protected void doSet(BoundStatement boundStatement, String colName, T value) {
     if (value == null) {
       boundStatement.setBytes(colName, null);
       return;
@@ -76,8 +77,6 @@ public abstract class BaseByteBufferTypeStrategy<T> extends BaseSimpleTypeStrate
     ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
     boundStatement.setBytes(colName, byteBuffer);
   }
-
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   protected abstract T toValue(byte[] bytes);
 
