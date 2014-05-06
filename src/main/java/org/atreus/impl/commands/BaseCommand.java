@@ -23,13 +23,8 @@
  */
 package org.atreus.impl.commands;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusSession;
 import org.atreus.impl.AtreusEnvironment;
-import org.atreus.impl.queries.QueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +45,7 @@ public abstract class BaseCommand {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public abstract void bindStatement(BoundStatement boundStatement);
-
-  public abstract Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement);
-
-  public abstract void prepareBoundStatement(AtreusSession session, BoundStatement boundStatement);
-
-  public abstract RegularStatement prepareStatement(AtreusSession session);
+  public abstract Object execute(AtreusEnvironment environment, AtreusSession session);
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

@@ -25,11 +25,14 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.AtreusInitialisationException;
+import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.*;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
+import org.atreus.impl.visitors.PrimaryKeyGeneratorVisitor;
+import org.atreus.impl.visitors.UpdateEntityVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,6 +118,13 @@ public class EntityManager {
     }
   }
 
+  public void visitUpdate(AtreusSession session, Object entity) {
+    ManagedEntityImpl managedEntity = (ManagedEntityImpl)  environment.getEntityManager().getEntity(entity.getClass());
+    for(AtreusEntityVisitor visitor : managedEntity.getUpdateVisitors()) {
+      visitor.acceptEntity(session, managedEntity, entity);
+    }
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
@@ -143,7 +153,7 @@ public class EntityManager {
 
   private ManagedFieldImpl buildManagedField(ManagedEntityImpl managedEntity, Field javaField) {
     ManagedFieldImpl managedField = new ManagedFieldImpl();
-    managedField.setManagedEntity(managedEntity);
+    managedField.setParentEntity(managedEntity);
     managedField.setColumn(javaField.getName());
     managedField.setJavaField(javaField);
     return managedField;
@@ -161,6 +171,10 @@ public class EntityManager {
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
       updateManagedEntity(managedEntity, entityStrategy);
     }
+
+    // TODO optimize reuse of objectss
+    managedEntity.getUpdateVisitors().add(new PrimaryKeyGeneratorVisitor());
+    managedEntity.getUpdateVisitors().add(new UpdateEntityVisitor());
 
     LOG.debug("Registered Entity name={} {}", managedEntity.getName(), managedEntity.getEntityType());
     addManagedEntity(managedEntity);

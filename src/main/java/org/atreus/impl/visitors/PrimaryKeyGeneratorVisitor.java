@@ -21,23 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.impl.visitors;
 
-import com.datastax.driver.core.BoundStatement;
 import org.atreus.core.AtreusSession;
+import org.atreus.core.ext.AtreusEntityVisitor;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for all read commands.
+ * Primary Key Generator visitor.
  *
  * @author Martin Crawford
  */
-public abstract class BaseReadCommand extends BaseCommand {
+public class PrimaryKeyGeneratorVisitor extends AtreusEntityVisitor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseReadCommand.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyGeneratorVisitor.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -46,8 +48,13 @@ public abstract class BaseReadCommand extends BaseCommand {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void prepareBoundStatement(AtreusSession session, BoundStatement boundStatement) {
-    boundStatement.setConsistencyLevel(session.getReadConsistencyLevel());
+  public void acceptEntity(AtreusSession session, AtreusManagedEntity managedEntity, Object entity) {
+    AtreusManagedField managedPrimaryKey = managedEntity.getPrimaryKeyField();
+    Object primaryKey = getField(managedPrimaryKey, entity);
+    if (primaryKey == null && managedEntity.getPrimaryKeyStrategy() != null) {
+      primaryKey = managedEntity.getPrimaryKeyStrategy().generate();
+      setField(managedPrimaryKey, entity, primaryKey);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

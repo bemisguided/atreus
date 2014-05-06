@@ -23,9 +23,7 @@
  */
 package org.atreus.impl;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.*;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.impl.commands.BaseCommand;
@@ -66,6 +64,27 @@ public class AtreusSessionImpl implements AtreusSession {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+
+  @Override
+  public ResultSet execute(Statement statement) {
+    return environment.getCassandraSession().execute(statement);
+  }
+
+  @Override
+  public ResultSet execute(String cql) {
+    return environment.getCassandraSession().execute(cql);
+  }
+
+  @Override
+  public void executeOrBatch(Statement statement) {
+    environment.getCassandraSession().execute(statement);
+  }
+
+  @Override
+  public void executeOrBatch(String cql) {
+    environment.getCassandraSession().execute(cql);
+  }
+
   @Override
   public <T> T findByPrimaryKey(Class<T> entityType, Serializable primaryKey) {
     // Assert input params
@@ -85,6 +104,16 @@ public class AtreusSessionImpl implements AtreusSession {
   }
 
   @Override
+  public BoundStatement prepareQuery(String cql) {
+    return environment.getQueryManager().generate(cql);
+  }
+
+  @Override
+  public BoundStatement prepareQuery(RegularStatement regularStatement) {
+    return environment.getQueryManager().generate(regularStatement);
+  }
+
+  @Override
   public void save(Object entity) {
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
@@ -95,11 +124,10 @@ public class AtreusSessionImpl implements AtreusSession {
 
     // Build command
     SaveCommand command = new SaveCommand();
-    command.setManagedEntity(managedEntity);
     command.setEntity(entity);
 
     // Execute or batch
-    doExecuteOrBatch(command);
+    doExecute(command, null);
   }
 
   @Override
@@ -111,17 +139,7 @@ public class AtreusSessionImpl implements AtreusSession {
 
   @SuppressWarnings("unchecked")
   protected <T> T doExecute(BaseCommand command, Class<T> type) {
-    RegularStatement regularStatement = command.prepareStatement(this);
-    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
-    command.bindStatement(boundStatement);
-    command.prepareBoundStatement(this, boundStatement);
-    return (T) command.execute(this, environment.getCassandraSession(), boundStatement);
-  }
-
-  @SuppressWarnings("unchecked")
-  protected void doExecuteOrBatch(BaseCommand command) {
-    // TODO batch
-    doExecute(command, null);
+    return (T) command.execute(environment, this);
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

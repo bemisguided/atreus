@@ -62,13 +62,13 @@ public class QueryManager {
     return generate(cassandraStatement.getQueryString());
   }
 
-  public BoundStatement generate(String cqlQueryString) {
-    LOG.debug("CQL Statement: {}", cqlQueryString);
-    PreparedStatement preparedStatement = preparedStatementMap.get(cqlQueryString);
+  public BoundStatement generate(String cql) {
+    LOG.debug("CQL Statement: {}", cql);
+    PreparedStatement preparedStatement = preparedStatementMap.get(cql);
 
     if (preparedStatement == null) {
-      preparedStatement = environment.getCassandraSession().prepare(cqlQueryString);
-      preparedStatementMap.put(cqlQueryString, preparedStatement);
+      preparedStatement = environment.getCassandraSession().prepare(cql);
+      preparedStatementMap.put(cql, preparedStatement);
     }
     return new BoundStatement(preparedStatement);
   }

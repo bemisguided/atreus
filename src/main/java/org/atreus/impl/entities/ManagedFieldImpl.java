@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.entities;
 
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.AtreusManagedField;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   private Field javaField;
 
-  private ManagedEntityImpl managedEntity;
+  private ManagedEntityImpl parentEntity;
 
   private AtreusTypeStrategy typeStrategy;
 
@@ -96,7 +97,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   @Override
   public String toString() {
-    return managedEntity.getName() + "." + javaField.getName();
+    return parentEntity.getName() + "." + javaField.getName();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -134,12 +135,13 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
     this.fieldName = javaField.getName();
   }
 
-  public ManagedEntityImpl getManagedEntity() {
-    return managedEntity;
+  @Override
+  public AtreusManagedEntity getParentEntity() {
+    return parentEntity;
   }
 
-  public void setManagedEntity(ManagedEntityImpl managedEntity) {
-    this.managedEntity = managedEntity;
+  public void setParentEntity(ManagedEntityImpl parentEntity) {
+    this.parentEntity = parentEntity;
   }
 
   @Override

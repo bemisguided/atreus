@@ -23,8 +23,6 @@
  */
 package org.atreus.core.ext;
 
-import org.atreus.core.ext.AtreusTypeStrategy;
-
 import java.lang.reflect.Field;
 
 /**
@@ -41,6 +39,8 @@ public interface AtreusManagedField {
   public String getFieldName();
 
   public Field getJavaField();
+
+  public AtreusManagedEntity getParentEntity();
 
   public AtreusTypeStrategy getTypeStrategy();
 

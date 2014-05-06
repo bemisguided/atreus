@@ -23,15 +23,11 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
+import org.atreus.core.ext.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 ;
 
@@ -67,6 +63,12 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   private AtreusManagedField ttlField;
 
   private AtreusTtlStrategy ttlStrategy;
+
+  private List<AtreusEntityVisitor> saveVisitors = new ArrayList<>();
+
+  private List<AtreusEntityVisitor> updateVisitors = new ArrayList<>();
+
+  private List<AtreusEntityVisitor> deleteVisitors = new ArrayList<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -171,4 +173,15 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     this.ttlStrategy = ttlStrategy;
   }
 
+  public List<AtreusEntityVisitor> getSaveVisitors() {
+    return saveVisitors;
+  }
+
+  public List<AtreusEntityVisitor> getUpdateVisitors() {
+    return updateVisitors;
+  }
+
+  public List<AtreusEntityVisitor> getDeleteVisitors() {
+    return deleteVisitors;
+  }
 }

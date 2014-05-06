@@ -23,7 +23,7 @@
  */
 package org.atreus.core;
 
-import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.*;
 
 import java.io.Serializable;
 
@@ -42,5 +42,17 @@ public interface AtreusSession {
   public void save(Object entity);
 
   public void close();
+
+  public BoundStatement prepareQuery(String cql);
+
+  public BoundStatement prepareQuery(RegularStatement regularStatement);
+
+  public ResultSet execute(Statement statement);
+
+  public ResultSet execute(String cql);
+
+  public void executeOrBatch(Statement statement);
+
+  public void executeOrBatch(String cql);
 
 }

@@ -26,6 +26,7 @@ package org.atreus.impl.commands;
 import com.datastax.driver.core.*;
 import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ import java.io.Serializable;
  *
  * @author Martin Crawford
  */
-public class FindByPrimaryKeyCommand extends BaseReadCommand {
+public class FindByPrimaryKeyCommand extends BaseCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -55,18 +56,11 @@ public class FindByPrimaryKeyCommand extends BaseReadCommand {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void bindStatement(BoundStatement boundStatement) {
+  public Object execute(AtreusEnvironment environment, AtreusSession session) {
+    RegularStatement regularStatement = QueryHelper.selectEntity(managedEntity);
+    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
     BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
-  }
-
-  @Override
-  public RegularStatement prepareStatement(AtreusSession session) {
-    return QueryHelper.selectEntity(managedEntity);
-  }
-
-  @Override
-  public Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement) {
-    ResultSet resultSet = cassandraSession.execute(boundStatement);
+    ResultSet resultSet = session.execute(boundStatement);
     Row row = resultSet.one();
     if (row == null) {
       return null;

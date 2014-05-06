@@ -23,14 +23,8 @@
  */
 package org.atreus.impl.commands;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
 import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
-import org.atreus.impl.entities.BindingHelper;
-import org.atreus.impl.queries.QueryHelper;
+import org.atreus.impl.AtreusEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public class SaveCommand extends BaseWriteCommand {
+public class SaveCommand extends BaseCommand {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,32 +43,16 @@ public class SaveCommand extends BaseWriteCommand {
 
   private Object entity;
 
-  private AtreusManagedEntity managedEntity;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void bindStatement(BoundStatement boundStatement) {
-    BindingHelper.bindFromEntity(managedEntity, entity, boundStatement);
-  }
-
-  @Override
-  public Object execute(AtreusSession session, Session cassandraSession, BoundStatement boundStatement) {
-    cassandraSession.execute(boundStatement);
+  public Object execute(AtreusEnvironment environment, AtreusSession session) {
+    environment.getEntityManager().visitUpdate(session, entity);
     return null;
   }
 
-  @Override
-  public RegularStatement prepareStatement(AtreusSession session) {
-    boolean hasTtl = false;
-    AtreusManagedField ttlField = managedEntity.getTtlField();
-    if (ttlField != null && !BindingHelper.isNull(ttlField, entity)) {
-      hasTtl = true;
-    }
-    return QueryHelper.insertEntity(managedEntity, hasTtl);
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -88,14 +66,6 @@ public class SaveCommand extends BaseWriteCommand {
 
   public void setEntity(Object entity) {
     this.entity = entity;
-  }
-
-  public AtreusManagedEntity getManagedEntity() {
-    return managedEntity;
-  }
-
-  public void setManagedEntity(AtreusManagedEntity managedEntity) {
-    this.managedEntity = managedEntity;
   }
 
 } // end of class

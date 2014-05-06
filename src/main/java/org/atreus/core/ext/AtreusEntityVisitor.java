@@ -21,23 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.core.ext;
 
-import com.datastax.driver.core.BoundStatement;
 import org.atreus.core.AtreusSession;
+import org.atreus.core.annotations.AtreusEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for all write commands.
+ * todo document me
  *
  * @author Martin Crawford
  */
-public abstract class BaseWriteCommand extends BaseCommand {
+public abstract class AtreusEntityVisitor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseWriteCommand.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusEntityVisitor.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -45,12 +45,33 @@ public abstract class BaseWriteCommand extends BaseCommand {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void prepareBoundStatement(AtreusSession session, BoundStatement boundStatement) {
-    boundStatement.setConsistencyLevel(session.getWriteConsistencyLevel());
+  public void acceptEntity(AtreusSession session, AtreusManagedEntity managedEntity, Object entity) {
+
+  }
+
+  public void acceptField(AtreusSession session, AtreusManagedField managedField, Object entity) {
+
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected static Object getField(AtreusManagedField managedField, Object entity) {
+    try {
+      return managedField.getJavaField().get(entity);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected static void setField(AtreusManagedField managedField, Object entity, Object value) {
+    try {
+      managedField.getJavaField().set(entity, value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
