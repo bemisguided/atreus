@@ -21,28 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
-
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-
-import java.io.Serializable;
+package org.atreus.core.ext.meta;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Interface for a managed composite association.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusMetaComposite {
 
-  public Object getEntity();
+  public AtreusMetaEntity getAssociatedEntity();
 
-  public Object getFieldValue(AtreusMetaField metaField);
+  public AtreusMetaField getField();
 
-  public void setFieldValue(AtreusMetaField metaField, Object value);
+  public AtreusMetaEntity getOwnerEntity();
 
-  public AtreusMetaEntity getMetaEntity();
-
-  public Serializable getPrimaryKey();
+  public boolean isParent();
 
 }

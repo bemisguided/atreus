@@ -21,28 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.strategies;
 
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-
-import java.io.Serializable;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.CQLDataType;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Interface for an Atreus Type Strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusTypeStrategy<T> {
 
-  public Object getEntity();
+  public T get(Row row, String colName);
 
-  public Object getFieldValue(AtreusMetaField metaField);
+  public Class<?> getValueClass();
 
-  public void setFieldValue(AtreusMetaField metaField, Object value);
+  public CQLDataType getDataType();
 
-  public AtreusMetaEntity getMetaEntity();
+  public void set(BoundStatement boundStatement, String colName, T value);
 
-  public Serializable getPrimaryKey();
+  public void setValueClass(Class<?> valueClass);
 
 }

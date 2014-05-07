@@ -24,23 +24,30 @@
 package org.atreus.impl;
 
 import com.datastax.driver.core.*;
-import org.atreus.core.AtreusSession;
+import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.commands.BaseCommand;
 import org.atreus.impl.commands.FindByPrimaryKeyCommand;
 import org.atreus.impl.commands.SaveCommand;
+import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.util.AssertUtils;
+import org.atreus.impl.util.CompositeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements an Atreus Session.
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImpl implements AtreusSession {
+public class AtreusSessionImpl implements AtreusSessionExt {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -49,6 +56,8 @@ public class AtreusSessionImpl implements AtreusSession {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final AtreusEnvironment environment;
+
+  private Map<CompositeKey, AtreusManagedEntity> managedEntities = new HashMap<>();
 
   private ConsistencyLevel readConsistencyLevel;
 
@@ -64,10 +73,10 @@ public class AtreusSessionImpl implements AtreusSession {
 
   public AtreusSessionImpl(AtreusEnvironment environment) {
     this.environment = environment;
-    writeAsync = environment.getConfiguration().isDefaultWriteAsync();
-    writeBatch = environment.getConfiguration().isDefaultWriteBatch();
-    readConsistencyLevel = environment.getConfiguration().getDefaultReadConsistencyLevel();
-    writeConsistencyLevel = environment.getConfiguration().getDefaultWriteConsistencyLevel();
+    writeAsync = getConfiguration().isDefaultWriteAsync();
+    writeBatch = getConfiguration().isDefaultWriteBatch();
+    readConsistencyLevel = getConfiguration().getDefaultReadConsistencyLevel();
+    writeConsistencyLevel = getConfiguration().getDefaultWriteConsistencyLevel();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -91,7 +100,7 @@ public class AtreusSessionImpl implements AtreusSession {
       batchStatement.add(statement);
       return;
     }
-    environment.getCassandraSession().execute(statement);
+    getCassandraSession().execute(statement);
   }
 
   @Override
@@ -105,6 +114,7 @@ public class AtreusSessionImpl implements AtreusSession {
       return;
     }
     executeWrite(batchStatement, isWriteAsync());
+    batchStatement = null;
   }
 
   @Override
@@ -113,20 +123,21 @@ public class AtreusSessionImpl implements AtreusSession {
       return;
     }
     executeWrite(batchStatement, async);
+    batchStatement = null;
   }
 
   @Override
   public <T> T findOne(Class<T> entityType, Serializable primaryKey) {
     // Assert input params
     AssertUtils.notNull(entityType, "entityType is a required parameter");
-    AtreusManagedEntity managedEntity = environment.getEntityManager().getEntity(entityType);
-    if (managedEntity == null) {
+    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entityType);
+    if (metaEntity == null) {
       throw new RuntimeException(entityType.getCanonicalName() + " is not managed by Atreus");
     }
 
     // Build command
     FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand();
-    command.setManagedEntity(managedEntity);
+    command.setManagedEntity(metaEntity);
     command.setPrimaryKey(primaryKey);
 
     // Execute (not a batchable command)
@@ -134,20 +145,58 @@ public class AtreusSessionImpl implements AtreusSession {
   }
 
   @Override
+  public AtreusManagedEntity getManagedEntity(Object entity) {
+    // Assert input params
+    AssertUtils.notNull(entity, "entity is a required parameter");
+
+    // Check if the entity is already a managed entity
+    if (entity instanceof AtreusManagedEntity) {
+
+      // Make sure it is saved to the session
+      AtreusManagedEntity managedEntity = (AtreusManagedEntity) entity;
+      CompositeKey managedEntityKey = new CompositeKey(managedEntity.getEntity(), managedEntity.getPrimaryKey());
+       managedEntities.put(managedEntityKey, managedEntity);
+      return managedEntity;
+    }
+
+    // Check the session for a matching managed entity
+    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entity);
+    Class<?> entityType = metaEntity.getEntityType();
+    Object primaryKey = metaEntity.getFieldValue(metaEntity.getPrimaryKeyField(), entity);
+
+    // A primary key has not been set so create a managed entity and return unsaved to the session
+    if (primaryKey == null) {
+      return getEntityManager().toManagedEntity(entity);
+    }
+
+    // Look up with a composite key
+    CompositeKey managedEntityKey = new CompositeKey(entityType, primaryKey);
+    AtreusManagedEntity managedEntity = managedEntities.get(managedEntityKey);
+    if (managedEntity != null) {
+      return managedEntity;
+    }
+
+    // Create a new managed entity and save to the session
+    managedEntity = getEntityManager().toManagedEntity(entity);
+    managedEntities.put(managedEntityKey, managedEntity);
+    return managedEntity;
+  }
+
+  @Override
   public BoundStatement prepareQuery(String cql) {
-    return environment.getQueryManager().generate(cql);
+    return getQueryManager().generate(cql);
   }
 
   @Override
   public BoundStatement prepareQuery(RegularStatement regularStatement) {
-    return environment.getQueryManager().generate(regularStatement);
+    return getQueryManager().generate(regularStatement);
   }
 
   @Override
   public void save(Object entity) {
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
-    AtreusManagedEntity managedEntity = environment.getEntityManager().getEntity(entity.getClass());
+    AtreusMetaEntity managedEntity = getEntityManager().getMetaEntity(entity);
     if (managedEntity == null) {
       throw new RuntimeException(entity.getClass().getCanonicalName() + " is not managed by Atreus");
     }
@@ -162,10 +211,31 @@ public class AtreusSessionImpl implements AtreusSession {
 
   @Override
   public void close() {
-    // TODO Internal closing of the Atreus Session
+    flush();
+    managedEntities.clear();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected Session getCassandraSession() {
+    return getEnvironment().getCassandraSession();
+  }
+
+  protected AtreusConfiguration getConfiguration() {
+    return getEnvironment().getConfiguration();
+  }
+
+  protected EntityManager getEntityManager() {
+    return getEnvironment().getEntityManager();
+  }
+
+  protected AtreusEnvironment getEnvironment() {
+    return environment;
+  }
+
+  protected QueryManager getQueryManager() {
+    return getEnvironment().getQueryManager();
+  }
 
   @SuppressWarnings("unchecked")
   protected <T> T doExecute(BaseCommand command, Class<T> type) {
@@ -176,21 +246,20 @@ public class AtreusSessionImpl implements AtreusSession {
 
   private ResultSet executeRead(Statement statement) {
     statement.setConsistencyLevel(getReadConsistencyLevel());
-    return environment.getCassandraSession().execute(statement);
+    return getCassandraSession().execute(statement);
   }
 
   private void executeWrite(Statement statement, boolean async) {
     statement.setConsistencyLevel(getWriteConsistencyLevel());
     if (async) {
       // TODO implement callback listener architecture
-      environment.getCassandraSession().executeAsync(statement);
+      getCassandraSession().executeAsync(statement);
       return;
     }
-    environment.getCassandraSession().execute(statement);
+    getCassandraSession().execute(statement);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
 
   @Override
   public ConsistencyLevel getReadConsistencyLevel() {

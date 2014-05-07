@@ -23,26 +23,15 @@
  */
 package org.atreus.core.ext;
 
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-
-import java.io.Serializable;
+import org.atreus.core.AtreusSession;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Extension Atreus Session.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusSessionExt extends AtreusSession {
 
-  public Object getEntity();
-
-  public Object getFieldValue(AtreusMetaField metaField);
-
-  public void setFieldValue(AtreusMetaField metaField, Object value);
-
-  public AtreusMetaEntity getMetaEntity();
-
-  public Serializable getPrimaryKey();
+  public AtreusManagedEntity getManagedEntity(Object entity);
 
 }

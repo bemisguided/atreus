@@ -23,9 +23,9 @@
  */
 package org.atreus.core.impl.queries;
 
-import org.atreus.core.ext.AtreusManagedField;
-import org.atreus.impl.entities.ManagedEntityImpl;
-import org.atreus.impl.entities.ManagedFieldImpl;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaFieldImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class QueryHelperTests {
   @Test
   public void testInsert() {
     LOG.info("Running testInsert");
-    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
+    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
     managedEntity.setPrimaryKeyField(buildField("id"));
     managedEntity.addField(buildField("col1"));
     managedEntity.addField(buildField("col2"));
@@ -65,7 +65,7 @@ public class QueryHelperTests {
   @Test
   public void testInsertWithTtl() {
     LOG.info("Running testInsertWithTtl");
-    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
+    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
     managedEntity.setPrimaryKeyField(buildField("id"));
     managedEntity.addField(buildField("col1"));
     managedEntity.addField(buildField("col2"));
@@ -83,7 +83,7 @@ public class QueryHelperTests {
   @Test
   public void testSelect() {
     LOG.info("Running testSelect");
-    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testSelect");
+    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testSelect");
     managedEntity.setPrimaryKeyField(buildField("id"));
     managedEntity.addField(buildField("col1"));
     managedEntity.addField(buildField("col2"));
@@ -100,7 +100,7 @@ public class QueryHelperTests {
   @Test
   public void testUpdate() {
     LOG.info("Running testUpdate");
-    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
+    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
     managedEntity.setPrimaryKeyField(buildField("id"));
     managedEntity.addField(buildField("col1"));
     managedEntity.addField(buildField("col2"));
@@ -111,7 +111,7 @@ public class QueryHelperTests {
   @Test
   public void testUpdateWithTtl() {
     LOG.info("Running testUpdateWithTtl");
-    ManagedEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
+    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
     managedEntity.setPrimaryKeyField(buildField("id"));
     managedEntity.addField(buildField("col1"));
     managedEntity.addField(buildField("col2"));
@@ -130,15 +130,15 @@ public class QueryHelperTests {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private ManagedEntityImpl buildEntity(String keySpaceName, String tableName) {
-    ManagedEntityImpl managedEntity = new ManagedEntityImpl();
+  private MetaEntityImpl buildEntity(String keySpaceName, String tableName) {
+    MetaEntityImpl managedEntity = new MetaEntityImpl();
     managedEntity.setKeySpace(keySpaceName);
     managedEntity.setTable(tableName);
     return managedEntity;
   }
 
-  private AtreusManagedField buildField(String columnName) {
-    ManagedFieldImpl managedField = new ManagedFieldImpl();
+  private AtreusMetaField buildField(String columnName) {
+    MetaFieldImpl managedField = new MetaFieldImpl();
     managedField.setFieldName(columnName);
     managedField.setColumn(columnName);
     return managedField;

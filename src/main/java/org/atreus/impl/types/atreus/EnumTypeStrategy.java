@@ -25,8 +25,8 @@ package org.atreus.impl.types.atreus;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusType;
 import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.strategies.AtreusType;
 import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

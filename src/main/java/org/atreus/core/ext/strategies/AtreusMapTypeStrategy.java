@@ -21,28 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.strategies;
 
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.CQLDataType;
 
-import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Interface for an Atreus Map Type Strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public interface AtreusMapTypeStrategy<T extends Map> extends AtreusTypeStrategy<T> {
 
-  public Object getEntity();
+  public CQLDataType getValueDataType();
 
-  public Object getFieldValue(AtreusMetaField metaField);
+  public void setValueDataType(CQLDataType valueDataType);
 
-  public void setFieldValue(AtreusMetaField metaField, Object value);
+  public CQLDataType getKeyDataType();
 
-  public AtreusMetaEntity getMetaEntity();
-
-  public Serializable getPrimaryKey();
+  public void setKeyDataType(CQLDataType keyDataType);
 
 }

@@ -21,17 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.meta;
 
-import java.io.Serializable;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
+
+import java.lang.reflect.Field;
 
 /**
- * Interface for an Atreus Primary Key Strategy.
+ * Interface for a managed field.
  *
  * @author Martin Crawford
  */
-public interface AtreusPrimaryKeyStrategy<T extends Serializable> {
+public interface AtreusMetaField {
 
-  public T generate();
+  public String getColumn();
+
+  public void setColumn(String column);
+
+  public String getName();
+
+  public Field getJavaField();
+
+  public AtreusMetaEntity getOwnerEntity();
+
+  public AtreusTypeStrategy getTypeStrategy();
 
 }

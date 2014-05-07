@@ -46,7 +46,7 @@ public @interface AtreusReferenced {
 
   /**
    * Sets the list of fields from the referenced entity to denormalize with this entity. Default is all.
-   * 
+   *
    * @return
    */
   public String[] fields() default {};

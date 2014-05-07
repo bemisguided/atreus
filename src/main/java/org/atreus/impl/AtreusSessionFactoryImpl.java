@@ -23,10 +23,9 @@
  */
 package org.atreus.impl;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.exceptions.DriverException;
-import org.atreus.core.*;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.AtreusSession;
+import org.atreus.core.AtreusSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

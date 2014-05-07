@@ -25,7 +25,12 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.*;
-import org.atreus.core.ext.*;
+import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +56,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Class<?> getCollectionValue(AtreusManagedField managedField) {
+  public Class<?> getCollectionValue(AtreusMetaField managedField) {
     AtreusCollection collectionAnnotation = managedField.getJavaField().getAnnotation(AtreusCollection.class);
     if (collectionAnnotation != null && !NullType.class.isAssignableFrom(collectionAnnotation.type())) {
       return collectionAnnotation.type();
@@ -60,7 +65,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public String getEntityName(AtreusManagedEntity managedEntity) {
+  public String getEntityName(AtreusMetaEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
     if (entityAnnotation == null) {
       return null;
@@ -69,7 +74,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public String getEntityKeySpace(AtreusManagedEntity managedEntity) {
+  public String getEntityKeySpace(AtreusMetaEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
     if (entityAnnotation == null) {
       return null;
@@ -78,7 +83,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public String getEntityTable(AtreusManagedEntity managedEntity) {
+  public String getEntityTable(AtreusMetaEntity managedEntity) {
     AtreusEntity entityAnnotation = managedEntity.getEntityType().getAnnotation(AtreusEntity.class);
     if (entityAnnotation == null) {
       return null;
@@ -87,7 +92,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public String getFieldColumn(AtreusManagedField managedField) {
+  public String getFieldColumn(AtreusMetaField managedField) {
     AtreusField fieldAnnotation = managedField.getJavaField().getAnnotation(AtreusField.class);
     if (fieldAnnotation == null) {
       return null;
@@ -96,7 +101,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public Class<?> getMapKey(AtreusManagedField managedField) {
+  public Class<?> getMapKey(AtreusMetaField managedField) {
     AtreusMap mapAnnotation = managedField.getJavaField().getAnnotation(AtreusMap.class);
     if (mapAnnotation != null && !NullType.class.isAssignableFrom(mapAnnotation.key())) {
       return mapAnnotation.key();
@@ -105,7 +110,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public String getPrimaryKeyColumn(AtreusManagedField managedField) {
+  public String getPrimaryKeyColumn(AtreusMetaField managedField) {
     AtreusPrimaryKey primaryKeyAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKey.class);
     if (primaryKeyAnnotation == null) {
       return null;
@@ -120,25 +125,25 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public boolean isPrimaryKeyField(AtreusManagedField managedField) {
+  public boolean isPrimaryKeyField(AtreusMetaField managedField) {
     Field javaField = managedField.getJavaField();
     return javaField.getAnnotation(AtreusPrimaryKey.class) != null;
   }
 
   @Override
-  public boolean isPrimaryKeyGenerated(AtreusManagedField managedField) {
+  public boolean isPrimaryKeyGenerated(AtreusMetaField managedField) {
     AtreusPrimaryKey primaryKeyAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKey.class);
     return primaryKeyAnnotation.generated();
   }
 
   @Override
-  public boolean isTtlField(AtreusManagedField managedField) {
+  public boolean isTtlField(AtreusMetaField managedField) {
     Field javaField = managedField.getJavaField();
     return javaField.getAnnotation(AtreusTtl.class) != null;
   }
 
   @Override
-  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusManagedField managedField) {
+  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusMetaField managedField) {
 
     // Query for @AtreusPrimaryKeyGenerator
     AtreusPrimaryKeyGenerator primaryKeyGeneratorAnnotation = managedField.getJavaField().getAnnotation(AtreusPrimaryKeyGenerator.class);
@@ -161,7 +166,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public AtreusTtlStrategy resolveTtlStrategy(AtreusManagedField managedField) {
+  public AtreusTtlStrategy resolveTtlStrategy(AtreusMetaField managedField) {
 
     // Query for @AtreusTtlTranslator
     AtreusTtlTranslator ttlTranslatorAnnotation = managedField.getJavaField().getAnnotation(AtreusTtlTranslator.class);
@@ -184,7 +189,7 @@ public class AtreusAnnotationEntityStrategy implements AtreusEntityStrategy {
   }
 
   @Override
-  public AtreusTypeStrategy resolveTypeStrategy(AtreusManagedField managedField) {
+  public AtreusTypeStrategy resolveTypeStrategy(AtreusMetaField managedField) {
 
     // Query for @AtreusFieldType
     AtreusFieldType fieldTypeAnnotation = managedField.getJavaField().getAnnotation(AtreusFieldType.class);

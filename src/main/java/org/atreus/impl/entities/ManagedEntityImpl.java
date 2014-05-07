@@ -23,16 +23,16 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.ext.*;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
-;
+import java.io.Serializable;
 
 /**
- * Managed Entity bean.
+ * Implements a managed entity.
  *
  * @author Martin Crawford
  */
@@ -44,40 +44,41 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> entityType;
-
-  private Map<String, AtreusManagedField> fieldsByName = new TreeMap<>();
-
-  private Map<String, AtreusManagedField> fieldsByColumnName = new TreeMap<>();
-
-  private String keySpace;
-
-  private String name;
-
-  private AtreusManagedField primaryKeyField;
-
-  private AtreusPrimaryKeyStrategy primaryKeyGenerator;
-
-  private String table;
-
-  private AtreusManagedField ttlField;
-
-  private AtreusTtlStrategy ttlStrategy;
-
-  private List<AtreusEntityVisitor> saveVisitors = new ArrayList<>();
-
-  private List<AtreusEntityVisitor> updateVisitors = new ArrayList<>();
-
-  private List<AtreusEntityVisitor> deleteVisitors = new ArrayList<>();
+  private final Object entity;
+  private final AtreusMetaEntity metaEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
+    this.entity = entity;
+    this.metaEntity = metaEntity;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void addField(AtreusManagedField managedField) {
-    fieldsByName.put(managedField.getFieldName(), managedField);
-    fieldsByColumnName.put(managedField.getColumn(), managedField);
+  public Object getEntity() {
+    return entity;
+  }
+
+  @Override
+  public Object getFieldValue(AtreusMetaField metaField) {
+    return getMetaEntity().getFieldValue(metaField, entity);
+  }
+
+  @Override
+  public void setFieldValue(AtreusMetaField metaField, Object value) {
+    getMetaEntity().setFieldValue(metaField, entity, value);
+  }
+
+  @Override
+  public AtreusMetaEntity getMetaEntity() {
+    return metaEntity;
+  }
+
+  @Override
+  public Serializable getPrimaryKey() {
+    return (Serializable) getFieldValue(getMetaEntity().getPrimaryKeyField());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -86,102 +87,4 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  @Override
-  public Class<?> getEntityType() {
-    return entityType;
-  }
-
-  public void setEntityType(Class<?> entityType) {
-    this.entityType = entityType;
-  }
-
-  @Override
-  public String getKeySpace() {
-    return keySpace;
-  }
-
-  public void setKeySpace(String keySpace) {
-    this.keySpace = keySpace;
-  }
-
-  @Override
-  public String getTable() {
-    return table;
-  }
-
-  public void setTable(String table) {
-    this.table = table;
-  }
-
-  @Override
-  public AtreusManagedField[] getFields() {
-    AtreusManagedField[] result = new AtreusManagedField[fieldsByName.size()];
-    return fieldsByName.values().toArray(result);
-  }
-
-  @Override
-  public AtreusManagedField getFieldByName(String name) {
-    return fieldsByName.get(name);
-  }
-
-  @Override
-  public AtreusManagedField getFieldByColumnName(String columnName) {
-    return fieldsByColumnName.get(columnName);
-  }
-
-  public AtreusManagedField getPrimaryKeyField() {
-    return primaryKeyField;
-  }
-
-  public void setPrimaryKeyField(AtreusManagedField primaryKeyField) {
-    this.primaryKeyField = primaryKeyField;
-  }
-
-  @Override
-  public AtreusPrimaryKeyStrategy getPrimaryKeyStrategy() {
-    return primaryKeyGenerator;
-  }
-
-  public void setPrimaryKeyGenerator(AtreusPrimaryKeyStrategy primaryKeyGenerator) {
-    this.primaryKeyGenerator = primaryKeyGenerator;
-  }
-
-  @Override
-  public AtreusManagedField getTtlField() {
-    return ttlField;
-  }
-
-  public void setTtlField(AtreusManagedField ttlField) {
-    this.ttlField = ttlField;
-  }
-
-  @Override
-  public AtreusTtlStrategy getTtlStrategy() {
-    return ttlStrategy;
-  }
-
-  public void setTtlStrategy(AtreusTtlStrategy ttlStrategy) {
-    this.ttlStrategy = ttlStrategy;
-  }
-
-  public List<AtreusEntityVisitor> getSaveVisitors() {
-    return saveVisitors;
-  }
-
-  public List<AtreusEntityVisitor> getUpdateVisitors() {
-    return updateVisitors;
-  }
-
-  public List<AtreusEntityVisitor> getDeleteVisitors() {
-    return deleteVisitors;
-  }
-}
+} // end of class

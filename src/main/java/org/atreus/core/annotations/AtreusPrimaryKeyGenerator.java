@@ -23,7 +23,7 @@
  */
 package org.atreus.core.annotations;
 
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

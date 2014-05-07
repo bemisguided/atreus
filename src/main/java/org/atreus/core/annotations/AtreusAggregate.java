@@ -46,7 +46,7 @@ public @interface AtreusAggregate {
 
   /**
    * Indicates if the annotated field is inverse navigable. Default is false.
-   * 
+   *
    * @return
    */
   public boolean navigable() default false;

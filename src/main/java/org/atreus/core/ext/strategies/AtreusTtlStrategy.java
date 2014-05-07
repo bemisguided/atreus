@@ -21,27 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.strategies;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Date;
 
 /**
- * Annotation indicates an Type Strategy to be managed by Atreus.
+ * Interface for a time-to-live strategy.
  *
  * @author Martin Crawford
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface AtreusType {
+public interface AtreusTtlStrategy<T> {
 
-  /**
-   * Class of the type supported by the Type Strategy.
-   *
-   * @return
-   */
-  public Class<?> value();
+  public Integer translate(Date now, T value);
 
 }

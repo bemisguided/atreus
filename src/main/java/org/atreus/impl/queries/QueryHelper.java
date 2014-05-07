@@ -24,11 +24,10 @@
 package org.atreus.impl.queries;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
+import com.datastax.driver.core.querybuilder.*;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,49 +50,59 @@ public class QueryHelper {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static RegularStatement insertEntity(AtreusManagedEntity managedEntity) {
+  public static RegularStatement insertEntity(AtreusMetaEntity managedEntity) {
     return insertEntity(managedEntity, false);
   }
 
-  public static RegularStatement insertEntity(AtreusManagedEntity managedEntity, boolean withTtl) {
+  public static RegularStatement insertEntity(AtreusMetaEntity managedEntity, boolean withTtl) {
     Insert insert = insertInto(managedEntity.getKeySpace(), managedEntity.getTable());
     String columnName = managedEntity.getPrimaryKeyField().getColumn();
     insert.value(columnName, bindMarker(columnName));
-    for (AtreusManagedField managedField : managedEntity.getFields()) {
+    for (AtreusMetaField managedField : managedEntity.getFields()) {
       columnName = managedField.getColumn();
       insert.value(columnName, bindMarker(columnName));
     }
-    AtreusManagedField ttlField = managedEntity.getTtlField();
+    AtreusMetaField ttlField = managedEntity.getTtlField();
     if (ttlField != null && withTtl) {
       insert.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return insert;
   }
 
-  public static RegularStatement selectEntity(AtreusManagedEntity managedEntity) {
+  public static RegularStatement selectEntity(AtreusMetaEntity managedEntity) {
     Select select = select().all().from(managedEntity.getKeySpace(), managedEntity.getTable());
     String columnName = managedEntity.getPrimaryKeyField().getColumn();
     select.where(eq(columnName, bindMarker(columnName)));
     return select;
   }
 
-  public static RegularStatement updateEntity(AtreusManagedEntity managedEntity) {
+  public static RegularStatement updateEntity(AtreusMetaEntity managedEntity) {
     return updateEntity(managedEntity, false);
   }
 
-  public static RegularStatement updateEntity(AtreusManagedEntity managedEntity, boolean withTtl) {
+  public static RegularStatement updateEntity(AtreusMetaEntity managedEntity, boolean withTtl) {
     Update update = update(managedEntity.getKeySpace(), managedEntity.getTable());
     String columnName = managedEntity.getPrimaryKeyField().getColumn();
     Update.Where where = update.where(eq(columnName, bindMarker(columnName)));
-    for (AtreusManagedField managedField : managedEntity.getFields()) {
+    for (AtreusMetaField managedField : managedEntity.getFields()) {
       columnName = managedField.getColumn();
       where.with(set(columnName, bindMarker(columnName)));
     }
-    AtreusManagedField ttlField = managedEntity.getTtlField();
+    AtreusMetaField ttlField = managedEntity.getTtlField();
     if (ttlField != null && withTtl) {
       update.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return update;
+  }
+
+  public static RegularStatement deleteCompositeEntity(AtreusMetaComposite managedComposite) {
+    AtreusMetaEntity ownerEntity = managedComposite.getOwnerEntity();
+    AtreusMetaEntity associatedEntity = managedComposite.getAssociatedEntity();
+    AtreusMetaField primaryKeyField = ownerEntity.getPrimaryKeyField();
+    String primaryKeyColumn = primaryKeyField.getColumn();
+    Delete delete = QueryBuilder.delete().from(associatedEntity.getKeySpace(), associatedEntity.getTable());
+    delete.where(eq(primaryKeyColumn, bindMarker(primaryKeyColumn)));
+    return delete;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

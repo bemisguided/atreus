@@ -1,26 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <name>Atreus - Cassandra Client</name>
-	<groupId>atreus</groupId>
-	<artifactId>atreus-core</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
-	<inceptionYear>2012</inceptionYear>
+  <groupId>atreus</groupId>
+  <artifactId>atreus-core</artifactId>
+  <version>1.0.1-SNAPSHOT</version>
+  <inceptionYear>2012</inceptionYear>
 
-	<properties>
-		<java-version>1.7</java-version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  <properties>
+    <java-version>1.7</java-version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <com.datastax.cassandra.driver-version>2.0.1</com.datastax.cassandra.driver-version>
     <org.reflections-version>0.9.9-RC1</org.reflections-version>
     <org.javassist-version>3.18.1-GA</org.javassist-version>
     <org.antlr-version>4.2.2</org.antlr-version>
     <org.slf4j-version>1.7.6</org.slf4j-version>
-		<cassandra-unit-version>2.0.2.1</cassandra-unit-version>
-		<org.easymock-version>3.1</org.easymock-version>
-	</properties>
+    <cassandra-unit-version>2.0.2.1</cassandra-unit-version>
+    <org.easymock-version>3.1</org.easymock-version>
+  </properties>
 
-	<dependencies>
+  <dependencies>
 
     <!-- Datastax Cassandra Driver -->
     <dependency>
@@ -58,24 +58,24 @@
     </dependency>
 
     <!-- Testing -->
-		<dependency>
-			<groupId>org.cassandraunit</groupId>
-			<artifactId>cassandra-unit</artifactId>
-			<version>${cassandra-unit-version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${org.slf4j-version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>${org.easymock-version}</version>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.cassandraunit</groupId>
+      <artifactId>cassandra-unit</artifactId>
+      <version>${cassandra-unit-version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${org.slf4j-version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <version>${org.easymock-version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -83,35 +83,35 @@
       <scope>test</scope>
     </dependency>
 
-	</dependencies>
+  </dependencies>
 
-	<build>
-		<plugins>
+  <build>
+    <plugins>
 
       <!-- Compile -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${java-version}</source>
-					<target>${java-version}</target>
-				</configuration>
-				<version>2.3.2</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<!--forkMode>pertest</forkMode -->
-					<includes>
-						<include>**/*Tests.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
-				</configuration>
-				<version>2.7.2</version>
-			</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java-version}</source>
+          <target>${java-version}</target>
+        </configuration>
+        <version>2.3.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!--forkMode>pertest</forkMode -->
+          <includes>
+            <include>**/*Tests.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/Abstract*.java</exclude>
+          </excludes>
+        </configuration>
+        <version>2.7.2</version>
+      </plugin>
 
       <!-- ANTLR4 -->
       <plugin>
@@ -162,36 +162,36 @@
       </plugin>
 
       <!-- License -->
-			<plugin>
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.9.0</version>
-				<configuration>
-					<basedir>${basedir}</basedir>
-					<header>${basedir}/LICENSE.txt</header>
-					<quiet>false</quiet>
-					<failIfMissing>true</failIfMissing>
-					<aggregate>false</aggregate>
-					<strictCheck>true</strictCheck>
-					<excludes>
+      <plugin>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>1.9.0</version>
+        <configuration>
+          <basedir>${basedir}</basedir>
+          <header>${basedir}/LICENSE.txt</header>
+          <quiet>false</quiet>
+          <failIfMissing>true</failIfMissing>
+          <aggregate>false</aggregate>
+          <strictCheck>true</strictCheck>
+          <excludes>
             <exclude>.*/**</exclude>
-						<exclude>target/**</exclude>
+            <exclude>target/**</exclude>
             <exclude>**/v0/**</exclude>
-						<exclude>*.markdown</exclude>
-						<exclude>*.gitignore</exclude>
+            <exclude>*.markdown</exclude>
+            <exclude>*.gitignore</exclude>
             <exclude>*.yaml</exclude>
             <exclude>**/*.html</exclude>
-					</excludes>
-					<useDefaultExcludes>true</useDefaultExcludes>
-					<useDefaultMapping>true</useDefaultMapping>
-					<properties>
-						<year>${project.inceptionYear}</year>
-					</properties>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
+          </excludes>
+          <useDefaultExcludes>true</useDefaultExcludes>
+          <useDefaultMapping>true</useDefaultMapping>
+          <properties>
+            <year>${project.inceptionYear}</year>
+          </properties>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
 
-		</plugins>
-	</build>
+    </plugins>
+  </build>
 
 </project>

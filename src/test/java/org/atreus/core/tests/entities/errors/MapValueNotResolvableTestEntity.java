@@ -27,7 +27,6 @@ import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusMap;
 import org.atreus.core.annotations.AtreusPrimaryKey;
 
-import java.util.List;
 import java.util.Map;
 
 /**

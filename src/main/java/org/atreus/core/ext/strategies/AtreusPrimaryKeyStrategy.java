@@ -21,26 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.strategies;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
+import java.io.Serializable;
 
 /**
- * Interface for an Atreus Type Strategy.
+ * Interface for an Atreus Primary Key Strategy.
  *
  * @author Martin Crawford
  */
-public interface AtreusTypeStrategy<T> {
+public interface AtreusPrimaryKeyStrategy<T extends Serializable> {
 
-  public T get(Row row, String colName);
-
-  public Class<?> getValueClass();
-
-  public CQLDataType getDataType();
-
-  public void set(BoundStatement boundStatement, String colName, T value);
-
-  public void setValueClass(Class<?> valueClass);
+  public T generate();
 
 }

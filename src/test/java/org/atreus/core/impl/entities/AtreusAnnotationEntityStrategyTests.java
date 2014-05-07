@@ -23,9 +23,9 @@
  */
 package org.atreus.core.impl.entities;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
 import org.atreus.core.BaseAtreusTests;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.tests.entities.common.TestEntity;
 import org.atreus.impl.entities.EntityManager;
 import org.atreus.impl.types.cql.IntegerTypeStrategy;
@@ -61,9 +61,9 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
     entityManager.processEntities();
 
     // Assert TestEntity registry
-    AtreusManagedEntity managedEntity = entityManager.getEntity(TestEntity.class);
+    AtreusMetaEntity managedEntity = entityManager.getMetaEntity(TestEntity.class);
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
-    managedEntity = entityManager.getEntity("TestEntity");
+    managedEntity = entityManager.getMetaEntity("TestEntity");
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
 
     // Assert TestEntity entity
@@ -81,7 +81,7 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
 
     // Assert TestEntity fields
     Assert.assertEquals(3, managedEntity.getFields().length);
-    for (AtreusManagedField managedField : managedEntity.getFields()) {
+    for (AtreusMetaField managedField : managedEntity.getFields()) {
       if ("field1".equals(managedField.getColumn())) {
         Assert.assertNotNull("Expected not null TypeAccessor", managedField.getTypeStrategy());
         Assert.assertEquals(StringTypeStrategy.class, managedField.getTypeStrategy().getClass());

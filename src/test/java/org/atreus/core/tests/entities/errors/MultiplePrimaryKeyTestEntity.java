@@ -26,8 +26,6 @@ package org.atreus.core.tests.entities.errors;
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusPrimaryKey;
 
-import java.util.List;
-
 /**
  * MultiplePrimaryKeyTestEntity
  *

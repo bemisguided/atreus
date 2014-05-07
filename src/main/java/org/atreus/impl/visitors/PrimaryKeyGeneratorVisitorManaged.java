@@ -21,22 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.visitors;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
-import org.atreus.core.ext.strategies.AtreusType;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusManagedEntityVisitor;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Integer Type Strategy.
+ * Primary Key Generator visitor.
  *
  * @author Martin Crawford
  */
-@AtreusType(Integer.class)
-public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
+public class PrimaryKeyGeneratorVisitorManaged extends AtreusManagedEntityVisitor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyGeneratorVisitorManaged.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -45,24 +49,20 @@ public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_INT;
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
+    Object primaryKey = managedEntity.getPrimaryKey();
+    if (primaryKey == null && metaEntity.getPrimaryKeyStrategy() != null) {
+      primaryKey = metaEntity.getPrimaryKeyStrategy().generate();
+      managedEntity.setFieldValue(primaryKeyMetaField, primaryKey);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Integer doGet(Row row, String colName) {
-    return row.getInt(colName);
-  }
-
-  @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Integer value) {
-    boundStatement.setInt(colName, value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

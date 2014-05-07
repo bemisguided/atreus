@@ -24,10 +24,10 @@
 package org.atreus.impl.types;
 
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.ext.AtreusPrimaryKeyStrategy;
-import org.atreus.core.ext.AtreusTtlStrategy;
-import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
+import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.atreus.core.ext.strategies.AtreusType;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.util.ReflectionUtils;
 import org.reflections.Reflections;

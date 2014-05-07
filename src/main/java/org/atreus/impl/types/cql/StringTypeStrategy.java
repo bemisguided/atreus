@@ -25,9 +25,8 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusType;
-import org.atreus.core.ext.AtreusTypeStrategy;
 import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.strategies.AtreusType;
 
 /**
  * String Type Strategy.

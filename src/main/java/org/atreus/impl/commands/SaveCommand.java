@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.commands;
 
-import org.atreus.core.AtreusSession;
+import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.impl.AtreusEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class SaveCommand extends BaseCommand {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Object execute(AtreusEnvironment environment, AtreusSession session) {
+  public Object execute(AtreusEnvironment environment, AtreusSessionExt session) {
     environment.getEntityManager().visitUpdate(session, entity);
     return null;
   }

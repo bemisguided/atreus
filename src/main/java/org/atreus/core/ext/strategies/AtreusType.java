@@ -21,28 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.strategies;
 
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-
-import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Annotation indicates an Type Strategy to be managed by Atreus.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface AtreusType {
 
-  public Object getEntity();
-
-  public Object getFieldValue(AtreusMetaField metaField);
-
-  public void setFieldValue(AtreusMetaField metaField, Object value);
-
-  public AtreusMetaEntity getMetaEntity();
-
-  public Serializable getPrimaryKey();
+  /**
+   * Class of the type supported by the Type Strategy.
+   *
+   * @return
+   */
+  public Class<?> value();
 
 }

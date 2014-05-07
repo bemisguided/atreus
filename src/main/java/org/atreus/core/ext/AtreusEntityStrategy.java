@@ -23,6 +23,12 @@
  */
 package org.atreus.core.ext;
 
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
+import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
+
 import java.util.Collection;
 
 /**
@@ -32,32 +38,32 @@ import java.util.Collection;
  */
 public interface AtreusEntityStrategy {
 
-  public Class<?> getCollectionValue(AtreusManagedField managedField);
+  public Class<?> getCollectionValue(AtreusMetaField managedField);
 
-  public String getEntityName(AtreusManagedEntity managedEntity);
+  public String getEntityName(AtreusMetaEntity managedEntity);
 
-  public String getEntityKeySpace(AtreusManagedEntity managedEntity);
+  public String getEntityKeySpace(AtreusMetaEntity managedEntity);
 
-  public String getEntityTable(AtreusManagedEntity managedEntity);
+  public String getEntityTable(AtreusMetaEntity managedEntity);
 
-  public String getFieldColumn( AtreusManagedField managedField);
+  public String getFieldColumn(AtreusMetaField managedField);
 
-  public Class<?> getMapKey(AtreusManagedField managedField);
+  public Class<?> getMapKey(AtreusMetaField managedField);
 
-  public String getPrimaryKeyColumn( AtreusManagedField managedField);
+  public String getPrimaryKeyColumn(AtreusMetaField managedField);
 
   public Collection<Class<?>> findEntities(String path);
 
-  public boolean isPrimaryKeyField(AtreusManagedField managedField);
+  public boolean isPrimaryKeyField(AtreusMetaField managedField);
 
-  public boolean isPrimaryKeyGenerated(AtreusManagedField managedField);
+  public boolean isPrimaryKeyGenerated(AtreusMetaField managedField);
 
-  public boolean isTtlField(AtreusManagedField managedField);
+  public boolean isTtlField(AtreusMetaField managedField);
 
-  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusManagedField managedField);
+  public AtreusPrimaryKeyStrategy resolvePrimaryKeyStrategy(AtreusMetaField managedField);
 
-  public AtreusTtlStrategy resolveTtlStrategy(AtreusManagedField managedField);
+  public AtreusTtlStrategy resolveTtlStrategy(AtreusMetaField managedField);
 
-  public AtreusTypeStrategy resolveTypeStrategy(AtreusManagedField managedField);
+  public AtreusTypeStrategy resolveTypeStrategy(AtreusMetaField managedField);
 
 }

@@ -21,48 +21,65 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.util;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
-import org.atreus.core.ext.strategies.AtreusType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
- * Integer Type Strategy.
+ * Utility composite key for use with java.util.Map.
  *
  * @author Martin Crawford
  */
-@AtreusType(Integer.class)
-public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
+public class CompositeKey {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeKey.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Object[] keys;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public CompositeKey(Object... keys) {
+    this.keys = keys;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_INT;
+  public int hashCode() {
+    int result = 0;
+    for (Object keyValue : keys) {
+      if (keyValue != null) {
+        result += keyValue.hashCode();
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof CompositeKey)) {
+      return false;
+    }
+    CompositeKey that = (CompositeKey) obj;
+    return Arrays.equals(keys, that.keys);
+  }
+
+  @Override
+  public String toString() {
+    return "CompositeKey{" + Arrays.toString(keys) + '}';
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Integer doGet(Row row, String colName) {
-    return row.getInt(colName);
-  }
-
-  @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Integer value) {
-    boundStatement.setInt(colName, value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

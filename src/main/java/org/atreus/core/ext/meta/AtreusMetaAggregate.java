@@ -21,23 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
-
-import java.util.Map;
+package org.atreus.core.ext.meta;
 
 /**
- * Interface for an Atreus Map Type Strategy.
+ * Interface for a managed aggregate association.
  *
  * @author Martin Crawford
  */
-public interface AtreusMapTypeStrategy<T extends Map> extends AtreusTypeStrategy<T> {
+public interface AtreusMetaAggregate {
 
-  public CQLDataType getValueDataType();
+  public AtreusMetaEntity getAssociatedEntity();
 
-  public void setValueDataType(CQLDataType valueDataType);
+  public AtreusMetaField getField();
 
-  public CQLDataType getKeyDataType();
+  public AtreusMetaEntity getOwnerEntity();
 
-  public void setKeyDataType(CQLDataType keyDataType);
+  public boolean isNavigable();
 
 }

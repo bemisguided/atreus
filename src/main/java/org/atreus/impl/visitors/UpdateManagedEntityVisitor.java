@@ -26,11 +26,11 @@ package org.atreus.impl.visitors;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.AtreusDataBindingException;
-import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.AtreusEntityVisitor;
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
-import org.atreus.impl.entities.BindingHelper;
+import org.atreus.core.ext.AtreusManagedEntityVisitor;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,11 +42,11 @@ import java.util.Date;
  *
  * @author Martin Crawford
  */
-public class UpdateEntityVisitor extends AtreusEntityVisitor {
+public class UpdateManagedEntityVisitor extends AtreusManagedEntityVisitor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(UpdateEntityVisitor.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(UpdateManagedEntityVisitor.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -55,22 +55,23 @@ public class UpdateEntityVisitor extends AtreusEntityVisitor {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void acceptEntity(AtreusSession session, AtreusManagedEntity managedEntity, Object entity) {
-    AtreusManagedField managedPrimaryKey = managedEntity.getPrimaryKeyField();
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
 
     boolean hasTtl = false;
-    AtreusManagedField ttlField = managedEntity.getTtlField();
-    if (ttlField != null && !BindingHelper.isNull(ttlField, entity)) {
+    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
+    if (ttlMetaField != null && managedEntity.getFieldValue(ttlMetaField) != null) {
       hasTtl = true;
     }
-    RegularStatement regularStatement = QueryHelper.insertEntity(managedEntity, hasTtl);
+    RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
     BoundStatement boundStatement = session.prepareQuery(regularStatement);
-    bindFromField(managedPrimaryKey, entity, boundStatement);
-    for (AtreusManagedField managedField : managedEntity.getFields()) {
-      bindFromField(managedField, entity, boundStatement);
+    bindFromField(primaryKeyMetaField, managedEntity, boundStatement);
+    for (AtreusMetaField managedField : metaEntity.getFields()) {
+      bindFromField(managedField, managedEntity, boundStatement);
     }
 
-    bindFromEntityTtl(managedEntity, entity, boundStatement);
+    bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
     session.executeOrBatch(boundStatement);
   }
 
@@ -79,27 +80,27 @@ public class UpdateEntityVisitor extends AtreusEntityVisitor {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   @SuppressWarnings("unchecked")
-  private void bindFromField(AtreusManagedField managedField, Object entity, BoundStatement boundStatement) {
-    Object value = getField(managedField, entity);
-    managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), value);
+  private void bindFromField(AtreusMetaField metaField, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+    Object value = managedEntity.getFieldValue(metaField);
+    metaField.getTypeStrategy().set(boundStatement, metaField.getColumn(), value);
   }
 
   @SuppressWarnings("unchecked")
-  private void bindFromEntityTtl(AtreusManagedEntity managedEntity, Object entity, BoundStatement boundStatement) {
-    AtreusManagedField ttlField = managedEntity.getTtlField();
-    if (ttlField == null) {
+  private void bindFromEntityTtl(AtreusMetaEntity metaEntity, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
+    if (ttlMetaField == null) {
       return;
     }
-    Object value = getField(ttlField, entity);
+    Object value = managedEntity.getFieldValue(ttlMetaField);
     if (value == null) {
       return;
     }
 
-    Integer ttlValue = managedEntity.getTtlStrategy().translate(new Date(), value);
+    Integer ttlValue = metaEntity.getTtlStrategy().translate(new Date(), value);
     if (ttlValue == null || ttlValue < 1) {
-      throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlField, ttlValue);
+      throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlMetaField, ttlValue);
     }
-    boundStatement.setInt(ttlField.getColumn(), ttlValue);
+    boundStatement.setInt(ttlMetaField.getColumn(), ttlValue);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

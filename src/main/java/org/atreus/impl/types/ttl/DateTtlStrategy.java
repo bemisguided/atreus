@@ -23,8 +23,8 @@
  */
 package org.atreus.impl.types.ttl;
 
-import org.atreus.core.ext.AtreusTtlStrategy;
-import org.atreus.core.ext.AtreusType;
+import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.atreus.core.ext.strategies.AtreusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

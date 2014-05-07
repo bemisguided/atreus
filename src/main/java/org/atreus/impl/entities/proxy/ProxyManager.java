@@ -21,81 +21,67 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.proxy;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.entities.ManagedEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Helper class to bind data to and from Cassandra rows and statements.
+ * Proxy Manager.
  *
  * @author Martin Crawford
  */
-public class BindingHelper {
+public class ProxyManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BindingHelper.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManager.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Map<Class<?>, Class<AtreusManagedEntity>> proxyClasses = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static void bindToEntity(AtreusMetaEntity managedEntity, Object entity, Row row) {
-    bindToField(managedEntity.getPrimaryKeyField(), entity, row);
-    for (AtreusMetaField managedField : managedEntity.getFields()) {
-      bindToField(managedField, entity, row);
-    }
+  @SuppressWarnings("unchecked")
+  public void createProxyClass(Class<?> entityType) {
+    ProxyFactory proxyFactory = new ProxyFactory();
+    proxyFactory.setSuperclass(entityType);
+    proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class});
+    Class<AtreusManagedEntity> proxyClass = proxyFactory.createClass();
+    proxyClasses.put(entityType, proxyClass);
   }
 
-  public static void bindToField(AtreusMetaField managedField, Object entity, Row row) {
-    Object value = managedField.getTypeStrategy().get(row, managedField.getColumn());
+  public AtreusManagedEntity createManagedEntity(AtreusMetaEntity metaEntity, Object entity) {
+    Class<AtreusManagedEntity> proxyClass = proxyClasses.get(metaEntity.getEntityType());
+    if (proxyClass == null) {
+      throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
+    }
     try {
-      managedField.getJavaField().set(entity, value);
+      AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
+      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(metaEntity, entity);
+      EntityProxyHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
+      ((Proxy) managedEntityProxy).setHandler(proxyHandler);
+      return managedEntityProxy;
     }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException("Proxy class could not be created for " + metaEntity.getEntityType());
     }
-  }
-
-  public static boolean isNull(AtreusMetaField managedField, Object entity) {
-    return getField(managedField, entity) == null;
-  }
-
-  public static void bindFromPrimaryKeys(AtreusMetaEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
-    AtreusMetaField managedField = managedEntity.getPrimaryKeyField();
-    managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), primaryKey);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private static Object getField(AtreusMetaField managedField, Object entity) {
-    try {
-      return managedField.getJavaField().get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void setField(AtreusMetaField managedField, Object entity, Object value) {
-    try {
-      managedField.getJavaField().set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

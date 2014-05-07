@@ -25,14 +25,18 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.AtreusSession;
 import org.atreus.core.ext.*;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.strategies.*;
 import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaFieldImpl;
+import org.atreus.impl.entities.proxy.ProxyManager;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
-import org.atreus.impl.visitors.PrimaryKeyGeneratorVisitor;
-import org.atreus.impl.visitors.UpdateEntityVisitor;
+import org.atreus.impl.visitors.PrimaryKeyGeneratorVisitorManaged;
+import org.atreus.impl.visitors.UpdateManagedEntityVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +57,10 @@ public class EntityManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final ProxyManager proxyManager = new ProxyManager();
   private final AtreusEnvironment environment;
-  private Map<Class<?>, ManagedEntityImpl> classRegistry = new HashMap<>();
-  private Map<String, ManagedEntityImpl> nameRegistry = new HashMap<>();
+  private Map<Class<?>, MetaEntityImpl> metaEntityByClass = new HashMap<>();
+  private Map<String, MetaEntityImpl> metaEntityByName = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -69,18 +74,28 @@ public class EntityManager {
     doProcessEntity(entityType);
   }
 
-  public AtreusManagedEntity getEntity(String name) {
-    return nameRegistry.get(name);
+  public AtreusMetaEntity getMetaEntity(String name) {
+    return metaEntityByName.get(name);
   }
 
-  public AtreusManagedEntity getEntity(Class<?> entityType) {
-    return classRegistry.get(entityType);
+  public AtreusMetaEntity getMetaEntity(Object entity) {
+    return getMetaEntity(entity.getClass());
+  }
+
+  public AtreusMetaEntity getMetaEntity(Class<?> entityType) {
+    return metaEntityByClass.get(entityType);
+  }
+
+  public AtreusManagedEntity toManagedEntity(Object entity) {
+    AtreusMetaEntity metaEntity = getMetaEntity(entity);
+    return proxyManager.createManagedEntity(metaEntity, entity);
   }
 
   public void processEntities() {
     // Iterate and process fields for each manged entity
-    for (ManagedEntityImpl managedEntity : classRegistry.values()) {
+    for (MetaEntityImpl managedEntity : metaEntityByClass.values()) {
       Class<?> entityType = managedEntity.getEntityType();
+
       // Process the fields
       for (Field javaField : entityType.getDeclaredFields()) {
 
@@ -118,10 +133,12 @@ public class EntityManager {
     }
   }
 
-  public void visitUpdate(AtreusSession session, Object entity) {
-    ManagedEntityImpl managedEntity = (ManagedEntityImpl)  environment.getEntityManager().getEntity(entity.getClass());
-    for(AtreusEntityVisitor visitor : managedEntity.getUpdateVisitors()) {
-      visitor.acceptEntity(session, managedEntity, entity);
+  public void visitUpdate(AtreusSessionExt session, Object entity) {
+    // TODO this does not belong here
+    AtreusManagedEntity managedEntity = session.getManagedEntity(entity);
+    MetaEntityImpl metaEntity = (MetaEntityImpl) environment.getEntityManager().getMetaEntity(entity.getClass());
+    for (AtreusManagedEntityVisitor visitor : metaEntity.getUpdateVisitors()) {
+      visitor.acceptEntity(session, managedEntity);
     }
   }
 
@@ -129,21 +146,21 @@ public class EntityManager {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void addManagedEntity(ManagedEntityImpl managedEntity) {
-    classRegistry.put(managedEntity.getEntityType(), managedEntity);
-    nameRegistry.put(managedEntity.getName(), managedEntity);
+  private void addManagedEntity(MetaEntityImpl managedEntity) {
+    metaEntityByClass.put(managedEntity.getEntityType(), managedEntity);
+    metaEntityByName.put(managedEntity.getName(), managedEntity);
   }
 
-  private void assertSinglePrimaryKey(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField) {
+  private void assertSinglePrimaryKey(MetaEntityImpl managedEntity, MetaFieldImpl managedField) {
     if (managedEntity.getPrimaryKeyField() != null && !managedEntity.getPrimaryKeyField().equals(managedField)) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_MULTIPLE,
           managedEntity.getName());
     }
   }
 
-  private ManagedEntityImpl buildManagedEntity(Class<?> entityType) {
+  private MetaEntityImpl buildManagedEntity(Class<?> entityType) {
     String className = entityType.getSimpleName();
-    ManagedEntityImpl managedEntity = new ManagedEntityImpl();
+    MetaEntityImpl managedEntity = new MetaEntityImpl();
     managedEntity.setEntityType(entityType);
     managedEntity.setName(className);
     managedEntity.setTable(className);
@@ -151,9 +168,9 @@ public class EntityManager {
     return managedEntity;
   }
 
-  private ManagedFieldImpl buildManagedField(ManagedEntityImpl managedEntity, Field javaField) {
-    ManagedFieldImpl managedField = new ManagedFieldImpl();
-    managedField.setParentEntity(managedEntity);
+  private MetaFieldImpl buildManagedField(MetaEntityImpl managedEntity, Field javaField) {
+    MetaFieldImpl managedField = new MetaFieldImpl();
+    managedField.setOwnerEntity(managedEntity);
     managedField.setColumn(javaField.getName());
     managedField.setJavaField(javaField);
     return managedField;
@@ -165,7 +182,7 @@ public class EntityManager {
     AtreusConfiguration configuration = environment.getConfiguration();
 
     // Create the managed entity with defaults
-    ManagedEntityImpl managedEntity = buildManagedEntity(entityType);
+    MetaEntityImpl managedEntity = buildManagedEntity(entityType);
 
     // Iterate the entity strategies and update the managed entity
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
@@ -173,15 +190,18 @@ public class EntityManager {
     }
 
     // TODO optimize reuse of objectss
-    managedEntity.getUpdateVisitors().add(new PrimaryKeyGeneratorVisitor());
-    managedEntity.getUpdateVisitors().add(new UpdateEntityVisitor());
+    managedEntity.getUpdateVisitors().add(new PrimaryKeyGeneratorVisitorManaged());
+    managedEntity.getUpdateVisitors().add(new UpdateManagedEntityVisitor());
+
+    // Build Proxy Class
+    proxyManager.createProxyClass(entityType);
 
     LOG.debug("Registered Entity name={} {}", managedEntity.getName(), managedEntity.getEntityType());
     addManagedEntity(managedEntity);
   }
 
   @SuppressWarnings("unchecked")
-  private void doProcessField(ManagedEntityImpl managedEntity, Field javaField) {
+  private void doProcessField(MetaEntityImpl managedEntity, Field javaField) {
     String fieldName = javaField.getName();
     LOG.trace("Processing Field for Entity entityType={} javaField={}", managedEntity.getEntityType(), fieldName);
 
@@ -191,12 +211,12 @@ public class EntityManager {
     javaField.setAccessible(true);
 
     // Build the Managed Field with common values
-    ManagedFieldImpl managedField = buildManagedField(managedEntity, javaField);
+    MetaFieldImpl managedField = buildManagedField(managedEntity, javaField);
 
     // Iterate the entity strategies and process
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
 
-      if (classRegistry.containsKey(javaField.getType())) {
+      if (metaEntityByClass.containsKey(javaField.getType())) {
         LOG.debug("Relationship detected {}", managedField.getJavaField());
         continue;
       }
@@ -241,7 +261,7 @@ public class EntityManager {
   }
 
   @SuppressWarnings("unchecked")
-  private void processCollectionField(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processCollectionField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
     if (valueClass == null) {
       valueClass = ReflectionUtils.findCollectionValueClass(managedField.getJavaField());
@@ -264,7 +284,7 @@ public class EntityManager {
   }
 
   @SuppressWarnings("unchecked")
-  private void processMapField(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processMapField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
     Class<?> keyClass = entityStrategy.getMapKey(managedField);
 
@@ -299,7 +319,7 @@ public class EntityManager {
     mapTypeStrategy.setKeyDataType(keyDataType);
   }
 
-  private void processPrimaryKeyField(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processPrimaryKeyField(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     // Assert there is not already an existing primary key
     assertSinglePrimaryKey(managedEntity, managedField);
 
@@ -315,12 +335,12 @@ public class EntityManager {
     managedEntity.setPrimaryKeyField(managedField);
   }
 
-  private void processTimeToLiveField(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processTimeToLiveField(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     resolveTtlStrategy(managedEntity, managedField, entityStrategy);
     managedEntity.setTtlField(managedField);
   }
 
-  private void updateManagedEntity(ManagedEntityImpl managedEntity, AtreusEntityStrategy entityStrategy) {
+  private void updateManagedEntity(MetaEntityImpl managedEntity, AtreusEntityStrategy entityStrategy) {
     String name = entityStrategy.getEntityName(managedEntity);
     String keySpace = entityStrategy.getEntityKeySpace(managedEntity);
     String table = entityStrategy.getEntityTable(managedEntity);
@@ -336,7 +356,7 @@ public class EntityManager {
     }
   }
 
-  private void updateField(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void updateField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     String column = entityStrategy.getFieldColumn(managedField);
 
     if (StringUtils.isNotNullOrEmpty(column)) {
@@ -344,7 +364,7 @@ public class EntityManager {
     }
   }
 
-  private void updatePrimaryKey(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void updatePrimaryKey(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     String column = entityStrategy.getPrimaryKeyColumn(managedField);
 
     if (StringUtils.isNotNullOrEmpty(column)) {
@@ -352,7 +372,7 @@ public class EntityManager {
     }
   }
 
-  private void resolvePrimaryKeyStrategy(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void resolvePrimaryKeyStrategy(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     AtreusPrimaryKeyStrategy primaryKeyStrategy = entityStrategy.resolvePrimaryKeyStrategy(managedField);
 
     if (primaryKeyStrategy != null) {
@@ -373,7 +393,7 @@ public class EntityManager {
     }
   }
 
-  private void resolveTtlStrategy(ManagedEntityImpl managedEntity, ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void resolveTtlStrategy(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     AtreusTtlStrategy ttlStrategy = entityStrategy.resolveTtlStrategy(managedField);
 
     if (ttlStrategy != null) {
@@ -395,7 +415,7 @@ public class EntityManager {
   }
 
   @SuppressWarnings("unchecked")
-  private void resolveTypeStrategy(ManagedFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void resolveTypeStrategy(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     Class<?> typeClass = managedField.getJavaField().getType();
     AtreusTypeStrategy typeStrategy = entityStrategy.resolveTypeStrategy(managedField);
 

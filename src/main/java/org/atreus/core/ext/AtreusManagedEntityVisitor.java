@@ -21,25 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.visitors;
+package org.atreus.core.ext;
 
-import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.AtreusEntityVisitor;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedField;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Primary Key Generator visitor.
+ * Atreus Entity Visitor base.
  *
  * @author Martin Crawford
  */
-public class PrimaryKeyGeneratorVisitor extends AtreusEntityVisitor {
+public abstract class AtreusManagedEntityVisitor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyGeneratorVisitor.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusManagedEntityVisitor.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -47,14 +44,16 @@ public class PrimaryKeyGeneratorVisitor extends AtreusEntityVisitor {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void acceptEntity(AtreusSession session, AtreusManagedEntity managedEntity, Object entity) {
-    AtreusManagedField managedPrimaryKey = managedEntity.getPrimaryKeyField();
-    Object primaryKey = getField(managedPrimaryKey, entity);
-    if (primaryKey == null && managedEntity.getPrimaryKeyStrategy() != null) {
-      primaryKey = managedEntity.getPrimaryKeyStrategy().generate();
-      setField(managedPrimaryKey, entity, primaryKey);
-    }
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+
+  }
+
+  public void acceptField(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+
+  }
+
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
+
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

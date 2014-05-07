@@ -41,7 +41,7 @@ public class RelationshipTestEntity {
 
   @AtreusPrimaryKey
   private String id;
-  
+
   private TestEntity testEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors

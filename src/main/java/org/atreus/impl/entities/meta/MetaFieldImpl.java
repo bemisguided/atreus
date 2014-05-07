@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.AtreusManagedField;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +36,11 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedFieldImpl> {
+public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedFieldImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(MetaFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -50,7 +50,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   private Field javaField;
 
-  private ManagedEntityImpl parentEntity;
+  private MetaEntityImpl ownerEntity;
 
   private AtreusTypeStrategy typeStrategy;
 
@@ -59,7 +59,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public int compareTo(ManagedFieldImpl o) {
+  public int compareTo(MetaFieldImpl o) {
     if (column == null && o.column == null) {
       return 0;
     }
@@ -81,7 +81,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
       return false;
     }
 
-    ManagedFieldImpl that = (ManagedFieldImpl) o;
+    MetaFieldImpl that = (MetaFieldImpl) o;
 
     if (column != null ? !column.equals(that.column) : that.column != null) {
       return false;
@@ -97,7 +97,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
 
   @Override
   public String toString() {
-    return parentEntity.getName() + "." + javaField.getName();
+    return ownerEntity.getName() + "." + javaField.getName();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -117,7 +117,7 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
   }
 
   @Override
-  public String getFieldName() {
+  public String getName() {
     return fieldName;
   }
 
@@ -136,12 +136,12 @@ public class ManagedFieldImpl implements AtreusManagedField, Comparable<ManagedF
   }
 
   @Override
-  public AtreusManagedEntity getParentEntity() {
-    return parentEntity;
+  public AtreusMetaEntity getOwnerEntity() {
+    return ownerEntity;
   }
 
-  public void setParentEntity(ManagedEntityImpl parentEntity) {
-    this.parentEntity = parentEntity;
+  public void setOwnerEntity(MetaEntityImpl ownerEntity) {
+    this.ownerEntity = ownerEntity;
   }
 
   @Override

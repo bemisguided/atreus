@@ -23,7 +23,6 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

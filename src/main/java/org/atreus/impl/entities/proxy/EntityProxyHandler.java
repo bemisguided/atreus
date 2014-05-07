@@ -21,57 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.impl.entities.proxy;
 
-import org.atreus.core.AtreusSession;
-import org.atreus.core.annotations.AtreusEntity;
+import javassist.util.proxy.MethodHandler;
+import org.atreus.impl.entities.ManagedEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
+
 /**
- * todo document me
+ * Implements a Method Handler for a proxied managed entity.
  *
  * @author Martin Crawford
  */
-public abstract class AtreusEntityVisitor {
+class EntityProxyHandler implements MethodHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusEntityVisitor.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final Object entity;
+  private final ManagedEntityImpl managedEntity;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public EntityProxyHandler(ManagedEntityImpl managedEntity, Object entity) {
+    this.entity = entity;
+    this.managedEntity = managedEntity;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void acceptEntity(AtreusSession session, AtreusManagedEntity managedEntity, Object entity) {
-
-  }
-
-  public void acceptField(AtreusSession session, AtreusManagedField managedField, Object entity) {
-
+  @Override
+  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
+    if (forwarder == null) {
+      return overridden.invoke(managedEntity, args);
+    }
+    return overridden.invoke(entity, args);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static Object getField(AtreusManagedField managedField, Object entity) {
-    try {
-      return managedField.getJavaField().get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  protected static void setField(AtreusManagedField managedField, Object entity, Object value) {
-    try {
-      managedField.getJavaField().set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

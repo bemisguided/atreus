@@ -25,8 +25,7 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.AtreusTypeStrategy;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +50,7 @@ public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T>
 
   @Override
   public final T get(Row row, String colName) {
-    if (row.isNull(colName)){
+    if (row.isNull(colName)) {
       return null;
     }
     return doGet(row, colName);

@@ -21,22 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core.impl.util;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
-import org.atreus.core.ext.strategies.AtreusType;
+import junit.framework.Assert;
+import org.atreus.impl.util.CompositeKey;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Integer Type Strategy.
+ * Unit tests for the Composite Key.
  *
  * @author Martin Crawford
  */
-@AtreusType(Integer.class)
-public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
+public class CompositeKeyTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeKeyTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -44,25 +46,33 @@ public class IntegerTypeStrategy extends BaseSimpleTypeStrategy<Integer> {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_INT;
+  @Test
+  public void testEquals() {
+    String key1 = "1234";
+    Integer key2 = 1234;
+    Assert.assertEquals(new CompositeKey(key1, key2), new CompositeKey(key1, key2));
+    Assert.assertEquals(new CompositeKey(key1, null), new CompositeKey(key1, null));
+    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1, key1));
+    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1));
+    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1, null));
+  }
+
+  @Test
+  public void testHashCode() {
+    String key1 = "1234";
+    Integer key2 = 1234;
+    Assert.assertEquals(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, key2).hashCode());
+    Assert.assertEquals(new CompositeKey(key1, null).hashCode(), new CompositeKey(key1, null).hashCode());
+    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, key1).hashCode());
+    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1).hashCode());
+    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, null).hashCode());
+
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Integer doGet(Row row, String colName) {
-    return row.getInt(colName);
-  }
-
-  @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Integer value) {
-    boundStatement.setInt(colName, value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+} // end of class

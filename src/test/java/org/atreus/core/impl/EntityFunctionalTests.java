@@ -26,8 +26,8 @@ package org.atreus.core.impl;
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.tests.entities.errors.*;
 import org.atreus.core.tests.entities.functional.*;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
@@ -286,7 +286,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     addEntity(NameOverrideTestEntity.class);
     initEnvironment();
 
-    AtreusManagedEntity managedEntity = getEnvironment().getEntityManager().getEntity(NameOverrideTestEntity.class);
+    AtreusMetaEntity managedEntity = getEnvironment().getEntityManager().getMetaEntity(NameOverrideTestEntity.class);
     Assert.assertNotNull("Expect an entity", managedEntity);
     Assert.assertEquals("EntityName", managedEntity.getName());
     Assert.assertEquals("KeySpaceName", managedEntity.getKeySpace());

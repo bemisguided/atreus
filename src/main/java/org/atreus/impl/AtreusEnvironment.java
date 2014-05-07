@@ -28,11 +28,9 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 import org.atreus.core.AtreusClusterConnectivityException;
 import org.atreus.core.AtreusConfiguration;
-import org.atreus.core.AtreusInitialisationException;
 import org.atreus.impl.entities.EntityManager;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
-import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +74,8 @@ public class AtreusEnvironment {
       cluster.connect();
       setCassandraCluster(cluster);
       setCassandraSession(cluster.newSession());
-    }catch (DriverException e) {
+    }
+    catch (DriverException e) {
       throw new AtreusClusterConnectivityException(AtreusClusterConnectivityException.ERROR_CODE_CANNOT_CONNECT, e);
     }
   }
@@ -98,7 +97,7 @@ public class AtreusEnvironment {
   private void initTypeManager() {
     getTypeManager().scanPaths(getConfiguration().getScanPaths());
   }
-  
+
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   public Cluster getCassandraCluster() {

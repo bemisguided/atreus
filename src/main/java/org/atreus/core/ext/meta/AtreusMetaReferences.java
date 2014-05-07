@@ -21,27 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.core.ext.meta;
 
-import java.lang.reflect.Field;
+import java.util.Set;
 
 /**
- * Interface for a managed field.
+ * Interface for a managed aggregate association.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedField {
+public interface AtreusMetaReferences {
 
-  public String getColumn();
+  public AtreusMetaEntity getAssociatedEntity();
 
-  public void setColumn(String column);
+  public AtreusMetaField getKeyField();
 
-  public String getFieldName();
+  public Set<AtreusMetaField> getReferencedFields();
 
-  public Field getJavaField();
-
-  public AtreusManagedEntity getParentEntity();
-
-  public AtreusTypeStrategy getTypeStrategy();
+  public AtreusMetaEntity getOwnerEntity();
 
 }

@@ -23,9 +23,12 @@
  */
 package org.atreus.impl.commands;
 
-import com.datastax.driver.core.*;
-import org.atreus.core.AtreusSession;
-import org.atreus.core.ext.AtreusManagedEntity;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
@@ -49,14 +52,14 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
 
   private Serializable primaryKey;
 
-  private AtreusManagedEntity managedEntity;
+  private AtreusMetaEntity managedEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Object execute(AtreusEnvironment environment, AtreusSession session) {
+  public Object execute(AtreusEnvironment environment, AtreusSessionExt session) {
     RegularStatement regularStatement = QueryHelper.selectEntity(managedEntity);
     BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
     BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
@@ -89,11 +92,11 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
     this.primaryKey = primaryKey;
   }
 
-  public AtreusManagedEntity getManagedEntity() {
+  public AtreusMetaEntity getManagedEntity() {
     return managedEntity;
   }
 
-  public void setManagedEntity(AtreusManagedEntity managedEntity) {
+  public void setManagedEntity(AtreusMetaEntity managedEntity) {
     this.managedEntity = managedEntity;
   }
 
