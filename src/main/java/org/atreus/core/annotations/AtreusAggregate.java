@@ -29,19 +29,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that provides the details of a managed collection by Atreus.
+ * Annotation that indicates an aggregate association for a field.
  *
  * @author Martin Crawford
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface AtreusCollection {
+public @interface AtreusAggregate {
 
   /**
-   * Sets the type of the value of this collection.
+   * Sets the type of the value of this aggregate association. Type must be an entity managed by Atreus.
    *
    * @return
    */
   public Class<?> type() default NullType.class;
+
+  /**
+   * Indicates if the annotated field is inverse navigable. Default is false.
+   * 
+   * @return
+   */
+  public boolean navigable() default false;
 
 }

@@ -23,13 +23,32 @@
  */
 package org.atreus.core.annotations;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
+ * Annotation that indicates a referenced association for a field to another managed entity.
  *
  * @author Martin Crawford
  */
-public enum AtreusRelationshipType {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface AtreusReferenced {
 
-  COMPOSITION,
-  AGGREGATION;
-  
+  /**
+   * Sets the type of the value of this referenced association. Type must be an entity managed by Atreus.
+   *
+   * @return
+   */
+  public Class<?> type() default NullType.class;
+
+  /**
+   * Sets the list of fields from the referenced entity to denormalize with this entity. Default is all.
+   * 
+   * @return
+   */
+  public String[] fields() default {};
+
 }
