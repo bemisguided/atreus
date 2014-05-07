@@ -29,6 +29,14 @@ import java.io.Serializable;
 
 public interface AtreusSession {
 
+  public boolean isWriteAsync();
+
+  public void setWriteAsync(boolean writeAsync);
+
+  public boolean isWriteBatch();
+
+  public void setWriteBatch(boolean batchWrite);
+
   public ConsistencyLevel getReadConsistencyLevel();
 
   public void setReadConsistencyLevel(ConsistencyLevel consistencyLevel);
@@ -37,15 +45,7 @@ public interface AtreusSession {
 
   public void setWriteConsistencyLevel(ConsistencyLevel consistencyLevel);
 
-  public <T> T findByPrimaryKey(Class<T> entityType, Serializable primaryKey);
-
-  public void save(Object entity);
-
   public void close();
-
-  public BoundStatement prepareQuery(String cql);
-
-  public BoundStatement prepareQuery(RegularStatement regularStatement);
 
   public ResultSet execute(Statement statement);
 
@@ -54,5 +54,17 @@ public interface AtreusSession {
   public void executeOrBatch(Statement statement);
 
   public void executeOrBatch(String cql);
+
+  public <T> T findOne(Class<T> entityType, Serializable primaryKey);
+
+  public void flush();
+
+  public void flush(boolean async);
+
+  public void save(Object entity);
+
+  public BoundStatement prepareQuery(String cql);
+
+  public BoundStatement prepareQuery(RegularStatement regularStatement);
 
 }

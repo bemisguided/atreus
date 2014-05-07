@@ -72,9 +72,9 @@ public class AtreusSessionBuilderTests extends BaseCassandraTests {
   public void testBuildFactoryWithConfiguration() {
     LOG.info("Running testBuildFactoryWithConfiguration");
     AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
-    configuration.setDefaultBatchWriting(false);
-    configuration.setDefaultConsistencyLevelRead(ConsistencyLevel.EACH_QUORUM);
-    configuration.setDefaultConsistencyLevelWrite(ConsistencyLevel.QUORUM);
+    configuration.setDefaultWriteBatch(false);
+    configuration.setDefaultReadConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+    configuration.setDefaultWriteConsistencyLevel(ConsistencyLevel.QUORUM);
     AtreusSessionFactory sessionFactory = AtreusSessionFactoryBuilder.buildFactory(configuration);
     Assert.assertEquals(CLUSTER_HOST_NAME, sessionFactory.getHosts()[0]);
     Assert.assertEquals(CLUSTER_PORT, sessionFactory.getPort());

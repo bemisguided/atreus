@@ -42,9 +42,10 @@ public class AtreusConfiguration {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private boolean defaultBatchWriting = true;
-  private ConsistencyLevel defaultConsistencyLevelRead = ConsistencyLevel.ONE;
-  private ConsistencyLevel defaultConsistencyLevelWrite = ConsistencyLevel.ONE;
+  private ConsistencyLevel defaultReadConsistencyLevel = ConsistencyLevel.ONE;
+  private boolean defaultWriteAsync = false;
+  private boolean defaultWriteBatch = true;
+  private ConsistencyLevel defaultWriteConsistencyLevel = ConsistencyLevel.ONE;
   private String[] hosts;
   private String keySpace;
   private int port;
@@ -75,28 +76,36 @@ public class AtreusConfiguration {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public boolean isDefaultBatchWriting() {
-    return defaultBatchWriting;
+  public ConsistencyLevel getDefaultReadConsistencyLevel() {
+    return defaultReadConsistencyLevel;
   }
 
-  public void setDefaultBatchWriting(boolean defaultBatchWriting) {
-    this.defaultBatchWriting = defaultBatchWriting;
+  public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+    this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
   }
 
-  public ConsistencyLevel getDefaultConsistencyLevelRead() {
-    return defaultConsistencyLevelRead;
+  public boolean isDefaultWriteAsync() {
+    return defaultWriteAsync;
   }
 
-  public void setDefaultConsistencyLevelRead(ConsistencyLevel defaultConsistencyLevelRead) {
-    this.defaultConsistencyLevelRead = defaultConsistencyLevelRead;
+  public void setDefaultWriteAsync(boolean defaultWriteAsync) {
+    this.defaultWriteAsync = defaultWriteAsync;
   }
 
-  public ConsistencyLevel getDefaultConsistencyLevelWrite() {
-    return defaultConsistencyLevelWrite;
+  public boolean isDefaultWriteBatch() {
+    return defaultWriteBatch;
   }
 
-  public void setDefaultConsistencyLevelWrite(ConsistencyLevel defaultConsistencyLevelWrite) {
-    this.defaultConsistencyLevelWrite = defaultConsistencyLevelWrite;
+  public void setDefaultWriteBatch(boolean defaultWriteBatch) {
+    this.defaultWriteBatch = defaultWriteBatch;
+  }
+
+  public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+    return defaultWriteConsistencyLevel;
+  }
+
+  public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+    this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
   }
 
   public AtreusEntityStrategy[] getEntityStrategies() {

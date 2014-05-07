@@ -52,41 +52,71 @@ public class AtreusSessionImpl implements AtreusSession {
 
   private ConsistencyLevel readConsistencyLevel;
 
+  private boolean writeAsync;
+
+  private boolean writeBatch;
+
   private ConsistencyLevel writeConsistencyLevel;
+
+  private BatchStatement batchStatement;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   public AtreusSessionImpl(AtreusEnvironment environment) {
     this.environment = environment;
-    readConsistencyLevel = environment.getConfiguration().getDefaultConsistencyLevelRead();
-    writeConsistencyLevel = environment.getConfiguration().getDefaultConsistencyLevelWrite();
+    writeAsync = environment.getConfiguration().isDefaultWriteAsync();
+    writeBatch = environment.getConfiguration().isDefaultWriteBatch();
+    readConsistencyLevel = environment.getConfiguration().getDefaultReadConsistencyLevel();
+    writeConsistencyLevel = environment.getConfiguration().getDefaultWriteConsistencyLevel();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-
   @Override
   public ResultSet execute(Statement statement) {
-    return environment.getCassandraSession().execute(statement);
+    return executeRead(statement);
   }
 
   @Override
   public ResultSet execute(String cql) {
-    return environment.getCassandraSession().execute(cql);
+    return execute(new SimpleStatement(cql));
   }
 
   @Override
   public void executeOrBatch(Statement statement) {
+    if (isWriteBatch()) {
+      if (batchStatement == null) {
+        batchStatement = new BatchStatement();
+      }
+      batchStatement.add(statement);
+      return;
+    }
     environment.getCassandraSession().execute(statement);
   }
 
   @Override
   public void executeOrBatch(String cql) {
-    environment.getCassandraSession().execute(cql);
+    executeOrBatch(new SimpleStatement(cql));
   }
 
   @Override
-  public <T> T findByPrimaryKey(Class<T> entityType, Serializable primaryKey) {
+  public void flush() {
+    if (batchStatement == null) {
+      return;
+    }
+    executeWrite(batchStatement, isWriteAsync());
+  }
+
+  @Override
+  public void flush(boolean async) {
+    if (batchStatement == null) {
+      return;
+    }
+    executeWrite(batchStatement, async);
+  }
+
+  @Override
+  public <T> T findOne(Class<T> entityType, Serializable primaryKey) {
     // Assert input params
     AssertUtils.notNull(entityType, "entityType is a required parameter");
     AtreusManagedEntity managedEntity = environment.getEntityManager().getEntity(entityType);
@@ -144,7 +174,23 @@ public class AtreusSessionImpl implements AtreusSession {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
+  private ResultSet executeRead(Statement statement) {
+    statement.setConsistencyLevel(getReadConsistencyLevel());
+    return environment.getCassandraSession().execute(statement);
+  }
+
+  private void executeWrite(Statement statement, boolean async) {
+    statement.setConsistencyLevel(getWriteConsistencyLevel());
+    if (async) {
+      // TODO implement callback listener architecture
+      environment.getCassandraSession().executeAsync(statement);
+      return;
+    }
+    environment.getCassandraSession().execute(statement);
+  }
+
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
 
   @Override
   public ConsistencyLevel getReadConsistencyLevel() {
@@ -154,6 +200,26 @@ public class AtreusSessionImpl implements AtreusSession {
   @Override
   public void setReadConsistencyLevel(ConsistencyLevel readConsistencyLevel) {
     this.readConsistencyLevel = readConsistencyLevel;
+  }
+
+  @Override
+  public boolean isWriteAsync() {
+    return writeAsync;
+  }
+
+  @Override
+  public void setWriteAsync(boolean writeAsync) {
+    this.writeAsync = writeAsync;
+  }
+
+  @Override
+  public boolean isWriteBatch() {
+    return writeBatch;
+  }
+
+  @Override
+  public void setWriteBatch(boolean writeBatch) {
+    this.writeBatch = writeBatch;
   }
 
   @Override

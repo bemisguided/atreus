@@ -76,9 +76,10 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     testEntity.setAnEnum(CQLDataType.CQL_ASCII);
 
     getSession().save(testEntity);
+    getSession().flush();
     String primaryKey = testEntity.getId();
 
-    AtreusTypesTestEntity otherEntity = getSession().findByPrimaryKey(AtreusTypesTestEntity.class, primaryKey);
+    AtreusTypesTestEntity otherEntity = getSession().findOne(AtreusTypesTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals(primaryKey, otherEntity.getId());
@@ -88,9 +89,10 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     // Null values
     testEntity = new AtreusTypesTestEntity();
     getSession().save(testEntity);
+    getSession().flush();
     primaryKey = testEntity.getId();
 
-    otherEntity = getSession().findByPrimaryKey(AtreusTypesTestEntity.class, primaryKey);
+    otherEntity = getSession().findOne(AtreusTypesTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertNull("Expect null short", otherEntity.getaShort());
@@ -133,9 +135,10 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     testEntity.setaUuid(UUID.fromString("4f7a8b70-d002-11e3-9c1a-0800200c9a66"));
 
     getSession().save(testEntity);
+    getSession().flush();
     String primaryKey = testEntity.getId();
 
-    CQLPrimitiveTypesTestEntity otherEntity = getSession().findByPrimaryKey(CQLPrimitiveTypesTestEntity.class, primaryKey);
+    CQLPrimitiveTypesTestEntity otherEntity = getSession().findOne(CQLPrimitiveTypesTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals(primaryKey, otherEntity.getId());
@@ -159,42 +162,47 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     addEntity(TtlTestEntity.class);
     initEnvironment();
 
-    executeCQL("CREATE TABLE default.TtlTestEntity (" +
-        "id text, " +
-        "value text, " +
-        "PRIMARY KEY(id))");
+    try {
+      executeCQL("CREATE TABLE default.TtlTestEntity (" +
+          "id text, " +
+          "value text, " +
+          "PRIMARY KEY(id))");
 
-    // Test with a time-to-live set
-    TtlTestEntity testEntity = new TtlTestEntity();
-    testEntity.setValue("I am a text value");
-    testEntity.setTtl(2); // 2 seconds
+      // Test with a time-to-live set
+      TtlTestEntity testEntity = new TtlTestEntity();
+      testEntity.setValue("I am a text value");
+      testEntity.setTtl(2); // 2 seconds
 
-    getSession().save(testEntity);
-    String primaryKey = testEntity.getId();
+      getSession().save(testEntity);
+      getSession().flush();
+      String primaryKey = testEntity.getId();
 
-    TtlTestEntity otherEntity = getSession().findByPrimaryKey(TtlTestEntity.class, primaryKey);
-    Assert.assertNotNull("Expect to be not null", otherEntity);
-    Assert.assertEquals(primaryKey, otherEntity.getId());
-    Assert.assertEquals("I am a text value", otherEntity.getValue());
-    Assert.assertNull("Time-to-live value should be null", otherEntity.getTtl());
+      TtlTestEntity otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+      Assert.assertNotNull("Expect to be not null", otherEntity);
+      Assert.assertEquals(primaryKey, otherEntity.getId());
+      Assert.assertEquals("I am a text value", otherEntity.getValue());
+      Assert.assertNull("Time-to-live value should be null", otherEntity.getTtl());
 
-    // Wait until expired
-    sleepSeconds(3); // Sleep for 3 secs
+      // Wait until expired
+      sleepSeconds(3); // Sleep for 3 secs
 
-    otherEntity = getSession().findByPrimaryKey(TtlTestEntity.class, primaryKey);
-    Assert.assertNull("Expect to be null", otherEntity);
+      otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+      Assert.assertNull("Expect to be null", otherEntity);
 
-    // Test w/o a time-to-live set
-    testEntity = new TtlTestEntity();
-    testEntity.setValue("I am another text value");
+      // Test w/o a time-to-live set
+      testEntity = new TtlTestEntity();
+      testEntity.setValue("I am another text value");
 
-    getSession().save(testEntity);
-    primaryKey = testEntity.getId();
+      getSession().save(testEntity);
+      getSession().flush();
+      primaryKey = testEntity.getId();
 
-    otherEntity = getSession().findByPrimaryKey(TtlTestEntity.class, primaryKey);
-    Assert.assertNotNull("Expect to be not null", otherEntity);
-
-    executeCQL("DROP TABLE default.TtlTestEntity");
+      otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+      Assert.assertNotNull("Expect to be not null", otherEntity);
+    }
+    finally {
+      executeCQL("DROP TABLE default.TtlTestEntity");
+    }
   }
 
 
@@ -256,9 +264,10 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     mapValue.put("value2", (long) 654321);
 
     getSession().save(testEntity);
+    getSession().flush();
     String primaryKey = testEntity.getId();
 
-    CollectionTestEntity otherEntity = getSession().findByPrimaryKey(CollectionTestEntity.class, primaryKey);
+    CollectionTestEntity otherEntity = getSession().findOne(CollectionTestEntity.class, primaryKey);
 
     Assert.assertNotNull("Expect to be not null", otherEntity);
     Assert.assertThat(otherEntity.getListField(), JUnitMatchers.hasItems("value1", "value2"));
