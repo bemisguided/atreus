@@ -24,8 +24,8 @@
 package org.atreus.core.impl.queries;
 
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.entities.meta.DynamicMetaFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.MetaFieldImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,24 +54,24 @@ public class QueryHelperTests {
   @Test
   public void testInsert() {
     LOG.info("Running testInsert");
-    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
-    managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.addField(buildField("col1"));
-    managedEntity.addField(buildField("col2"));
+    MetaEntityImpl metaEntity = buildEntity("QueryHelperTests", "testInsert");
+    metaEntity.setPrimaryKeyField(buildField(metaEntity, "id"));
+    metaEntity.addField(buildField(metaEntity, "col1"));
+    metaEntity.addField(buildField(metaEntity, "col2"));
 
-    assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2);", QueryHelper.insertEntity(managedEntity).getQueryString());
+    assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2);", QueryHelper.insertEntity(metaEntity).getQueryString());
   }
 
   @Test
   public void testInsertWithTtl() {
     LOG.info("Running testInsertWithTtl");
-    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testInsert");
-    managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.addField(buildField("col1"));
-    managedEntity.addField(buildField("col2"));
-    managedEntity.setTtlField(buildField("ttl1"));
+    MetaEntityImpl metaEntity = buildEntity("QueryHelperTests", "testInsert");
+    metaEntity.setPrimaryKeyField(buildField(metaEntity, "id"));
+    metaEntity.addField(buildField(metaEntity, "col1"));
+    metaEntity.addField(buildField(metaEntity, "col2"));
+    metaEntity.setTtlField(buildField(metaEntity, "ttl1"));
 
-    assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2) USING TTL :ttl1;", QueryHelper.insertEntity(managedEntity, true).getQueryString());
+    assertEquals("INSERT INTO queryhelpertests.testInsert(id,col1,col2) VALUES (:id,:col1,:col2) USING TTL :ttl1;", QueryHelper.insertEntity(metaEntity, true).getQueryString());
   }
 
   @Test
@@ -83,12 +83,12 @@ public class QueryHelperTests {
   @Test
   public void testSelect() {
     LOG.info("Running testSelect");
-    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testSelect");
-    managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.addField(buildField("col1"));
-    managedEntity.addField(buildField("col2"));
+    MetaEntityImpl metaEntity = buildEntity("QueryHelperTests", "testSelect");
+    metaEntity.setPrimaryKeyField(buildField(metaEntity, "id"));
+    metaEntity.addField(buildField(metaEntity, "col1"));
+    metaEntity.addField(buildField(metaEntity, "col2"));
 
-    assertEquals("SELECT * FROM queryhelpertests.testSelect WHERE id=:id;", QueryHelper.selectEntity(managedEntity).getQueryString());
+    assertEquals("SELECT * FROM queryhelpertests.testSelect WHERE id=:id;", QueryHelper.selectEntity(metaEntity).getQueryString());
   }
 
   @Test
@@ -100,24 +100,24 @@ public class QueryHelperTests {
   @Test
   public void testUpdate() {
     LOG.info("Running testUpdate");
-    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
-    managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.addField(buildField("col1"));
-    managedEntity.addField(buildField("col2"));
+    MetaEntityImpl metaEntity = buildEntity("QueryHelperTests", "testUpdate");
+    metaEntity.setPrimaryKeyField(buildField(metaEntity, "id"));
+    metaEntity.addField(buildField(metaEntity, "col1"));
+    metaEntity.addField(buildField(metaEntity, "col2"));
 
-    assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity).getQueryString());
+    assertEquals("UPDATE queryhelpertests.testUpdate SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(metaEntity).getQueryString());
   }
 
   @Test
   public void testUpdateWithTtl() {
     LOG.info("Running testUpdateWithTtl");
-    MetaEntityImpl managedEntity = buildEntity("QueryHelperTests", "testUpdate");
-    managedEntity.setPrimaryKeyField(buildField("id"));
-    managedEntity.addField(buildField("col1"));
-    managedEntity.addField(buildField("col2"));
-    managedEntity.setTtlField(buildField("ttl1"));
+    MetaEntityImpl metaEntity = buildEntity("QueryHelperTests", "testUpdate");
+    metaEntity.setPrimaryKeyField(buildField(metaEntity, "id"));
+    metaEntity.addField(buildField(metaEntity, "col1"));
+    metaEntity.addField(buildField(metaEntity, "col2"));
+    metaEntity.setTtlField(buildField(metaEntity, "ttl1"));
 
-    assertEquals("UPDATE queryhelpertests.testUpdate USING TTL :ttl1 SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(managedEntity, true).getQueryString());
+    assertEquals("UPDATE queryhelpertests.testUpdate USING TTL :ttl1 SET col1=:col1,col2=:col2 WHERE id=:id;", QueryHelper.updateEntity(metaEntity, true).getQueryString());
   }
 
   @Test
@@ -137,9 +137,8 @@ public class QueryHelperTests {
     return managedEntity;
   }
 
-  private AtreusMetaField buildField(String columnName) {
-    MetaFieldImpl managedField = new MetaFieldImpl();
-    managedField.setFieldName(columnName);
+  private AtreusMetaField buildField(MetaEntityImpl metaEntity, String columnName) {
+    DynamicMetaFieldImpl managedField = new DynamicMetaFieldImpl(metaEntity, columnName, String.class);
     managedField.setColumn(columnName);
     return managedField;
   }

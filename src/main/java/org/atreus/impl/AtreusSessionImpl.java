@@ -162,7 +162,7 @@ public class AtreusSessionImpl implements AtreusSessionExt {
     // Check the session for a matching managed entity
     AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entity);
     Class<?> entityType = metaEntity.getEntityType();
-    Object primaryKey = metaEntity.getFieldValue(metaEntity.getPrimaryKeyField(), entity);
+    Object primaryKey = metaEntity.getPrimaryKeyField().getValue(entity);
 
     // A primary key has not been set so create a managed entity and return unsaved to the session
     if (primaryKey == null) {

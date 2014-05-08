@@ -56,18 +56,13 @@ public class BindingHelper {
     }
   }
 
-  public static void bindToField(AtreusMetaField managedField, Object entity, Row row) {
-    Object value = managedField.getTypeStrategy().get(row, managedField.getColumn());
-    try {
-      managedField.getJavaField().set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+  public static void bindToField(AtreusMetaField metaField, Object entity, Row row) {
+    Object value = metaField.getTypeStrategy().get(row, metaField.getColumn());
+    metaField.setValue(entity, value);
   }
 
-  public static boolean isNull(AtreusMetaField managedField, Object entity) {
-    return getField(managedField, entity) == null;
+  public static boolean isNull(AtreusMetaField metaField, Object entity) {
+    return metaField.getValue(entity) == null;
   }
 
   public static void bindFromPrimaryKeys(AtreusMetaEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
@@ -78,24 +73,6 @@ public class BindingHelper {
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private static Object getField(AtreusMetaField managedField, Object entity) {
-    try {
-      return managedField.getJavaField().get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static void setField(AtreusMetaField managedField, Object entity, Object value) {
-    try {
-      managedField.getJavaField().set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

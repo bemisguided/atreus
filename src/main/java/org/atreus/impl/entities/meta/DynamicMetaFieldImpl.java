@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.entities.meta;
 
+import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
@@ -32,34 +33,40 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 
 /**
- * Managed Field bean.
+ * Implements a meta field instance for dynamically defined fields.
  *
  * @author Martin Crawford
  */
-public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl> {
+public class DynamicMetaFieldImpl implements AtreusMetaField, Comparable<DynamicMetaFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(MetaFieldImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private String column;
 
-  private String fieldName;
+  private final String name;
 
-  private Field javaField;
+  private final MetaEntityImpl ownerEntity;
 
-  private MetaEntityImpl ownerEntity;
+  private final Class<?> type;
 
   private AtreusTypeStrategy typeStrategy;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public DynamicMetaFieldImpl(MetaEntityImpl ownerEntity, String name, Class<?> type) {
+    this.ownerEntity = ownerEntity;
+    this.name = name;
+    this.type = type;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public int compareTo(MetaFieldImpl o) {
+  public int compareTo(DynamicMetaFieldImpl o) {
     if (column == null && o.column == null) {
       return 0;
     }
@@ -81,7 +88,7 @@ public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl>
       return false;
     }
 
-    MetaFieldImpl that = (MetaFieldImpl) o;
+    DynamicMetaFieldImpl that = (DynamicMetaFieldImpl) o;
 
     if (column != null ? !column.equals(that.column) : that.column != null) {
       return false;
@@ -97,7 +104,7 @@ public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl>
 
   @Override
   public String toString() {
-    return ownerEntity.getName() + "." + javaField.getName();
+    return ownerEntity.getName() + "." + name;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -117,22 +124,30 @@ public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl>
   }
 
   @Override
-  public String getName() {
-    return fieldName;
-  }
-
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
+  public Field getJavaField() {
+    return null;
   }
 
   @Override
-  public Field getJavaField() {
-    return javaField;
+  public String getName() {
+    return name;
   }
 
-  public void setJavaField(Field javaField) {
-    this.javaField = javaField;
-    this.fieldName = javaField.getName();
+  @Override
+  public Object getValue(Object entity) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+
+    return ((AtreusManagedEntity) entity).getDyanmicFields().get(name);
+  }
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    ((AtreusManagedEntity) entity).getDyanmicFields().put(name, value);
   }
 
   @Override
@@ -140,8 +155,9 @@ public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl>
     return ownerEntity;
   }
 
-  public void setOwnerEntity(MetaEntityImpl ownerEntity) {
-    this.ownerEntity = ownerEntity;
+  @Override
+  public Class<?> getType() {
+    return type;
   }
 
   @Override
@@ -149,6 +165,7 @@ public class MetaFieldImpl implements AtreusMetaField, Comparable<MetaFieldImpl>
     return typeStrategy;
   }
 
+  @Override
   public void setTypeStrategy(AtreusTypeStrategy typeStrategy) {
     this.typeStrategy = typeStrategy;
   }

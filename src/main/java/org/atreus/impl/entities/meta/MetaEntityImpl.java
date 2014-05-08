@@ -23,7 +23,6 @@
  */
 package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusManagedEntityVisitor;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
@@ -147,33 +146,15 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   }
 
   @Override
-  public Object getFieldValue(AtreusMetaField metaField, Object entity) {
-    // First check if the entity is already managed and call that interface
-    if (entity instanceof AtreusManagedEntity) {
-      return ((AtreusManagedEntity) entity).getFieldValue(metaField);
-    }
-    try {
-      // Otherwise extract the value using java reflection directly
-      return metaField.getJavaField().get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+  public Object getFieldValue(String name, Object entity) {
+    AtreusMetaField metaField = getFieldByName(name);
+    return metaField.getValue(entity);
   }
 
   @Override
-  public void setFieldValue(AtreusMetaField metaField, Object entity, Object value) {
-    // First check if the entity is already managed and call that interface
-    if (entity instanceof AtreusManagedEntity) {
-      ((AtreusManagedEntity) entity).setFieldValue(metaField, value);
-    }
-    try {
-      // Otherwise set the value using java reflection directly
-      metaField.getJavaField().set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+  public void setFieldValue(String name, Object entity, Object value) {
+    AtreusMetaField metaField = getFieldByName(name);
+    metaField.setValue(entity, value);
   }
 
   public AtreusMetaField getPrimaryKeyField() {

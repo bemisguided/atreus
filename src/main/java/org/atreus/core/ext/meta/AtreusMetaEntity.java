@@ -43,9 +43,9 @@ public interface AtreusMetaEntity {
 
   public AtreusMetaField[] getFields();
 
-  public Object getFieldValue(AtreusMetaField metaField, Object entity);
+  public Object getFieldValue(String name, Object entity);
 
-  public void setFieldValue(AtreusMetaField metaField, Object entity, Object value);
+  public void setFieldValue(String name, Object entity, Object value);
 
   public String getKeySpace();
 

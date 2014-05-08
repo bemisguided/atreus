@@ -30,7 +30,7 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.strategies.*;
 import org.atreus.impl.AtreusEnvironment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.MetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
 import org.atreus.impl.entities.proxy.ProxyManager;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.ReflectionUtils;
@@ -151,7 +151,7 @@ public class EntityManager {
     metaEntityByName.put(managedEntity.getName(), managedEntity);
   }
 
-  private void assertSinglePrimaryKey(MetaEntityImpl managedEntity, MetaFieldImpl managedField) {
+  private void assertSinglePrimaryKey(MetaEntityImpl managedEntity, StaticMetaFieldImpl managedField) {
     if (managedEntity.getPrimaryKeyField() != null && !managedEntity.getPrimaryKeyField().equals(managedField)) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_MULTIPLE,
           managedEntity.getName());
@@ -168,11 +168,9 @@ public class EntityManager {
     return managedEntity;
   }
 
-  private MetaFieldImpl buildManagedField(MetaEntityImpl managedEntity, Field javaField) {
-    MetaFieldImpl managedField = new MetaFieldImpl();
-    managedField.setOwnerEntity(managedEntity);
+  private StaticMetaFieldImpl buildJavaMetaField(MetaEntityImpl metaEntity, Field javaField) {
+    StaticMetaFieldImpl managedField = new StaticMetaFieldImpl(metaEntity, javaField);
     managedField.setColumn(javaField.getName());
-    managedField.setJavaField(javaField);
     return managedField;
   }
 
@@ -211,48 +209,48 @@ public class EntityManager {
     javaField.setAccessible(true);
 
     // Build the Managed Field with common values
-    MetaFieldImpl managedField = buildManagedField(managedEntity, javaField);
+    StaticMetaFieldImpl javaMetaField = buildJavaMetaField(managedEntity, javaField);
 
     // Iterate the entity strategies and process
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
 
       if (metaEntityByClass.containsKey(javaField.getType())) {
-        LOG.debug("Relationship detected {}", managedField.getJavaField());
+        LOG.debug("Relationship detected {}", javaMetaField.getName());
         continue;
       }
       // Resolve the common Type Strategy (if available)
-      resolveTypeStrategy(managedField, entityStrategy);
+      resolveTypeStrategy(javaMetaField, entityStrategy);
 
       // Special fields
 
       // Primary Key
-      if (entityStrategy.isPrimaryKeyField(managedField)) {
-        processPrimaryKeyField(managedEntity, managedField, entityStrategy);
+      if (entityStrategy.isPrimaryKeyField(javaMetaField)) {
+        processPrimaryKeyField(managedEntity, javaMetaField, entityStrategy);
         continue;
       }
 
       // Time-to-live
-      if (entityStrategy.isTtlField(managedField)) {
-        processTimeToLiveField(managedEntity, managedField, entityStrategy);
+      if (entityStrategy.isTtlField(javaMetaField)) {
+        processTimeToLiveField(managedEntity, javaMetaField, entityStrategy);
         continue;
       }
 
       // Managed Fields
-      managedEntity.addField(managedField);
+      managedEntity.addField(javaMetaField);
 
       // Collection
       if (Collection.class.isAssignableFrom(javaField.getType())) {
-        processCollectionField(managedField, entityStrategy);
+        processCollectionField(javaMetaField, entityStrategy);
         continue;
       }
 
       // Map
       if (Map.class.isAssignableFrom(javaField.getType())) {
-        processMapField(managedField, entityStrategy);
+        processMapField(javaMetaField, entityStrategy);
         continue;
       }
 
-      updateField(managedField, entityStrategy);
+      updateField(javaMetaField, entityStrategy);
 
     }
 
@@ -261,7 +259,7 @@ public class EntityManager {
   }
 
   @SuppressWarnings("unchecked")
-  private void processCollectionField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processCollectionField(StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
     if (valueClass == null) {
       valueClass = ReflectionUtils.findCollectionValueClass(managedField.getJavaField());
@@ -284,7 +282,7 @@ public class EntityManager {
   }
 
   @SuppressWarnings("unchecked")
-  private void processMapField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processMapField(StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     Class<?> valueClass = entityStrategy.getCollectionValue(managedField);
     Class<?> keyClass = entityStrategy.getMapKey(managedField);
 
@@ -319,7 +317,7 @@ public class EntityManager {
     mapTypeStrategy.setKeyDataType(keyDataType);
   }
 
-  private void processPrimaryKeyField(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processPrimaryKeyField(MetaEntityImpl managedEntity, StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     // Assert there is not already an existing primary key
     assertSinglePrimaryKey(managedEntity, managedField);
 
@@ -335,7 +333,7 @@ public class EntityManager {
     managedEntity.setPrimaryKeyField(managedField);
   }
 
-  private void processTimeToLiveField(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void processTimeToLiveField(MetaEntityImpl managedEntity, StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     resolveTtlStrategy(managedEntity, managedField, entityStrategy);
     managedEntity.setTtlField(managedField);
   }
@@ -356,7 +354,7 @@ public class EntityManager {
     }
   }
 
-  private void updateField(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void updateField(StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     String column = entityStrategy.getFieldColumn(managedField);
 
     if (StringUtils.isNotNullOrEmpty(column)) {
@@ -364,7 +362,7 @@ public class EntityManager {
     }
   }
 
-  private void updatePrimaryKey(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
+  private void updatePrimaryKey(StaticMetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
     String column = entityStrategy.getPrimaryKeyColumn(managedField);
 
     if (StringUtils.isNotNullOrEmpty(column)) {
@@ -372,60 +370,58 @@ public class EntityManager {
     }
   }
 
-  private void resolvePrimaryKeyStrategy(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
-    AtreusPrimaryKeyStrategy primaryKeyStrategy = entityStrategy.resolvePrimaryKeyStrategy(managedField);
+  private void resolvePrimaryKeyStrategy(MetaEntityImpl metaEntity, StaticMetaFieldImpl metaField, AtreusEntityStrategy entityStrategy) {
+    AtreusPrimaryKeyStrategy primaryKeyStrategy = entityStrategy.resolvePrimaryKeyStrategy(metaField);
 
     if (primaryKeyStrategy != null) {
-      managedEntity.setPrimaryKeyGenerator(primaryKeyStrategy);
+      metaEntity.setPrimaryKeyGenerator(primaryKeyStrategy);
       return;
     }
 
-    if (managedEntity.getPrimaryKeyStrategy() != null) {
+    if (metaEntity.getPrimaryKeyStrategy() != null) {
       return;
     }
 
     TypeManager typeManager = environment.getTypeManager();
 
-    Field javaField = managedField.getJavaField();
-    primaryKeyStrategy = typeManager.findPrimaryKeyGenerator(javaField.getType());
+    primaryKeyStrategy = typeManager.findPrimaryKeyGenerator(metaField.getType());
     if (primaryKeyStrategy != null) {
-      managedEntity.setPrimaryKeyGenerator(primaryKeyStrategy);
+      metaEntity.setPrimaryKeyGenerator(primaryKeyStrategy);
     }
   }
 
-  private void resolveTtlStrategy(MetaEntityImpl managedEntity, MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
-    AtreusTtlStrategy ttlStrategy = entityStrategy.resolveTtlStrategy(managedField);
+  private void resolveTtlStrategy(MetaEntityImpl metaEntity, StaticMetaFieldImpl metaField, AtreusEntityStrategy entityStrategy) {
+    AtreusTtlStrategy ttlStrategy = entityStrategy.resolveTtlStrategy(metaField);
 
     if (ttlStrategy != null) {
-      managedEntity.setTtlStrategy(ttlStrategy);
+      metaEntity.setTtlStrategy(ttlStrategy);
       return;
     }
 
-    if (managedEntity.getTtlStrategy() != null) {
+    if (metaEntity.getTtlStrategy() != null) {
       return;
     }
 
     TypeManager typeManager = environment.getTypeManager();
 
-    Field javaField = managedField.getJavaField();
-    ttlStrategy = typeManager.findTtlStrategy(javaField.getType());
+    ttlStrategy = typeManager.findTtlStrategy(metaField.getType());
     if (ttlStrategy != null) {
-      managedEntity.setTtlStrategy(ttlStrategy);
+      metaEntity.setTtlStrategy(ttlStrategy);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private void resolveTypeStrategy(MetaFieldImpl managedField, AtreusEntityStrategy entityStrategy) {
-    Class<?> typeClass = managedField.getJavaField().getType();
-    AtreusTypeStrategy typeStrategy = entityStrategy.resolveTypeStrategy(managedField);
+  private void resolveTypeStrategy(StaticMetaFieldImpl metaFied, AtreusEntityStrategy entityStrategy) {
+    Class<?> typeClass = metaFied.getType();
+    AtreusTypeStrategy typeStrategy = entityStrategy.resolveTypeStrategy(metaFied);
 
     if (typeStrategy != null) {
       typeStrategy.setValueClass(typeClass);
-      managedField.setTypeStrategy(typeStrategy);
+      metaFied.setTypeStrategy(typeStrategy);
       return;
     }
 
-    if (managedField.getTypeStrategy() != null) {
+    if (metaFied.getTypeStrategy() != null) {
       return;
     }
 
@@ -434,7 +430,7 @@ public class EntityManager {
     typeStrategy = typeManager.findTypeStrategy(typeClass);
     if (typeStrategy != null) {
       typeStrategy.setValueClass(typeClass);
-      managedField.setTypeStrategy(typeStrategy);
+      metaFied.setTypeStrategy(typeStrategy);
     }
   }
 

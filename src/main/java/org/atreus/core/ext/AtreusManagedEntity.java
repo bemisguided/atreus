@@ -27,13 +27,16 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
- * Interface applied to entites once managed by Atreus.
+ * Interface applied to entities once managed by Atreus.
  *
  * @author Martin Crawford
  */
 public interface AtreusManagedEntity {
+
+  public Map<String, Object> getDyanmicFields();
 
   public Object getEntity();
 

@@ -63,12 +63,12 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   @Override
   public Object getFieldValue(AtreusMetaField metaField) {
-    return getMetaEntity().getFieldValue(metaField, entity);
+    return metaField.getValue(entity);
   }
 
   @Override
   public void setFieldValue(AtreusMetaField metaField, Object value) {
-    getMetaEntity().setFieldValue(metaField, entity, value);
+    metaField.setValue(entity, value);
   }
 
   @Override
