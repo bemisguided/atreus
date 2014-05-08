@@ -139,7 +139,7 @@ public class DynamicMetaFieldImpl implements AtreusMetaField, Comparable<Dynamic
       throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
     }
 
-    return ((AtreusManagedEntity) entity).getDyanmicFields().get(name);
+    return ((AtreusManagedEntity) entity).getDynamicFields().get(name);
   }
 
   @Override
@@ -147,7 +147,7 @@ public class DynamicMetaFieldImpl implements AtreusMetaField, Comparable<Dynamic
     if (!(entity instanceof AtreusManagedEntity)) {
       throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
     }
-    ((AtreusManagedEntity) entity).getDyanmicFields().put(name, value);
+    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
   }
 
   @Override

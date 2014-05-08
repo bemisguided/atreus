@@ -34,24 +34,24 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
+public class SessionFactoryImpl implements AtreusSessionFactory {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionFactoryImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(SessionFactoryImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
+  private final Environment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public AtreusSessionFactoryImpl(AtreusEnvironment environment) {
+  public SessionFactoryImpl(Environment environment) {
     this.environment = environment;
   }
 
-  public AtreusSessionFactoryImpl(AtreusConfiguration configuration) {
-    this.environment = new AtreusEnvironment(configuration);
+  public SessionFactoryImpl(AtreusConfiguration configuration) {
+    this.environment = new Environment(configuration);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -88,7 +88,7 @@ public class AtreusSessionFactoryImpl implements AtreusSessionFactory {
 
   @Override
   public AtreusSession openSession() {
-    return new AtreusSessionImpl(environment);
+    return new SessionImpl(environment);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

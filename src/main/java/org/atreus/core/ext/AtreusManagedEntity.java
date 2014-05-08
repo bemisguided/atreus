@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public interface AtreusManagedEntity {
 
-  public Map<String, Object> getDyanmicFields();
+  public Map<String, Object> getDynamicFields();
 
   public Object getEntity();
 

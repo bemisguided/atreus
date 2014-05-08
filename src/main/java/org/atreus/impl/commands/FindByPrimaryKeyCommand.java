@@ -29,7 +29,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Object execute(AtreusEnvironment environment, AtreusSessionExt session) {
+  public Object execute(Environment environment, AtreusSessionExt session) {
     RegularStatement regularStatement = QueryHelper.selectEntity(managedEntity);
     BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
     BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);

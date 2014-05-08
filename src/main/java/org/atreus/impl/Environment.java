@@ -39,11 +39,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public class AtreusEnvironment {
+public class Environment {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusEnvironment.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(Environment.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -56,7 +56,7 @@ public class AtreusEnvironment {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public AtreusEnvironment(AtreusConfiguration configuration) {
+  public Environment(AtreusConfiguration configuration) {
     this.configuration = configuration;
     this.entityManager = new EntityManager(this);
     this.queryManager = new QueryManager(this);

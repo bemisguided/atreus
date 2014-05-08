@@ -28,7 +28,7 @@ import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.ext.*;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.strategies.*;
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
 import org.atreus.impl.entities.proxy.ProxyManager;
@@ -58,13 +58,13 @@ public class EntityManager {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private final ProxyManager proxyManager = new ProxyManager();
-  private final AtreusEnvironment environment;
+  private final Environment environment;
   private Map<Class<?>, MetaEntityImpl> metaEntityByClass = new HashMap<>();
   private Map<String, MetaEntityImpl> metaEntityByName = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public EntityManager(AtreusEnvironment environment) {
+  public EntityManager(Environment environment) {
     this.environment = environment;
   }
 

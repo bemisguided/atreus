@@ -23,7 +23,7 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.AtreusSessionFactoryImpl;
+import org.atreus.impl.SessionFactoryImpl;
 import org.atreus.impl.util.StringUtils;
 
 /**
@@ -51,7 +51,7 @@ public class AtreusSessionFactoryBuilder {
    * @return a connected Atreus Session Factory
    */
   public static AtreusSessionFactory buildFactory(AtreusConfiguration configuration) {
-    AtreusSessionFactoryImpl factory = new AtreusSessionFactoryImpl(configuration);
+    SessionFactoryImpl factory = new SessionFactoryImpl(configuration);
 
     // Validate the Cassandra configuration
     if (configuration.getHosts() == null || configuration.getHosts().length < 1) {

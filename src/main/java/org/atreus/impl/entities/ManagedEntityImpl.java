@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements a managed entity.
@@ -44,6 +46,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final Map<String, Object> dynamicFields = new HashMap<>();
   private final Object entity;
   private final AtreusMetaEntity metaEntity;
 
@@ -55,6 +58,11 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public Map<String, Object> getDynamicFields() {
+    return dynamicFields;
+  }
 
   @Override
   public Object getEntity() {

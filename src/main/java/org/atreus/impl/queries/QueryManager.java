@@ -26,7 +26,7 @@ package org.atreus.impl.queries;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +46,13 @@ public class QueryManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
+  private final Environment environment;
 
   private Map<String, PreparedStatement> preparedStatementMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public QueryManager(AtreusEnvironment environment) {
+  public QueryManager(Environment environment) {
     this.environment = environment;
   }
 

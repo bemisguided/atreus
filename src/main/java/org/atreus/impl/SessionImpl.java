@@ -47,15 +47,15 @@ import java.util.Map;
  *
  * @author Martin Crawford
  */
-public class AtreusSessionImpl implements AtreusSessionExt {
+public class SessionImpl implements AtreusSessionExt {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusSessionImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
+  private final Environment environment;
 
   private Map<CompositeKey, AtreusManagedEntity> managedEntities = new HashMap<>();
 
@@ -71,7 +71,7 @@ public class AtreusSessionImpl implements AtreusSessionExt {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public AtreusSessionImpl(AtreusEnvironment environment) {
+  public SessionImpl(Environment environment) {
     this.environment = environment;
     writeAsync = getConfiguration().isDefaultWriteAsync();
     writeBatch = getConfiguration().isDefaultWriteBatch();
@@ -229,7 +229,7 @@ public class AtreusSessionImpl implements AtreusSessionExt {
     return getEnvironment().getEntityManager();
   }
 
-  protected AtreusEnvironment getEnvironment() {
+  protected Environment getEnvironment() {
     return environment;
   }
 

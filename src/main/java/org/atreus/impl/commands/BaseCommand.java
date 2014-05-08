@@ -24,7 +24,7 @@
 package org.atreus.impl.commands;
 
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public abstract class BaseCommand {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public abstract Object execute(AtreusEnvironment environment, AtreusSessionExt session);
+  public abstract Object execute(Environment environment, AtreusSessionExt session);
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

@@ -23,7 +23,7 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public abstract class BaseAtreusTests {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusEnvironment environment;
+  private Environment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -54,7 +54,7 @@ public abstract class BaseAtreusTests {
   @Before
   public void before() throws Exception {
     AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
-    environment = new AtreusEnvironment(configuration);
+    environment = new Environment(configuration);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -73,11 +73,11 @@ public abstract class BaseAtreusTests {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected AtreusEnvironment getEnvironment() {
+  protected Environment getEnvironment() {
     return environment;
   }
 
-  protected void setEnvironment(AtreusEnvironment environment) {
+  protected void setEnvironment(Environment environment) {
     this.environment = environment;
   }
 }

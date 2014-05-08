@@ -28,7 +28,7 @@ import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.atreus.core.ext.strategies.AtreusType;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-import org.atreus.impl.AtreusEnvironment;
+import org.atreus.impl.Environment;
 import org.atreus.impl.util.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -51,14 +51,14 @@ public class TypeManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusEnvironment environment;
+  private final Environment environment;
   private Map<Class<?>, Class<? extends AtreusPrimaryKeyStrategy>> primaryKeyStrategyMap = new HashMap<>();
   private Map<Class<?>, Class<? extends AtreusTtlStrategy>> ttlStrategyMap = new HashMap<>();
   private Map<Class<?>, Class<? extends AtreusTypeStrategy>> typeStrategyMap = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TypeManager(AtreusEnvironment environment) {
+  public TypeManager(Environment environment) {
     this.environment = environment;
     scanPath("org.atreus.impl.types");
   }

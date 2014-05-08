@@ -23,8 +23,8 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.AtreusEnvironment;
-import org.atreus.impl.AtreusSessionImpl;
+import org.atreus.impl.Environment;
+import org.atreus.impl.SessionImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -52,10 +52,10 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
   @Before
   public void before() throws Exception {
     AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
-    setEnvironment(new AtreusEnvironment(configuration));
+    setEnvironment(new Environment(configuration));
     getEnvironment().setCassandraCluster(getCassandraCluster());
     getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    session = new AtreusSessionImpl(getEnvironment());
+    session = new SessionImpl(getEnvironment());
   }
 
   @After
