@@ -21,21 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.meta;
+package org.atreus.core.ext.listeners;
 
 /**
- * Interface for a managed composite association.
+ * Atreus entity on delete event listener.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaComposite {
-
-  public AtreusMetaEntity getChildEntity();
-
-  public AtreusMetaField getChildField();
-
-  public AtreusMetaEntity getParentEntity();
-
-  public AtreusMetaField getParentField();
-
+public interface AtreusOnDeleteListener extends AtreusEntityListener {
+  
 }

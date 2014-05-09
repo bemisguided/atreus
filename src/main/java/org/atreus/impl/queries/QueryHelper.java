@@ -96,11 +96,11 @@ public class QueryHelper {
   }
 
   public static RegularStatement deleteCompositeEntity(AtreusMetaComposite managedComposite) {
-    AtreusMetaEntity ownerEntity = managedComposite.getOwnerEntity();
-    AtreusMetaEntity associatedEntity = managedComposite.getAssociatedEntity();
-    AtreusMetaField primaryKeyField = ownerEntity.getPrimaryKeyField();
+    AtreusMetaEntity parentEntity = managedComposite.getParentEntity();
+    AtreusMetaEntity childEntity = managedComposite.getChildEntity();
+    AtreusMetaField primaryKeyField = parentEntity.getPrimaryKeyField();
     String primaryKeyColumn = primaryKeyField.getColumn();
-    Delete delete = QueryBuilder.delete().from(associatedEntity.getKeySpace(), associatedEntity.getTable());
+    Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
     delete.where(eq(primaryKeyColumn, bindMarker(primaryKeyColumn)));
     return delete;
   }

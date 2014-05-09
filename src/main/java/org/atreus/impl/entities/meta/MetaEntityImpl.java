@@ -23,7 +23,12 @@
  */
 package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntityVisitor;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
@@ -59,6 +64,8 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   private String keySpace;
 
+  private List<AtreusEntityListener> listeners = new ArrayList<>();
+
   private String name;
 
   private AtreusMetaField primaryKeyField;
@@ -71,12 +78,6 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   private AtreusTtlStrategy ttlStrategy;
 
-  private List<AtreusManagedEntityVisitor> saveVisitors = new ArrayList<>();
-
-  private List<AtreusManagedEntityVisitor> updateVisitors = new ArrayList<>();
-
-  private List<AtreusManagedEntityVisitor> deleteVisitors = new ArrayList<>();
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -87,9 +88,45 @@ public class MetaEntityImpl implements AtreusMetaEntity {
     fieldsByColumnName.put(managedField.getColumn(), managedField);
   }
 
+  @Override
+  public void addListener(AtreusEntityListener listener) {
+    listeners.add(listener);
+  }
+
+  @Override
+  public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    broadcastListeners(session, managedEntity, AtreusOnDeleteListener.class);
+  }
+
+  @Override
+  public void save(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    broadcastListeners(session, managedEntity, AtreusOnSaveListener.class);
+  }
+
+  @Override
+  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    broadcastListeners(session, managedEntity, AtreusOnUpdateListener.class);
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void broadcastListeners(AtreusSessionExt session, AtreusManagedEntity managedEntity, Class<? extends AtreusEntityListener> listenerClass) {
+
+    if (!managedEntity.getMetaEntity().equals(this)) {
+      throw new RuntimeException("Expected entity of type " + entityType + " provided type " + managedEntity.getMetaEntity().getEntityType());
+    }
+
+    // Broadcast entity
+    for (AtreusEntityListener listener : listeners) {
+      if (!listenerClass.isAssignableFrom(listener.getClass())) {
+        continue;
+      }
+      listener.acceptEntity(session, managedEntity);
+    }
+
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
@@ -192,15 +229,4 @@ public class MetaEntityImpl implements AtreusMetaEntity {
     this.ttlStrategy = ttlStrategy;
   }
 
-  public List<AtreusManagedEntityVisitor> getSaveVisitors() {
-    return saveVisitors;
-  }
-
-  public List<AtreusManagedEntityVisitor> getUpdateVisitors() {
-    return updateVisitors;
-  }
-
-  public List<AtreusManagedEntityVisitor> getDeleteVisitors() {
-    return deleteVisitors;
-  }
 }

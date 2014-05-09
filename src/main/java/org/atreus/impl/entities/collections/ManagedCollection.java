@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.meta;
+package org.atreus.impl.entities.collections;
+
+import java.util.Collection;
 
 /**
- * Interface for a managed composite association.
+ * Interface for a managed collection.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaComposite {
+public interface ManagedCollection {
 
-  public AtreusMetaEntity getChildEntity();
+  public Collection getAddedEntities();
 
-  public AtreusMetaField getChildField();
+  public Collection getCollection();
 
-  public AtreusMetaEntity getParentEntity();
-
-  public AtreusMetaField getParentField();
+  public Collection getRemovedEntities();
 
 }

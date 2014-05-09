@@ -21,40 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.impl.entities.collections;
 
-import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 /**
- * Atreus Entity Visitor base.
+ * Managed set.
  *
  * @author Martin Crawford
  */
-public abstract class AtreusManagedEntityVisitor {
+public class ManagedSet extends BaseManagedCollection implements Set {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusManagedEntityVisitor.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedSet.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public ManagedSet(Set delegate) {
+    super(delegate);
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-
-  }
-
-  public void acceptField(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-
-  }
-
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
-
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

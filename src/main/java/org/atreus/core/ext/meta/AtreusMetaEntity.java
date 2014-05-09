@@ -23,6 +23,9 @@
  */
 package org.atreus.core.ext.meta;
 
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 
@@ -33,7 +36,11 @@ import org.atreus.core.ext.strategies.AtreusTtlStrategy;
  */
 public interface AtreusMetaEntity {
 
+  public void addListener(AtreusEntityListener listener);
+
   public void addField(AtreusMetaField managedField);
+
+  public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
   public Class<?> getEntityType();
 
@@ -60,5 +67,9 @@ public interface AtreusMetaEntity {
   public AtreusMetaField getTtlField();
 
   public AtreusTtlStrategy getTtlStrategy();
+
+  public void save(AtreusSessionExt session, AtreusManagedEntity managedEntity);
+
+  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
 }

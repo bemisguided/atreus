@@ -21,21 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.meta;
+package org.atreus.core.ext.listeners;
+
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
 
 /**
- * Interface for a managed composite association.
+ * Atreus Entity event listener.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaComposite {
+public interface AtreusEntityListener {
 
-  public AtreusMetaEntity getChildEntity();
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
-  public AtreusMetaField getChildField();
+  public void acceptField(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
-  public AtreusMetaEntity getParentEntity();
-
-  public AtreusMetaField getParentField();
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite);
 
 }

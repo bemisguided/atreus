@@ -21,77 +21,111 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.collections;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
- * Implements a managed entity.
+ * Base managed collection.
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+public abstract class BaseManagedCollection implements Collection, ManagedCollection {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseManagedCollection.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Map<String, Object> dynamicFields = new HashMap<>();
-  private final Object entity;
-  private final AtreusMetaEntity metaEntity;
+  private final Collection addedEntities = new HashSet<>();
+  private final Collection delegate;
+  private final Collection removedEntities = new HashSet<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
-    this.entity = entity;
-    this.metaEntity = metaEntity;
+  protected BaseManagedCollection(Collection delegate) {
+    this.delegate = delegate;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Map<String, Object> getDynamicFields() {
-    return dynamicFields;
+  public int size() {
+    return delegate.size();
   }
 
   @Override
-  public Object getEntity() {
-    return entity;
+  public boolean isEmpty() {
+    return delegate.isEmpty();
   }
 
   @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(entity);
+  public boolean contains(Object o) {
+    return delegate.contains(o);
   }
 
   @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(entity, value);
+  public Iterator iterator() {
+    return delegate.iterator();
   }
 
   @Override
-  public AtreusMetaEntity getMetaEntity() {
-    return metaEntity;
+  public Object[] toArray() {
+    return delegate.toArray();
   }
 
   @Override
-  public Serializable getPrimaryKey() {
-    return (Serializable) getFieldValue(getMetaEntity().getPrimaryKeyField());
+  public Object[] toArray(Object[] a) {
+    return delegate.toArray(a);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean add(Object o) {
+    addedEntities.add(o);
+    return delegate.add(o);
   }
 
   @Override
-  public boolean isUpdated() {
-    return true;
+  @SuppressWarnings("unchecked")
+  public boolean remove(Object o) {
+    removedEntities.add(o);
+    return delegate.remove(o);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean containsAll(Collection c) {
+    return delegate.containsAll(c);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean addAll(Collection c) {
+    addedEntities.addAll(c);
+    return delegate.addAll(c);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean removeAll(Collection c) {
+    removedEntities.addAll(c);
+    return delegate.removeAll(c);
+  }
+
+  @SuppressWarnings("unchecked")
+  public boolean retainAll(Collection c) {
+    // TODO implement retainAll
+    return delegate.retainAll(c);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void clear() {
+    removedEntities.addAll(delegate);
+    delegate.clear();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -99,5 +133,20 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public Collection getAddedEntities() {
+    return addedEntities;
+  }
+
+  @Override
+  public Collection getCollection() {
+    return delegate;
+  }
+
+  @Override
+  public Collection getRemovedEntities() {
+    return removedEntities;
+  }
 
 } // end of class

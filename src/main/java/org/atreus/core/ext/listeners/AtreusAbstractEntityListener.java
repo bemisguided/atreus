@@ -21,77 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.core.ext.listeners;
 
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Implements a managed entity.
+ * Atreus Entity Visitor base.
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+public abstract class AtreusAbstractEntityListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusAbstractEntityListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Map<String, Object> dynamicFields = new HashMap<>();
-  private final Object entity;
-  private final AtreusMetaEntity metaEntity;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
-    this.entity = entity;
-    this.metaEntity = metaEntity;
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public Map<String, Object> getDynamicFields() {
-    return dynamicFields;
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+
   }
 
-  @Override
-  public Object getEntity() {
-    return entity;
+  public void acceptField(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+
   }
 
-  @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(entity);
-  }
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
 
-  @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(entity, value);
-  }
-
-  @Override
-  public AtreusMetaEntity getMetaEntity() {
-    return metaEntity;
-  }
-
-  @Override
-  public Serializable getPrimaryKey() {
-    return (Serializable) getFieldValue(getMetaEntity().getPrimaryKeyField());
-  }
-
-  @Override
-  public boolean isUpdated() {
-    return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

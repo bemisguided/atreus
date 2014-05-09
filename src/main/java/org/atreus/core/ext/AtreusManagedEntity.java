@@ -48,4 +48,7 @@ public interface AtreusManagedEntity {
 
   public Serializable getPrimaryKey();
 
+  public boolean isUpdated();
+
+
 }

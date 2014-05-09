@@ -25,18 +25,20 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.ext.*;
+import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.CQLDataType;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.strategies.*;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
 import org.atreus.impl.entities.proxy.ProxyManager;
+import org.atreus.impl.listeners.EntityUpdateListener;
+import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
-import org.atreus.impl.visitors.PrimaryKeyGeneratorVisitorManaged;
-import org.atreus.impl.visitors.UpdateManagedEntityVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,15 +135,6 @@ public class EntityManager {
     }
   }
 
-  public void visitUpdate(AtreusSessionExt session, Object entity) {
-    // TODO this does not belong here
-    AtreusManagedEntity managedEntity = session.getManagedEntity(entity);
-    MetaEntityImpl metaEntity = (MetaEntityImpl) environment.getEntityManager().getMetaEntity(entity.getClass());
-    for (AtreusManagedEntityVisitor visitor : metaEntity.getUpdateVisitors()) {
-      visitor.acceptEntity(session, managedEntity);
-    }
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
@@ -180,22 +173,22 @@ public class EntityManager {
     AtreusConfiguration configuration = environment.getConfiguration();
 
     // Create the managed entity with defaults
-    MetaEntityImpl managedEntity = buildManagedEntity(entityType);
+    MetaEntityImpl metaEntity = buildManagedEntity(entityType);
 
     // Iterate the entity strategies and update the managed entity
     for (AtreusEntityStrategy entityStrategy : configuration.getEntityStrategies()) {
-      updateManagedEntity(managedEntity, entityStrategy);
+      updateManagedEntity(metaEntity, entityStrategy);
     }
 
     // TODO optimize reuse of objectss
-    managedEntity.getUpdateVisitors().add(new PrimaryKeyGeneratorVisitorManaged());
-    managedEntity.getUpdateVisitors().add(new UpdateManagedEntityVisitor());
+    metaEntity.addListener(new PrimaryKeyGeneratorListener());
+    metaEntity.addListener(new EntityUpdateListener());
 
     // Build Proxy Class
     proxyManager.createProxyClass(entityType);
 
-    LOG.debug("Registered Entity name={} {}", managedEntity.getName(), managedEntity.getEntityType());
-    addManagedEntity(managedEntity);
+    LOG.debug("Registered Entity name={} {}", metaEntity.getName(), metaEntity.getEntityType());
+    addManagedEntity(metaEntity);
   }
 
   @SuppressWarnings("unchecked")

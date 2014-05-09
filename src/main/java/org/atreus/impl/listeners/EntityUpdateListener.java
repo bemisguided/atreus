@@ -21,26 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.visitors;
+package org.atreus.impl.listeners;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.RegularStatement;
+import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusManagedEntityVisitor;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
+
 /**
- * Primary Key Generator visitor.
+ * Update Entity visitor.
  *
  * @author Martin Crawford
  */
-public class PrimaryKeyGeneratorVisitorManaged extends AtreusManagedEntityVisitor {
+public class EntityUpdateListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener, AtreusOnUpdateListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyGeneratorVisitorManaged.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityUpdateListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -52,16 +60,50 @@ public class PrimaryKeyGeneratorVisitorManaged extends AtreusManagedEntityVisito
   public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
-    Object primaryKey = managedEntity.getPrimaryKey();
-    if (primaryKey == null && metaEntity.getPrimaryKeyStrategy() != null) {
-      primaryKey = metaEntity.getPrimaryKeyStrategy().generate();
-      managedEntity.setFieldValue(primaryKeyMetaField, primaryKey);
+
+    boolean hasTtl = false;
+    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
+    if (ttlMetaField != null && managedEntity.getFieldValue(ttlMetaField) != null) {
+      hasTtl = true;
     }
+    RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
+    BoundStatement boundStatement = session.prepareQuery(regularStatement);
+    bindFromField(primaryKeyMetaField, managedEntity, boundStatement);
+    for (AtreusMetaField managedField : metaEntity.getFields()) {
+      bindFromField(managedField, managedEntity, boundStatement);
+    }
+
+    bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
+    session.executeOrBatch(boundStatement);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  @SuppressWarnings("unchecked")
+  private void bindFromField(AtreusMetaField metaField, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+    Object value = managedEntity.getFieldValue(metaField);
+    metaField.getTypeStrategy().set(boundStatement, metaField.getColumn(), value);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void bindFromEntityTtl(AtreusMetaEntity metaEntity, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
+    if (ttlMetaField == null) {
+      return;
+    }
+    Object value = managedEntity.getFieldValue(ttlMetaField);
+    if (value == null) {
+      return;
+    }
+
+    Integer ttlValue = metaEntity.getTtlStrategy().translate(new Date(), value);
+    if (ttlValue == null || ttlValue < 1) {
+      throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlMetaField, ttlValue);
+    }
+    boundStatement.setInt(ttlMetaField.getColumn(), ttlValue);
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
