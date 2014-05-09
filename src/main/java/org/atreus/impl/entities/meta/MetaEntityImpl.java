@@ -29,6 +29,7 @@ import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
@@ -55,6 +56,8 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   private static final transient Logger LOG = LoggerFactory.getLogger(MetaEntityImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private AtreusMetaComposite[] compositeAssociations = new AtreusMetaComposite[0];
 
   private Class<?> entityType;
 
@@ -83,9 +86,18 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void addField(AtreusMetaField managedField) {
-    fieldsByName.put(managedField.getName(), managedField);
-    fieldsByColumnName.put(managedField.getColumn(), managedField);
+  public AtreusMetaComposite[] getCompositeAssociations() {
+    return compositeAssociations;
+  }
+
+  public void setCompositeAssociations(AtreusMetaComposite[] compositeAssociations) {
+    this.compositeAssociations = compositeAssociations;
+  }
+
+  @Override
+  public void addField(AtreusMetaField metaField) {
+    fieldsByName.put(metaField.getName(), metaField);
+    fieldsByColumnName.put(metaField.getColumn(), metaField);
   }
 
   @Override

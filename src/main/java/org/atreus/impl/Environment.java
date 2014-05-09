@@ -91,7 +91,7 @@ public class Environment {
 
   private void initEntityManager() {
     getEntityManager().scanPaths(getConfiguration().getScanPaths());
-    getEntityManager().processEntities();
+    getEntityManager().initMetaEntities();
   }
 
   private void initTypeManager() {

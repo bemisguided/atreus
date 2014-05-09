@@ -58,7 +58,7 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
     LOG.info("Running testScanPath");
     EntityManager entityManager = getEnvironment().getEntityManager();
     entityManager.scanPath(DEFAULT_SCAN_PATH);
-    entityManager.processEntities();
+    entityManager.initMetaEntities();
 
     // Assert TestEntity registry
     AtreusMetaEntity managedEntity = entityManager.getMetaEntity(TestEntity.class);

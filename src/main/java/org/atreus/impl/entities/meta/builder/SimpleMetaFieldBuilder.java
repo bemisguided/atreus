@@ -21,76 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.meta.builder;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.util.StringUtils;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Field;
 
 /**
- * Implements a managed entity.
+ * Simple field meta field builder.
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private final Map<String, Object> dynamicFields = new HashMap<>();
-  private final Object entity;
-  private final AtreusMetaEntity metaEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
-    this.entity = entity;
-    this.metaEntity = metaEntity;
+  public SimpleMetaFieldBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Map<String, Object> getDynamicFields() {
-    return dynamicFields;
-  }
+  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+    // Assumption is this is the last field builder to be called and therefore a simple field
 
-  @Override
-  public Object getEntity() {
-    return entity;
-  }
+    // Create the static field
+    StaticMetaFieldImpl metaField = createStaticMetaField(metaEntity, field);
 
-  @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(entity);
-  }
+    // Check for a field annotation
+    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
+    if (fieldAnnotation != null) {
+      String fieldColumn = fieldAnnotation.value();
+      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
+        metaField.setColumn(fieldColumn);
+      }
+    }
 
-  @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(entity, value);
-  }
+    // Resolve the type strategy
+    resolveTypeStrategy(metaEntity, metaField, field);
 
-  @Override
-  public AtreusMetaEntity getMetaEntity() {
-    return metaEntity;
-  }
-
-  @Override
-  public Serializable getPrimaryKey() {
-    return (Serializable) getMetaEntity().getPrimaryKeyField().getValue(entity);
-  }
-
-  @Override
-  public boolean isUpdated() {
+    // Add the field to the meta entity
+    metaEntity.addField(metaField);
     return true;
   }
 

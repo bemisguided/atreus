@@ -42,6 +42,8 @@ public interface AtreusMetaEntity {
 
   public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
+  public AtreusMetaComposite[] getCompositeAssociations();
+
   public Class<?> getEntityType();
 
   public AtreusMetaField getFieldByName(String name);

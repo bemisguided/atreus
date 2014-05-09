@@ -21,77 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.meta.builder;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
- * Implements a managed entity.
+ * Filter out transient fields meta field builder.
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+public class FilterTransientMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private final Map<String, Object> dynamicFields = new HashMap<>();
-  private final Object entity;
-  private final AtreusMetaEntity metaEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
-    this.entity = entity;
-    this.metaEntity = metaEntity;
+  public FilterTransientMetaFieldBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Map<String, Object> getDynamicFields() {
-    return dynamicFields;
-  }
-
-  @Override
-  public Object getEntity() {
-    return entity;
-  }
-
-  @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(entity);
-  }
-
-  @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(entity, value);
-  }
-
-  @Override
-  public AtreusMetaEntity getMetaEntity() {
-    return metaEntity;
-  }
-
-  @Override
-  public Serializable getPrimaryKey() {
-    return (Serializable) getMetaEntity().getPrimaryKeyField().getValue(entity);
-  }
-
-  @Override
-  public boolean isUpdated() {
-    return true;
+  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+    // if this is transient then end the chain
+    return Modifier.isTransient(field.getModifiers());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
