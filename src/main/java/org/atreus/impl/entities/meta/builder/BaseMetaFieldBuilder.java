@@ -28,6 +28,7 @@ import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.DynamicMetaFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
 import org.atreus.impl.types.TypeManager;
@@ -55,10 +56,16 @@ public abstract class BaseMetaFieldBuilder extends BaseMetaPropertyBuilder {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
+  protected DynamicMetaFieldImpl createDynamicMetaField(MetaEntityImpl metaEntity, String name, Field field) {
+    DynamicMetaFieldImpl metaField = new DynamicMetaFieldImpl(metaEntity, name, field.getType());
+    metaField.setColumn(name);
+    return metaField;
+  }
+
   protected StaticMetaFieldImpl createStaticMetaField(MetaEntityImpl metaEntity, Field field) {
-    StaticMetaFieldImpl managedField = new StaticMetaFieldImpl(metaEntity, field);
-    managedField.setColumn(field.getName());
-    return managedField;
+    StaticMetaFieldImpl metaField = new StaticMetaFieldImpl(metaEntity, field);
+    metaField.setColumn(field.getName());
+    return metaField;
   }
 
   @SuppressWarnings("unchecked")

@@ -23,15 +23,18 @@
  */
 package org.atreus.impl.util;
 
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class the handle reflection related functions.
@@ -62,6 +65,11 @@ public class ReflectionUtils {
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  public static Set<Class<?>> findClassesWithAnnotation(String packagePath, Class<? extends  Annotation> annotationClass) {
+    Reflections reflections = new Reflections(packagePath);
+    return reflections.getTypesAnnotatedWith(annotationClass);
+  }
 
   public static Class<?> findCollectionValueClass(Field field) {
     if (!Collection.class.isAssignableFrom(field.getType())) {

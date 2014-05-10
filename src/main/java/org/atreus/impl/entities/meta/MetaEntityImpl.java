@@ -34,8 +34,6 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +50,6 @@ import java.util.TreeMap;
 public class MetaEntityImpl implements AtreusMetaEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final transient Logger LOG = LoggerFactory.getLogger(MetaEntityImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 

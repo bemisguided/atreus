@@ -24,8 +24,6 @@
 package org.atreus.core;
 
 import com.datastax.driver.core.ConsistencyLevel;
-import org.atreus.core.ext.AtreusEntityStrategy;
-import org.atreus.impl.entities.AtreusAnnotationEntityStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +48,6 @@ public class AtreusConfiguration {
   private String keySpace;
   private int port;
   private String[] scanPaths;
-  private AtreusEntityStrategy[] entityStrategies = new AtreusEntityStrategy[]{new AtreusAnnotationEntityStrategy()};
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -106,14 +103,6 @@ public class AtreusConfiguration {
 
   public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
     this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
-  }
-
-  public AtreusEntityStrategy[] getEntityStrategies() {
-    return entityStrategies;
-  }
-
-  public void setEntityStrategies(AtreusEntityStrategy[] entityStrategies) {
-    this.entityStrategies = entityStrategies;
   }
 
   public String[] getHosts() {

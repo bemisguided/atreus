@@ -27,10 +27,6 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Field;
 
 /**
  * Implements a meta field instance for dynamically defined fields.
@@ -40,8 +36,6 @@ import java.lang.reflect.Field;
 public class DynamicMetaFieldImpl implements AtreusMetaField, Comparable<DynamicMetaFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -121,11 +115,6 @@ public class DynamicMetaFieldImpl implements AtreusMetaField, Comparable<Dynamic
   @Override
   public void setColumn(String column) {
     this.column = column;
-  }
-
-  @Override
-  public Field getJavaField() {
-    return null;
   }
 
   @Override

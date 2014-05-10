@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.ext.AtreusEntityStrategy;
+import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.Environment;
@@ -32,6 +32,7 @@ import org.atreus.impl.entities.meta.builder.*;
 import org.atreus.impl.entities.proxy.ProxyManager;
 import org.atreus.impl.listeners.EntityUpdateListener;
 import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
+import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,8 @@ public class EntityManager {
   private final Environment environment;
   private Map<Class<?>, MetaEntityImpl> metaEntityByClass = new HashMap<>();
   private Map<String, MetaEntityImpl> metaEntityByName = new HashMap<>();
-  private List<BaseMetaPropertyBuilder> propertyBuilders = new ArrayList<>();
+  private List<BaseMetaPropertyBuilder> entityPropertyBuilders = new ArrayList<>();
+  private List<BaseMetaPropertyBuilder> fieldPropertyBuilders = new ArrayList<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -97,7 +99,7 @@ public class EntityManager {
       for (Field field : entityType.getDeclaredFields()) {
 
         // Execute the meta property builder rule set
-        for (BaseMetaPropertyBuilder propertyBuilder : propertyBuilders) {
+        for (BaseMetaPropertyBuilder propertyBuilder : fieldPropertyBuilders) {
           if (propertyBuilder.acceptField(metaEntity, field)) {
             break;
           }
@@ -116,14 +118,8 @@ public class EntityManager {
   public void scanPath(String path) {
     LOG.trace("Scanning classpath path={}", path);
 
-    AtreusEntityStrategy[] entityStrategies = environment.getConfiguration().getEntityStrategies();
-
     // Resolve all candidate entity classes using the configured entity strategies
-    Set<Class<?>> entityTypes = new HashSet<>();
-    for (AtreusEntityStrategy entityStrategy : entityStrategies) {
-      LOG.trace("Scanning with AtreusEntityStrategy={}", entityStrategy.getClass());
-      entityTypes.addAll(entityStrategy.findEntities(path));
-    }
+    Set<Class<?>> entityTypes = ReflectionUtils.findClassesWithAnnotation(path, AtreusEntity.class);
 
     // Iterate and process each found entity class
     for (Class<?> entityType : entityTypes) {
@@ -151,15 +147,24 @@ public class EntityManager {
   }
 
   private void buildMetaEntity(Class<?> entityType) {
-    LOG.trace("Processing Entity entityType={}", entityType.getCanonicalName());
+    LOG.info("Processing Entity entityType={}", entityType.getCanonicalName());
 
     // Create the managed entity with defaults
     MetaEntityImpl metaEntity = createMetaEntity(entityType);
 
-    // Execute the meta property builder rule set
-    for (BaseMetaPropertyBuilder metaPropertyBuilder : propertyBuilders) {
+    // Execute the meta property builder rule set on entity
+    for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
       if (metaPropertyBuilder.acceptEntity(metaEntity, entityType)) {
         break;
+      }
+    }
+
+    // Execute the meta property rule set on fields (first pass)
+    for (Field field : entityType.getDeclaredFields()) {
+      for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
+        if (metaPropertyBuilder.acceptField(metaEntity, field)) {
+          break;
+        }
       }
     }
 
@@ -175,14 +180,20 @@ public class EntityManager {
   }
 
   private void initPropertyBuilders() {
-    propertyBuilders.add(new DefaultMetaEntityBuilder(environment));
-    propertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
-    propertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
-    propertyBuilders.add(new PrimaryKeyMetaFieldBuilder(environment));
-    propertyBuilders.add(new TtlMetaFieldBuilder(environment));
-    propertyBuilders.add(new CollectionMetaFieldBuilder(environment));
-    propertyBuilders.add(new MapMetaFieldBuilder(environment));
-    propertyBuilders.add(new SimpleMetaFieldBuilder(environment));
+    // Entity meta property builders
+    entityPropertyBuilders.add(new DefaultMetaEntityBuilder(environment));
+    entityPropertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
+    entityPropertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
+    entityPropertyBuilders.add(new PrimaryKeyMetaFieldBuilder(environment));
+
+    // Field meta property builders
+    fieldPropertyBuilders.add(new FilterPrimaryKeyMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new TtlMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new CollectionMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new MapMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new SimpleMetaFieldBuilder(environment));
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

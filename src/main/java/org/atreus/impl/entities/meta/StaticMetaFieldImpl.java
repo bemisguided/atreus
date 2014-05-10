@@ -27,8 +27,6 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
@@ -40,8 +38,6 @@ import java.lang.reflect.Field;
 public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMetaFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final transient Logger LOG = LoggerFactory.getLogger(StaticMetaFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -118,11 +114,6 @@ public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMe
   @Override
   public void setColumn(String column) {
     this.column = column;
-  }
-
-  @Override
-  public Field getJavaField() {
-    return javaField;
   }
 
   @Override

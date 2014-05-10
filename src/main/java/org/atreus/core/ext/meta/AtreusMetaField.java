@@ -25,8 +25,6 @@ package org.atreus.core.ext.meta;
 
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 
-import java.lang.reflect.Field;
-
 /**
  * Interface defining the meta definition of a field for an Atreus managed entity.
  *
@@ -37,9 +35,6 @@ public interface AtreusMetaField {
   public String getColumn();
 
   public void setColumn(String column);
-
-  @Deprecated
-  public Field getJavaField();
 
   public String getName();
 
