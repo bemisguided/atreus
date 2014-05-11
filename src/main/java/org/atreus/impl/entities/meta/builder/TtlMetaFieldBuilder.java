@@ -29,7 +29,7 @@ import org.atreus.core.annotations.AtreusTtlTranslator;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 
 import java.lang.reflect.Field;
@@ -63,7 +63,7 @@ public class TtlMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the time-to-live meta field
-    StaticMetaFieldImpl ttlMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl ttlMetaField = createStaticMetaField(metaEntity, field);
 
     // Resolve the type strategy
     resolveTypeStrategy(metaEntity, ttlMetaField, field);

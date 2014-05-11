@@ -30,15 +30,13 @@ import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 
 /**
- * Interface defining the meta definition for an Atreus managed entity.
+ * Atreus meta property interface defining a managed entity.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaEntity {
+public interface AtreusMetaEntity extends AtreusMetaObject {
 
   public void addListener(AtreusEntityListener listener);
-
-  public void addField(AtreusMetaField managedField);
 
   public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
@@ -46,19 +44,7 @@ public interface AtreusMetaEntity {
 
   public Class<?> getEntityType();
 
-  public AtreusMetaField getFieldByName(String name);
-
-  public AtreusMetaField getFieldByColumnName(String columnName);
-
-  public AtreusMetaField[] getFields();
-
-  public Object getFieldValue(String name, Object entity);
-
-  public void setFieldValue(String name, Object entity, Object value);
-
   public String getKeySpace();
-
-  public String getName();
 
   public AtreusMetaField getPrimaryKeyField();
 
@@ -66,7 +52,7 @@ public interface AtreusMetaEntity {
 
   public String getTable();
 
-  public AtreusMetaField getTtlField();
+  public AtreusMetaSimpleField getTtlField();
 
   public AtreusTtlStrategy getTtlStrategy();
 

@@ -21,30 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.CQLDataType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.ext.AtreusManagedEntity;
+
+import java.lang.reflect.Field;
 
 /**
- * Base class for Collection Type Strategies.
+ * Implements a meta field instance for statically defined fields.
  *
  * @author Martin Crawford
  */
-public abstract class BaseCollectionTypeStrategy<T> extends BaseSimpleTypeStrategy<T> {
+public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseCollectionTypeStrategy.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> valueClass;
-
-  private CQLDataType valueDataType;
+  private final Field javaField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public StaticMetaSimpleFieldImpl(MetaEntityImpl ownerObject, Field javaField) {
+    super(ownerObject);
+    this.javaField = javaField;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
@@ -54,20 +55,44 @@ public abstract class BaseCollectionTypeStrategy<T> extends BaseSimpleTypeStrate
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public Class<?> getValueClass() {
-    return valueClass;
+  @Override
+  public String getName() {
+    return javaField.getName();
   }
 
-  public void setValueClass(Class<?> valueClass) {
-    this.valueClass = valueClass;
+  @Override
+  public Object getValue(Object entity) {
+    // First check if the entity is already managed and call that interface
+    if (entity instanceof AtreusManagedEntity) {
+      return ((AtreusManagedEntity) entity).getFieldValue(this);
+    }
+    try {
+      // Otherwise extract the value using java reflection directly
+      return javaField.get(entity);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public CQLDataType getValueDataType() {
-    return valueDataType;
+  @Override
+  public void setValue(Object entity, Object value) {
+    // First check if the entity is already managed and call that interface
+    if (entity instanceof AtreusManagedEntity) {
+      ((AtreusManagedEntity) entity).setFieldValue(this, value);
+    }
+    try {
+      // Otherwise bindValue the value using java reflection directly
+      javaField.set(entity, value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public void setValueDataType(CQLDataType valueDataType) {
-    this.valueDataType = valueDataType;
+  @Override
+  public Class<?> getType() {
+    return javaField.getType();
   }
 
 } // end of class

@@ -21,74 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.impl.util.ReflectionUtils;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.nio.ByteBuffer;
-import java.util.*;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaObject;
 
 /**
- * CQL Data Types.
+ * Implements a meta field instance for dynamically defined fields.
  *
  * @author Martin Crawford
  */
-public enum CQLDataType {
+public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  CQL_ASCII("ascii", String.class),
-  CQL_BIGINT("bigint", Long.class),
-  CQL_BLOB("blob", ByteBuffer.class),
-  CQL_BOOLEAN("boolean", Boolean.class),
-  CQL_COUNTER("counter", Integer.class),
-  CQL_DECIMAL("decimal", BigDecimal.class),
-  CQL_DOUBLE("double", Double.class),
-  CQL_FLOAT("float", Float.class),
-  CQL_INET("inet", InetAddress.class),
-  CQL_INT("int", Integer.class),
-  CQL_LIST("list", List.class),
-  CQL_MAP("map", Map.class),
-  CQL_SET("set", Set.class),
-  CQL_TEXT("text", String.class),
-  CQL_TIMESTAMP("timestamp", Date.class),
-  CQL_UUID("uuid", UUID.class),
-  CQL_TIMEUUID("timeuuid", UUID.class),
-  CQL_VARCHAR("varchar", String.class),
-  CQL_VARINT("varint", BigInteger.class);
-
-  private static Map<Class<?>, CQLDataType> REGISTER_TYPE_CLASSES = new HashMap<>();
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final String text;
-  private final Class<?> defaultClass;
+  private final String name;
+
+  private final Class<?> type;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  static {
-    for (CQLDataType cqlDataType : values()) {
-      REGISTER_TYPE_CLASSES.put(cqlDataType.defaultClass, cqlDataType);
-    }
-  }
-
-  CQLDataType(String text, Class<?> defaultClass) {
-    this.text = text;
-    this.defaultClass = defaultClass;
+  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+    super(ownerObject);
+    this.name = name;
+    this.type = type;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public static CQLDataType mapClassToDataType(Class<?> typeClass) {
-    if (typeClass == null) {
-      return null;
-    }
-    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
-    return REGISTER_TYPE_CLASSES.get(typeClass);
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -96,12 +57,31 @@ public enum CQLDataType {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getText() {
-    return text;
+  @Override
+  public String getName() {
+    return name;
   }
 
-  public Class<?> getDefaultClass() {
-    return defaultClass;
+  @Override
+  public Object getValue(Object entity) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+
+    return ((AtreusManagedEntity) entity).getDynamicFields().get(name);
   }
 
-}
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return type;
+  }
+
+} // end of class

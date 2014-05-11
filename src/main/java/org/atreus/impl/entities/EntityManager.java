@@ -98,7 +98,7 @@ public class EntityManager {
       // Build the fields
       for (Field field : entityType.getDeclaredFields()) {
 
-        // Execute the meta property builder rule set
+        // Execute the meta property builder rule bindValue
         for (BaseMetaPropertyBuilder propertyBuilder : fieldPropertyBuilders) {
           if (propertyBuilder.acceptField(metaEntity, field)) {
             break;
@@ -152,14 +152,14 @@ public class EntityManager {
     // Create the managed entity with defaults
     MetaEntityImpl metaEntity = createMetaEntity(entityType);
 
-    // Execute the meta property builder rule set on entity
+    // Execute the meta property builder rule bindValue on entity
     for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
       if (metaPropertyBuilder.acceptEntity(metaEntity, entityType)) {
         break;
       }
     }
 
-    // Execute the meta property rule set on fields (first pass)
+    // Execute the meta property rule bindValue on fields (first pass)
     for (Field field : entityType.getDeclaredFields()) {
       for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
         if (metaPropertyBuilder.acceptField(metaEntity, field)) {

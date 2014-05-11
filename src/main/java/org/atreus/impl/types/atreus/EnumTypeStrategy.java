@@ -25,9 +25,9 @@ package org.atreus.impl.types.atreus;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusType;
-import org.atreus.impl.types.cql.BaseSimpleTypeStrategy;
+import org.atreus.impl.types.BaseSimpleTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +50,8 @@ public class EnumTypeStrategy extends BaseSimpleTypeStrategy<Enum> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_TEXT;
+  public AtreusCQLDataType getDataType() {
+    return AtreusCQLDataType.CQL_TEXT;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

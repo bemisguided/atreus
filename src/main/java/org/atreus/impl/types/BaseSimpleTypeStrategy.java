@@ -21,56 +21,64 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.types;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
 /**
- * Helper class to bind data to and from Cassandra rows and statements.
+ * Base class for Collection Type Strategies.
  *
  * @author Martin Crawford
  */
-public class BindingHelper {
+public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BindingHelper.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseSimpleTypeStrategy.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> valueClass;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static void bindToEntity(AtreusMetaEntity managedEntity, Object entity, Row row) {
-    bindToField(managedEntity.getPrimaryKeyField(), entity, row);
-    for (AtreusMetaField managedField : managedEntity.getFields()) {
-      bindToField(managedField, entity, row);
+  @Override
+  public final T unbindValue(Row row, String colName) {
+    if (row.isNull(colName)) {
+      return null;
     }
+    return doGet(row, colName);
   }
 
-  public static void bindToField(AtreusMetaField metaField, Object entity, Row row) {
-    Object value = metaField.getTypeStrategy().get(row, metaField.getColumn());
-    metaField.setValue(entity, value);
+  @Override
+  public Class<?> getValueClass() {
+    return valueClass;
   }
 
-  public static boolean isNull(AtreusMetaField metaField, Object entity) {
-    return metaField.getValue(entity) == null;
+  @Override
+  public final void bindValue(BoundStatement boundStatement, String colName, T value) {
+    if (value == null) {
+      return;
+    }
+    doSet(boundStatement, colName, value);
   }
 
-  public static void bindFromPrimaryKeys(AtreusMetaEntity managedEntity, BoundStatement boundStatement, Serializable primaryKey) {
-    AtreusMetaField managedField = managedEntity.getPrimaryKeyField();
-    managedField.getTypeStrategy().set(boundStatement, managedField.getColumn(), primaryKey);
+  @Override
+  public void setValueClass(Class<?> valueClass) {
+    this.valueClass = valueClass;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected abstract T doGet(Row row, String colName);
+
+  protected abstract void doSet(BoundStatement boundStatement, String colName, T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -29,8 +29,8 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.BindingHelper;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
 
   private Serializable primaryKey;
 
-  private AtreusMetaEntity managedEntity;
+  private AtreusMetaEntity metaEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -60,17 +60,20 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
 
   @Override
   public Object execute(Environment environment, AtreusSessionExt session) {
-    RegularStatement regularStatement = QueryHelper.selectEntity(managedEntity);
+    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
     BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
-    BindingHelper.bindFromPrimaryKeys(managedEntity, boundStatement, primaryKey);
+    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
     ResultSet resultSet = session.execute(boundStatement);
     Row row = resultSet.one();
     if (row == null) {
       return null;
     }
     try {
-      Object entity = managedEntity.getEntityType().newInstance();
-      BindingHelper.bindToEntity(managedEntity, entity, row);
+      Object entity = metaEntity.getEntityType().newInstance();
+      metaEntity.getPrimaryKeyField().unbindEntity(row, entity);
+      for (AtreusMetaField metaField : metaEntity.getFields()) {
+        metaField.unbindEntity(row, entity);
+      }
       return entity;
     }
     catch (InstantiationException | IllegalAccessException e) {
@@ -92,12 +95,12 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
     this.primaryKey = primaryKey;
   }
 
-  public AtreusMetaEntity getManagedEntity() {
-    return managedEntity;
+  public AtreusMetaEntity getMetaEntity() {
+    return metaEntity;
   }
 
-  public void setManagedEntity(AtreusMetaEntity managedEntity) {
-    this.managedEntity = managedEntity;
+  public void setMetaEntity(AtreusMetaEntity metaEntity) {
+    this.metaEntity = metaEntity;
   }
 
 } // end of class

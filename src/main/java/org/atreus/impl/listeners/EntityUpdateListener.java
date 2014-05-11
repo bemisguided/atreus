@@ -83,8 +83,7 @@ public class EntityUpdateListener extends AtreusAbstractEntityListener implement
 
   @SuppressWarnings("unchecked")
   private void bindFromField(AtreusMetaField metaField, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
-    Object value = managedEntity.getFieldValue(metaField);
-    metaField.getTypeStrategy().set(boundStatement, metaField.getColumn(), value);
+    metaField.bindEntity(boundStatement, managedEntity);
   }
 
   @SuppressWarnings("unchecked")
@@ -102,7 +101,7 @@ public class EntityUpdateListener extends AtreusAbstractEntityListener implement
     if (ttlValue == null || ttlValue < 1) {
       throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlMetaField, ttlValue);
     }
-    boundStatement.setInt(ttlMetaField.getColumn(), ttlValue);
+    ttlMetaField.bindValue(boundStatement, ttlValue);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

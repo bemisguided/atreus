@@ -21,21 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.strategies;
-
-import org.atreus.core.ext.AtreusCQLDataType;
-
-import java.util.Collection;
+package org.atreus.core.ext.meta;
 
 /**
- * Interface for an Atreus Collection Type Strategy.
+ * Atreus meta property interface defining a managed component.
  *
  * @author Martin Crawford
  */
-public interface AtreusCollectionTypeStrategy<T extends Collection> extends AtreusTypeStrategy<T> {
+public interface AtreusMetaComponent extends AtreusMetaObject {
 
-  public AtreusCQLDataType getValueDataType();
-
-  public void setValueDataType(AtreusCQLDataType valueDataType);
+  public Class<?> getComponentType();
 
 }

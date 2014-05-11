@@ -23,8 +23,8 @@
  */
 package org.atreus.core.impl.queries;
 
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.entities.meta.DynamicMetaFieldImpl;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Ignore;
@@ -131,16 +131,16 @@ public class QueryHelperTests {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   private MetaEntityImpl buildEntity(String keySpaceName, String tableName) {
-    MetaEntityImpl managedEntity = new MetaEntityImpl();
-    managedEntity.setKeySpace(keySpaceName);
-    managedEntity.setTable(tableName);
-    return managedEntity;
+    MetaEntityImpl metaEntity = new MetaEntityImpl();
+    metaEntity.setKeySpace(keySpaceName);
+    metaEntity.setTable(tableName);
+    return metaEntity;
   }
 
-  private AtreusMetaField buildField(MetaEntityImpl metaEntity, String columnName) {
-    DynamicMetaFieldImpl managedField = new DynamicMetaFieldImpl(metaEntity, columnName, String.class);
-    managedField.setColumn(columnName);
-    return managedField;
+  private AtreusMetaSimpleField buildField(MetaEntityImpl metaEntity, String columnName) {
+    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, columnName, String.class);
+    metaField.setColumn(columnName);
+    return metaField;
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

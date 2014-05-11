@@ -21,67 +21,87 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.cql;
+package org.atreus.core.ext;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
-import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.util.ReflectionUtils;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
- * Base class for Collection Type Strategies.
+ * CQL Data Types.
  *
  * @author Martin Crawford
  */
-public abstract class BaseSimpleTypeStrategy<T> implements AtreusTypeStrategy<T> {
+public enum AtreusCQLDataType {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseSimpleTypeStrategy.class);
+  CQL_ASCII("ascii", String.class),
+  CQL_BIGINT("bigint", Long.class),
+  CQL_BLOB("blob", ByteBuffer.class),
+  CQL_BOOLEAN("boolean", Boolean.class),
+  CQL_COUNTER("counter", Integer.class),
+  CQL_DECIMAL("decimal", BigDecimal.class),
+  CQL_DOUBLE("double", Double.class),
+  CQL_FLOAT("float", Float.class),
+  CQL_INET("inet", InetAddress.class),
+  CQL_INT("int", Integer.class),
+  CQL_LIST("list", List.class),
+  CQL_MAP("map", Map.class),
+  CQL_SET("set", Set.class),
+  CQL_TEXT("text", String.class),
+  CQL_TIMESTAMP("timestamp", Date.class),
+  CQL_UUID("uuid", UUID.class),
+  CQL_TIMEUUID("timeuuid", UUID.class),
+  CQL_VARCHAR("varchar", String.class),
+  CQL_VARINT("varint", BigInteger.class);
+
+  private static Map<Class<?>, AtreusCQLDataType> REGISTER_TYPE_CLASSES = new HashMap<>();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Class<?> valueClass;
+  private final String text;
+  private final Class<?> defaultClass;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  static {
+    for (AtreusCQLDataType cqlDataType : values()) {
+      REGISTER_TYPE_CLASSES.put(cqlDataType.defaultClass, cqlDataType);
+    }
+  }
+
+  AtreusCQLDataType(String text, Class<?> defaultClass) {
+    this.text = text;
+    this.defaultClass = defaultClass;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public final T get(Row row, String colName) {
-    if (row.isNull(colName)) {
+  public static AtreusCQLDataType mapClassToDataType(Class<?> typeClass) {
+    if (typeClass == null) {
       return null;
     }
-    return doGet(row, colName);
-  }
-
-  @Override
-  public Class<?> getValueClass() {
-    return valueClass;
-  }
-
-  @Override
-  public final void set(BoundStatement boundStatement, String colName, T value) {
-    if (value == null) {
-      return;
-    }
-    doSet(boundStatement, colName, value);
-  }
-
-  @Override
-  public void setValueClass(Class<?> valueClass) {
-    this.valueClass = valueClass;
+    typeClass = ReflectionUtils.toPrimitiveWrapper(typeClass);
+    return REGISTER_TYPE_CLASSES.get(typeClass);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected abstract T doGet(Row row, String colName);
-
-  protected abstract void doSet(BoundStatement boundStatement, String colName, T value);
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-} // end of class
+  public String getText() {
+    return text;
+  }
+
+  public Class<?> getDefaultClass() {
+    return defaultClass;
+  }
+
+}

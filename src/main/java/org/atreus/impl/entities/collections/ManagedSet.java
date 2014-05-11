@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 /**
- * Managed set.
+ * Managed bindValue.
  *
  * @author Martin Crawford
  */

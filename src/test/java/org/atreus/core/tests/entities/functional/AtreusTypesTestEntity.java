@@ -25,7 +25,7 @@ package org.atreus.core.tests.entities.functional;
 
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 
 /**
  * AtreusTypesTestEntity.
@@ -44,7 +44,7 @@ public class AtreusTypesTestEntity {
 
   private Short aShort;
 
-  private CQLDataType anEnum;
+  private AtreusCQLDataType anEnum;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -72,11 +72,11 @@ public class AtreusTypesTestEntity {
     this.aShort = aShort;
   }
 
-  public CQLDataType getAnEnum() {
+  public AtreusCQLDataType getAnEnum() {
     return anEnum;
   }
 
-  public void setAnEnum(CQLDataType anEnum) {
+  public void setAnEnum(AtreusCQLDataType anEnum) {
     this.anEnum = anEnum;
   }
 

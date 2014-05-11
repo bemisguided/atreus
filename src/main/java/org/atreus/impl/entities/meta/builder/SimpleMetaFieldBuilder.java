@@ -26,7 +26,7 @@ package org.atreus.impl.entities.meta.builder;
 import org.atreus.core.annotations.AtreusField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.util.StringUtils;
 
 import java.lang.reflect.Field;
@@ -55,7 +55,7 @@ public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
     // Assumption is this is the last field builder to be called and therefore a simple field
 
     // Create the static field
-    StaticMetaFieldImpl metaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl metaField = createStaticMetaField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);

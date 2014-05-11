@@ -25,9 +25,10 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
 import org.atreus.core.ext.strategies.AtreusType;
+import org.atreus.impl.types.BaseCollectionTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +53,8 @@ public class ListTypeStrategy extends BaseCollectionTypeStrategy<List> implement
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_LIST;
+  public AtreusCQLDataType getDataType() {
+    return AtreusCQLDataType.CQL_LIST;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

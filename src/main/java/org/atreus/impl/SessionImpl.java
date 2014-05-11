@@ -137,7 +137,7 @@ public class SessionImpl implements AtreusSessionExt {
 
     // Build command
     FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand();
-    command.setManagedEntity(metaEntity);
+    command.setMetaEntity(metaEntity);
     command.setPrimaryKey(primaryKey);
 
     // Execute (not a batchable command)
@@ -164,7 +164,7 @@ public class SessionImpl implements AtreusSessionExt {
     Class<?> entityType = metaEntity.getEntityType();
     Object primaryKey = metaEntity.getPrimaryKeyField().getValue(entity);
 
-    // A primary key has not been set so create a managed entity and return unsaved to the session
+    // A primary key has not been bindValue so create a managed entity and return unsaved to the session
     if (primaryKey == null) {
       return getEntityManager().toManagedEntity(entity);
     }

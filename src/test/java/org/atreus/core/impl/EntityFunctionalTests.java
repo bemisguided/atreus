@@ -26,8 +26,9 @@ package org.atreus.core.impl;
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.BaseAtreusCassandraTests;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.tests.entities.errors.*;
 import org.atreus.core.tests.entities.functional.*;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
@@ -73,7 +74,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
     AtreusTypesTestEntity testEntity = new AtreusTypesTestEntity();
     testEntity.setaShort((short) 1234);
-    testEntity.setAnEnum(CQLDataType.CQL_ASCII);
+    testEntity.setAnEnum(AtreusCQLDataType.CQL_ASCII);
 
     getSession().save(testEntity);
     getSession().flush();
@@ -84,7 +85,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect a value", otherEntity);
     Assert.assertEquals(primaryKey, otherEntity.getId());
     Assert.assertEquals(1234, (short) otherEntity.getaShort());
-    Assert.assertEquals(CQLDataType.CQL_ASCII, otherEntity.getAnEnum());
+    Assert.assertEquals(AtreusCQLDataType.CQL_ASCII, otherEntity.getAnEnum());
 
     // Null values
     testEntity = new AtreusTypesTestEntity();
@@ -168,7 +169,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
           "value text, " +
           "PRIMARY KEY(id))");
 
-      // Test with a time-to-live set
+      // Test with a time-to-live bindValue
       TtlTestEntity testEntity = new TtlTestEntity();
       testEntity.setValue("I am a text value");
       testEntity.setTtl(2); // 2 seconds
@@ -189,7 +190,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
       otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
       Assert.assertNull("Expect to be null", otherEntity);
 
-      // Test w/o a time-to-live set
+      // Test w/o a time-to-live bindValue
       testEntity = new TtlTestEntity();
       testEntity.setValue("I am another text value");
 
@@ -219,7 +220,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
           "PRIMARY KEY(id))");
 
 
-      // Test with a time-to-live set
+      // Test with a time-to-live bindValue
       TtlTestEntity testEntity = new TtlTestEntity();
       testEntity.setValue("I am a text value");
       testEntity.setTtl(0);
@@ -286,16 +287,16 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     addEntity(NameOverrideTestEntity.class);
     initEnvironment();
 
-    AtreusMetaEntity managedEntity = getEnvironment().getEntityManager().getMetaEntity(NameOverrideTestEntity.class);
-    Assert.assertNotNull("Expect an entity", managedEntity);
-    Assert.assertEquals("EntityName", managedEntity.getName());
-    Assert.assertEquals("KeySpaceName", managedEntity.getKeySpace());
-    Assert.assertEquals("TableName", managedEntity.getTable());
+    AtreusMetaEntity metaEntity = getEnvironment().getEntityManager().getMetaEntity(NameOverrideTestEntity.class);
+    Assert.assertNotNull("Expect an entity", metaEntity);
+    Assert.assertEquals("EntityName", metaEntity.getName());
+    Assert.assertEquals("KeySpaceName", metaEntity.getKeySpace());
+    Assert.assertEquals("TableName", metaEntity.getTable());
 
-    Assert.assertEquals("primaryKey", managedEntity.getPrimaryKeyField().getColumn());
-    Assert.assertEquals(StringPrimaryKeyStrategy.class, managedEntity.getPrimaryKeyStrategy().getClass());
+    Assert.assertEquals("primaryKey", ((AtreusMetaSimpleField) metaEntity.getPrimaryKeyField()).getColumn());
+    Assert.assertEquals(StringPrimaryKeyStrategy.class, metaEntity.getPrimaryKeyStrategy().getClass());
 
-    Assert.assertEquals("columnName", managedEntity.getFieldByName("field1").getColumn());
+    Assert.assertEquals("columnName", ((AtreusMetaSimpleField) metaEntity.getFieldByName("field1")).getColumn());
 
   }
 

@@ -23,18 +23,19 @@
  */
 package org.atreus.core.ext.meta;
 
-import org.atreus.core.ext.strategies.AtreusTypeStrategy;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
 
 /**
- * Interface defining the meta definition of a field for an Atreus managed entity.
+ * Atreus meta property interface defining a managed field.
  *
  * @author Martin Crawford
  */
 public interface AtreusMetaField {
 
-  public String getColumn();
+  public void bindEntity(BoundStatement boundStatement, Object entity);
 
-  public void setColumn(String column);
+  public void bindValue(BoundStatement boundStatement, Object value);
 
   public String getName();
 
@@ -42,12 +43,12 @@ public interface AtreusMetaField {
 
   public void setValue(Object entity, Object value);
 
-  public AtreusMetaEntity getOwnerEntity();
+  public AtreusMetaObject getOwnerObject();
 
   public Class<?> getType();
 
-  public AtreusTypeStrategy getTypeStrategy();
+  public void unbindEntity(Row row, Object entity);
 
-  public void setTypeStrategy(AtreusTypeStrategy typeStrategy);
+
 
 }

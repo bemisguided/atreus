@@ -25,9 +25,10 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusMapTypeStrategy;
 import org.atreus.core.ext.strategies.AtreusType;
+import org.atreus.impl.types.BaseCollectionTypeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,25 +48,25 @@ public class MapTypeStrategy extends BaseCollectionTypeStrategy<Map> implements 
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private CQLDataType keyDataType;
+  private AtreusCQLDataType keyDataType;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getKeyDataType() {
+  public AtreusCQLDataType getKeyDataType() {
     return keyDataType;
   }
 
   @Override
-  public void setKeyDataType(CQLDataType keyDataType) {
+  public void setKeyDataType(AtreusCQLDataType keyDataType) {
     this.keyDataType = keyDataType;
   }
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_MAP;
+  public AtreusCQLDataType getDataType() {
+    return AtreusCQLDataType.CQL_MAP;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -23,19 +23,19 @@
  */
 package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-
-import java.lang.reflect.Field;
+import org.atreus.impl.util.AssertUtils;
 
 /**
- * Implements a meta field instance for statically defined fields.
+ * Base implementation of a meta field.
  *
  * @author Martin Crawford
  */
-public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMetaFieldImpl> {
+public abstract class BaseMetaSimpleFieldImpl implements AtreusMetaSimpleField, Comparable<BaseMetaSimpleFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -43,23 +43,35 @@ public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMe
 
   private String column;
 
-  private final Field javaField;
-
-  private final MetaEntityImpl ownerEntity;
+  private final AtreusMetaObject ownerObject;
 
   private AtreusTypeStrategy typeStrategy;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public StaticMetaFieldImpl(MetaEntityImpl ownerEntity, Field javaField) {
-    this.ownerEntity = ownerEntity;
-    this.javaField = javaField;
+  protected BaseMetaSimpleFieldImpl(AtreusMetaObject ownerObject) {
+    this.ownerObject = ownerObject;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public int compareTo(StaticMetaFieldImpl o) {
+  @SuppressWarnings("unchecked")
+  public void bindEntity(BoundStatement boundStatement, Object entity) {
+    AssertUtils.notNull(getTypeStrategy(), "typeStrategy not set");
+    Object value = getValue(entity);
+    getTypeStrategy().bindValue(boundStatement, column, value);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void bindValue(BoundStatement boundStatement, Object value) {
+    AssertUtils.notNull(getTypeStrategy(), "typeStrategy not set");
+    getTypeStrategy().bindValue(boundStatement, column, value);
+  }
+
+  @Override
+  public int compareTo(BaseMetaSimpleFieldImpl o) {
     if (column == null && o.column == null) {
       return 0;
     }
@@ -81,7 +93,7 @@ public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMe
       return false;
     }
 
-    StaticMetaFieldImpl that = (StaticMetaFieldImpl) o;
+    BaseMetaSimpleFieldImpl that = (BaseMetaSimpleFieldImpl) o;
 
     if (column != null ? !column.equals(that.column) : that.column != null) {
       return false;
@@ -97,7 +109,14 @@ public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMe
 
   @Override
   public String toString() {
-    return ownerEntity.getName() + "." + javaField.getName();
+    return ownerObject.getName() + "." + getName();
+  }
+
+  @Override
+  public void unbindEntity(Row row, Object entity) {
+    AssertUtils.notNull(getTypeStrategy(), "typeStrategy not set");
+    Object value = getTypeStrategy().unbindValue(row, column);
+    setValue(entity, value);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -107,67 +126,26 @@ public class StaticMetaFieldImpl implements AtreusMetaField, Comparable<StaticMe
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public String getColumn() {
+  public final String getColumn() {
     return column;
   }
 
-  @Override
-  public void setColumn(String column) {
+  public final void setColumn(String column) {
     this.column = column;
   }
 
   @Override
-  public String getName() {
-    return javaField.getName();
+  public final AtreusMetaObject getOwnerObject() {
+    return ownerObject;
   }
 
   @Override
-  public Object getValue(Object entity) {
-    // First check if the entity is already managed and call that interface
-    if (entity instanceof AtreusManagedEntity) {
-      return ((AtreusManagedEntity) entity).getFieldValue(this);
-    }
-    try {
-      // Otherwise extract the value using java reflection directly
-      return javaField.get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public void setValue(Object entity, Object value) {
-    // First check if the entity is already managed and call that interface
-    if (entity instanceof AtreusManagedEntity) {
-      ((AtreusManagedEntity) entity).setFieldValue(this, value);
-    }
-    try {
-      // Otherwise set the value using java reflection directly
-      javaField.set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public AtreusMetaEntity getOwnerEntity() {
-    return ownerEntity;
-  }
-
-  @Override
-  public Class<?> getType() {
-    return javaField.getType();
-  }
-
-  @Override
-  public AtreusTypeStrategy getTypeStrategy() {
+  public final AtreusTypeStrategy getTypeStrategy() {
     return typeStrategy;
   }
 
   @Override
-  public void setTypeStrategy(AtreusTypeStrategy typeStrategy) {
+  public final void setTypeStrategy(AtreusTypeStrategy typeStrategy) {
     this.typeStrategy = typeStrategy;
   }
 

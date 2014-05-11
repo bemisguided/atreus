@@ -29,7 +29,7 @@ import org.atreus.core.annotations.AtreusPrimaryKeyGenerator;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public class PrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the Primary Key meta field
-    StaticMetaFieldImpl primaryKeyMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaField(metaEntity, field);
     String primaryKeyColumn = primaryKeyAnnotation.value();
     if (StringUtils.isNotNullOrEmpty(primaryKeyColumn)) {
       primaryKeyMetaField.setColumn(primaryKeyColumn);
@@ -93,7 +93,7 @@ public class PrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void assertSinglePrimaryKey(MetaEntityImpl metaEntity, StaticMetaFieldImpl managedField) {
+  private void assertSinglePrimaryKey(MetaEntityImpl metaEntity, StaticMetaSimpleFieldImpl managedField) {
     if (metaEntity.getPrimaryKeyField() != null && !metaEntity.getPrimaryKeyField().equals(managedField)) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_MULTIPLE,
           metaEntity.getName());

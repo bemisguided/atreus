@@ -25,10 +25,11 @@ package org.atreus.impl.entities.meta.builder;
 
 import org.atreus.core.annotations.AtreusComposite;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaCompositeImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -67,11 +68,11 @@ public class ParentMetaCompositeBuilder extends BaseMetaFieldBuilder {
       throw new RuntimeException("Child entity type not managed " + entityType);
     }
     MetaCompositeImpl metaComposite = findOrCreateMetaComposite(parentMetaEntity, childMetaEntity);
-    StaticMetaFieldImpl parentMetaField = createStaticMetaField(parentMetaEntity, field);
+    StaticMetaSimpleFieldImpl parentMetaField = createStaticMetaField(parentMetaEntity, field);
     metaComposite.setParentField(parentMetaField);
 
     // Create the parent primary key on the child
-    createDynamicMetaField(childMetaEntity, parentMetaEntity.getTable() + "_" + parentMetaEntity.getPrimaryKeyField().getColumn(), field);
+    createDynamicMetaField(childMetaEntity, parentMetaEntity.getTable() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn(), field);
     return true;
   }
 
@@ -82,7 +83,7 @@ public class ParentMetaCompositeBuilder extends BaseMetaFieldBuilder {
       return providedType;
     }
     if (Collection.class.isAssignableFrom(field.getType())) {
-     return ReflectionUtils.findCollectionValueClass(field);
+      return ReflectionUtils.findCollectionValueClass(field);
     }
     if (Map.class.isAssignableFrom(field.getType())) {
       throw new RuntimeException("Map currently not supported for associations");

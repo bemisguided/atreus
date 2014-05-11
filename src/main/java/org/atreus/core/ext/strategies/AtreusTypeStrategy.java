@@ -25,7 +25,7 @@ package org.atreus.core.ext.strategies;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 
 /**
  * Interface for an Atreus Type Strategy.
@@ -34,13 +34,13 @@ import org.atreus.core.ext.CQLDataType;
  */
 public interface AtreusTypeStrategy<T> {
 
-  public T get(Row row, String colName);
+  public T unbindValue(Row row, String colName);
 
   public Class<?> getValueClass();
 
-  public CQLDataType getDataType();
+  public AtreusCQLDataType getDataType();
 
-  public void set(BoundStatement boundStatement, String colName, T value);
+  public void bindValue(BoundStatement boundStatement, String colName, T value);
 
   public void setValueClass(Class<?> valueClass);
 

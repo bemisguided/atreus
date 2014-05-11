@@ -27,11 +27,11 @@ import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusField;
 import org.atreus.core.annotations.NullType;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
 
@@ -66,7 +66,7 @@ public class CollectionMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the static field
-    StaticMetaFieldImpl collectionMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
@@ -82,7 +82,7 @@ public class CollectionMetaFieldBuilder extends BaseMetaFieldBuilder {
 
     // Resolve the value class and corresponding CQL data type
     Class<?> valueClass = resolveCollectionValueClass(field);
-    CQLDataType valueDataType = CQLDataType.mapClassToDataType(valueClass);
+    AtreusCQLDataType valueDataType = AtreusCQLDataType.mapClassToDataType(valueClass);
 
     if (valueClass == null || valueDataType == null) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,

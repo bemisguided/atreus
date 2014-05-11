@@ -25,11 +25,12 @@ package org.atreus.impl.queries;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.*;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
@@ -50,64 +51,135 @@ public class QueryHelper {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static RegularStatement insertEntity(AtreusMetaEntity managedEntity) {
-    return insertEntity(managedEntity, false);
+  public static RegularStatement insertEntity(AtreusMetaEntity metaEntity) {
+    return insertEntity(metaEntity, false);
   }
 
-  public static RegularStatement insertEntity(AtreusMetaEntity managedEntity, boolean withTtl) {
-    Insert insert = insertInto(managedEntity.getKeySpace(), managedEntity.getTable());
-    String columnName = managedEntity.getPrimaryKeyField().getColumn();
-    insert.value(columnName, bindMarker(columnName));
-    for (AtreusMetaField managedField : managedEntity.getFields()) {
-      columnName = managedField.getColumn();
+  public static RegularStatement insertEntity(AtreusMetaEntity metaEntity, boolean withTtl) {
+    Insert insert = insertInto(metaEntity.getKeySpace(), metaEntity.getTable());
+    for (String columnName : listAllColumnNames(metaEntity)) {
       insert.value(columnName, bindMarker(columnName));
     }
-    AtreusMetaField ttlField = managedEntity.getTtlField();
+    AtreusMetaSimpleField ttlField = metaEntity.getTtlField();
     if (ttlField != null && withTtl) {
       insert.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return insert;
   }
 
-  public static RegularStatement selectEntity(AtreusMetaEntity managedEntity) {
-    Select select = select().all().from(managedEntity.getKeySpace(), managedEntity.getTable());
-    String columnName = managedEntity.getPrimaryKeyField().getColumn();
-    select.where(eq(columnName, bindMarker(columnName)));
+  public static RegularStatement selectEntity(AtreusMetaEntity metaEntity) {
+    Select select = select().all().from(metaEntity.getKeySpace(), metaEntity.getTable());
+    Select.Where where = null;
+    for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
+      if (where == null) {
+        where = select.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
+    }
     return select;
   }
 
-  public static RegularStatement updateEntity(AtreusMetaEntity managedEntity) {
-    return updateEntity(managedEntity, false);
+  public static RegularStatement updateEntity(AtreusMetaEntity metaEntity) {
+    return updateEntity(metaEntity, false);
   }
 
-  public static RegularStatement updateEntity(AtreusMetaEntity managedEntity, boolean withTtl) {
-    Update update = update(managedEntity.getKeySpace(), managedEntity.getTable());
-    String columnName = managedEntity.getPrimaryKeyField().getColumn();
-    Update.Where where = update.where(eq(columnName, bindMarker(columnName)));
-    for (AtreusMetaField managedField : managedEntity.getFields()) {
-      columnName = managedField.getColumn();
-      where.with(set(columnName, bindMarker(columnName)));
+  public static RegularStatement updateEntity(AtreusMetaEntity metaEntity, boolean withTtl) {
+    Update update = update(metaEntity.getKeySpace(), metaEntity.getTable());
+    Update.Where where = null;
+    for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
+      if (where == null) {
+        where = update.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
     }
-    AtreusMetaField ttlField = managedEntity.getTtlField();
+    for (String columnName : listFieldColumnNames(metaEntity)) {
+      update.with(set(columnName, bindMarker(columnName)));
+    }
+    AtreusMetaSimpleField ttlField = metaEntity.getTtlField();
     if (ttlField != null && withTtl) {
       update.using(ttl(bindMarker(ttlField.getColumn())));
     }
     return update;
   }
 
-  public static RegularStatement deleteCompositeEntity(AtreusMetaComposite managedComposite) {
-    AtreusMetaEntity parentEntity = managedComposite.getParentEntity();
-    AtreusMetaEntity childEntity = managedComposite.getChildEntity();
-    AtreusMetaField primaryKeyField = parentEntity.getPrimaryKeyField();
-    String primaryKeyColumn = primaryKeyField.getColumn();
+  public static RegularStatement deleteEntity(AtreusMetaEntity metaEntity) {
+    Delete delete = delete().from(metaEntity.getKeySpace(), metaEntity.getTable());
+    Delete.Where where = null;
+    for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
+      if (where == null) {
+        where = delete.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
+    }
+    return delete;
+  }
+
+  public static RegularStatement deleteAllChildCompositeEntities(AtreusMetaComposite metaComposite) {
+    AtreusMetaEntity parentEntity = metaComposite.getParentEntity();
+    AtreusMetaEntity childEntity = metaComposite.getChildEntity();
     Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
-    delete.where(eq(primaryKeyColumn, bindMarker(primaryKeyColumn)));
+    Delete.Where where = null;
+    for (String columnName : listPrimaryKeyColumnNames(parentEntity)) {
+      if (where == null) {
+        where = delete.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
+    }
     return delete;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private static List<String> listAllColumnNames(AtreusMetaEntity metaEntity) {
+    List<String> columnNames = new ArrayList<>();
+    listPrimaryKeyColumnNames(metaEntity, columnNames);
+    listFieldColumnNames(metaEntity, columnNames);
+    return columnNames;
+  }
+
+  private static List<String> listFieldColumnNames(AtreusMetaEntity metaEntity) {
+    return listFieldColumnNames(metaEntity, null);
+  }
+
+  private static List<String> listFieldColumnNames(AtreusMetaEntity metaEntity, List<String> columnNames) {
+    if (columnNames == null) {
+      columnNames = new ArrayList<>();
+    }
+    for (AtreusMetaField metaField : metaEntity.getFields()) {
+      listColumnNames(metaField, columnNames);
+    }
+    return columnNames;
+  }
+
+  private static List<String> listPrimaryKeyColumnNames(AtreusMetaEntity metaEntity) {
+    return listPrimaryKeyColumnNames(metaEntity, null);
+  }
+
+  private static List<String> listPrimaryKeyColumnNames(AtreusMetaEntity metaEntity, List<String> columnNames) {
+    if (columnNames == null) {
+      columnNames = new ArrayList<>();
+    }
+    listColumnNames(metaEntity.getPrimaryKeyField(), columnNames);
+    return columnNames;
+  }
+
+  private static void listColumnNames(AtreusMetaField metaField, List<String> columnNames) {
+    if (metaField instanceof AtreusMetaSimpleField) {
+      columnNames.add(((AtreusMetaSimpleField) metaField).getColumn());
+      return;
+    }
+    if (metaField instanceof AtreusMetaComplexField) {
+      for (AtreusMetaSimpleField metaSimpleField : ((AtreusMetaComplexField) metaField).getFields()) {
+        columnNames.add(metaSimpleField.getColumn());
+      }
+    }
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

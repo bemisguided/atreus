@@ -25,8 +25,9 @@ package org.atreus.impl.types.cql;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusType;
+import org.atreus.impl.types.BaseSimpleTypeStrategy;
 
 import java.math.BigDecimal;
 
@@ -47,8 +48,8 @@ public class BigDecimalTypeStrategy extends BaseSimpleTypeStrategy<BigDecimal> {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public CQLDataType getDataType() {
-    return CQLDataType.CQL_DECIMAL;
+  public AtreusCQLDataType getDataType() {
+    return AtreusCQLDataType.CQL_DECIMAL;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

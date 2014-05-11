@@ -21,53 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.types.atreus;
+package org.atreus.impl.types;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusCQLDataType;
-import org.atreus.core.ext.strategies.AtreusType;
-import org.atreus.impl.types.BaseSimpleTypeStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Integer Type Strategy.
+ * Base class for Collection Type Strategies.
  *
  * @author Martin Crawford
  */
-@AtreusType(Short.class)
-public class ShortTypeStrategy extends BaseSimpleTypeStrategy<Short> {
+public abstract class BaseCollectionTypeStrategy<T> extends BaseSimpleTypeStrategy<T> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseCollectionTypeStrategy.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private Class<?> valueClass;
+
+  private AtreusCQLDataType valueDataType;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public AtreusCQLDataType getDataType() {
-    return AtreusCQLDataType.CQL_INT;
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  @Override
-  protected Short doGet(Row row, String colName) {
-    Integer integer = row.getInt(colName);
-    if (integer > Short.MAX_VALUE || integer < Short.MIN_VALUE) {
-      throw new IllegalArgumentException(integer + " is out of range for short");
-    }
-    return integer.shortValue();
-  }
-
-  @Override
-  protected void doSet(BoundStatement boundStatement, String colName, Short value) {
-    boundStatement.setInt(colName, value);
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-}
+  public Class<?> getValueClass() {
+    return valueClass;
+  }
+
+  public void setValueClass(Class<?> valueClass) {
+    this.valueClass = valueClass;
+  }
+
+  public AtreusCQLDataType getValueDataType() {
+    return valueDataType;
+  }
+
+  public void setValueDataType(AtreusCQLDataType valueDataType) {
+    this.valueDataType = valueDataType;
+  }
+
+} // end of class

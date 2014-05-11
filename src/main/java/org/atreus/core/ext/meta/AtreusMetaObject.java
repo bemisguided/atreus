@@ -21,21 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.strategies;
-
-import org.atreus.core.ext.AtreusCQLDataType;
-
-import java.util.Collection;
+package org.atreus.core.ext.meta;
 
 /**
- * Interface for an Atreus Collection Type Strategy.
+ * Atreus meta property interface defining a managed object.
  *
  * @author Martin Crawford
  */
-public interface AtreusCollectionTypeStrategy<T extends Collection> extends AtreusTypeStrategy<T> {
+public interface AtreusMetaObject {
 
-  public AtreusCQLDataType getValueDataType();
+  public void addField(AtreusMetaField managedField);
 
-  public void setValueDataType(AtreusCQLDataType valueDataType);
+  public AtreusMetaField[] getFields();
+
+  public AtreusMetaField getFieldByName(String name);
+
+  public Object getFieldValue(String name, Object entity);
+
+  public void setFieldValue(String name, Object entity, Object value);
+
+  public String getName();
 
 }

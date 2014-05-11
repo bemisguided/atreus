@@ -23,7 +23,7 @@
  */
 package org.atreus.core.ext.strategies;
 
-import org.atreus.core.ext.CQLDataType;
+import org.atreus.core.ext.AtreusCQLDataType;
 
 import java.util.Map;
 
@@ -34,12 +34,12 @@ import java.util.Map;
  */
 public interface AtreusMapTypeStrategy<T extends Map> extends AtreusTypeStrategy<T> {
 
-  public CQLDataType getValueDataType();
+  public AtreusCQLDataType getValueDataType();
 
-  public void setValueDataType(CQLDataType valueDataType);
+  public void setValueDataType(AtreusCQLDataType valueDataType);
 
-  public CQLDataType getKeyDataType();
+  public AtreusCQLDataType getKeyDataType();
 
-  public void setKeyDataType(CQLDataType keyDataType);
+  public void setKeyDataType(AtreusCQLDataType keyDataType);
 
 }

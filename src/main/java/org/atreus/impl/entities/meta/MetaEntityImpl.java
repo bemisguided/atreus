@@ -32,13 +32,14 @@ import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 ;
 
@@ -57,9 +58,7 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   private Class<?> entityType;
 
-  private Map<String, AtreusMetaField> fieldsByName = new TreeMap<>();
-
-  private Map<String, AtreusMetaField> fieldsByColumnName = new TreeMap<>();
+  private Map<String, AtreusMetaField> fieldsByName = new LinkedHashMap<>();
 
   private String keySpace;
 
@@ -73,7 +72,7 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   private String table;
 
-  private AtreusMetaField ttlField;
+  private AtreusMetaSimpleField ttlField;
 
   private AtreusTtlStrategy ttlStrategy;
 
@@ -93,7 +92,6 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   @Override
   public void addField(AtreusMetaField metaField) {
     fieldsByName.put(metaField.getName(), metaField);
-    fieldsByColumnName.put(metaField.getColumn(), metaField);
   }
 
   @Override
@@ -180,11 +178,6 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   }
 
   @Override
-  public AtreusMetaField getFieldByColumnName(String columnName) {
-    return fieldsByColumnName.get(columnName);
-  }
-
-  @Override
   public AtreusMetaField[] getFields() {
     AtreusMetaField[] result = new AtreusMetaField[fieldsByName.size()];
     return fieldsByName.values().toArray(result);
@@ -220,11 +213,11 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   }
 
   @Override
-  public AtreusMetaField getTtlField() {
+  public AtreusMetaSimpleField getTtlField() {
     return ttlField;
   }
 
-  public void setTtlField(AtreusMetaField ttlField) {
+  public void setTtlField(AtreusMetaSimpleField ttlField) {
     this.ttlField = ttlField;
   }
 

@@ -25,12 +25,12 @@ package org.atreus.impl.entities.meta.builder;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusFieldType;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.DynamicMetaFieldImpl;
+import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaFieldImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 
 import java.lang.reflect.Field;
@@ -56,20 +56,20 @@ public abstract class BaseMetaFieldBuilder extends BaseMetaPropertyBuilder {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  protected DynamicMetaFieldImpl createDynamicMetaField(MetaEntityImpl metaEntity, String name, Field field) {
-    DynamicMetaFieldImpl metaField = new DynamicMetaFieldImpl(metaEntity, name, field.getType());
+  protected DynamicMetaSimpleFieldImpl createDynamicMetaField(MetaEntityImpl metaEntity, String name, Field field) {
+    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, name, field.getType());
     metaField.setColumn(name);
     return metaField;
   }
 
-  protected StaticMetaFieldImpl createStaticMetaField(MetaEntityImpl metaEntity, Field field) {
-    StaticMetaFieldImpl metaField = new StaticMetaFieldImpl(metaEntity, field);
+  protected StaticMetaSimpleFieldImpl createStaticMetaField(MetaEntityImpl metaEntity, Field field) {
+    StaticMetaSimpleFieldImpl metaField = new StaticMetaSimpleFieldImpl(metaEntity, field);
     metaField.setColumn(field.getName());
     return metaField;
   }
 
   @SuppressWarnings("unchecked")
-  protected void resolveTypeStrategy(MetaEntityImpl metaEntity, AtreusMetaField metaField, Field field) {
+  protected void resolveTypeStrategy(MetaEntityImpl metaEntity, AtreusMetaSimpleField metaField, Field field) {
 
     // Query for @AtreusFieldType
     AtreusFieldType fieldTypeAnnotation = field.getAnnotation(AtreusFieldType.class);
