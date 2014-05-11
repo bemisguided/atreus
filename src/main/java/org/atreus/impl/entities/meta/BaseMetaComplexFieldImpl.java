@@ -21,57 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
-import org.atreus.impl.util.StringUtils;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.meta.AtreusMetaComplexField;
+import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 
-import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Simple field meta field builder.
+ * Base meta complex field.
  *
  * @author Martin Crawford
  */
-public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
+public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final AtreusMetaObject ownerObject;
+  private Map<String, AtreusMetaSimpleField> fields = new LinkedHashMap<>();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SimpleMetaFieldBuilder(Environment environment) {
-    super(environment);
+  protected BaseMetaComplexFieldImpl(AtreusMetaObject ownerObject) {
+    this.ownerObject = ownerObject;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    // Assumption is this is the last field builder to be called and therefore a simple field
-
-    // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
-
-    // Check for a field annotation
-    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
-    if (fieldAnnotation != null) {
-      String fieldColumn = fieldAnnotation.value();
-      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
-        metaField.setColumn(fieldColumn);
-      }
-    }
-
-    // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, metaField, field);
-
-    // Add the field to the meta entity
-    metaEntity.addField(metaField);
-    return true;
+  public void addField(AtreusMetaSimpleField metaSimpleField) {
+    fields.put(metaSimpleField.getName(), metaSimpleField);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -79,5 +63,37 @@ public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public final AtreusMetaSimpleField[] getFields() {
+    AtreusMetaSimpleField[] result = new AtreusMetaSimpleField[fields.size()];
+    return fields.values().toArray(result);
+  }
+
+  @Override
+  public final void bindEntity(BoundStatement boundStatement, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindEntity(boundStatement, entity);
+    }
+  }
+
+  @Override
+  public final void bindValue(BoundStatement boundStatement, Object value) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindValue(boundStatement, value);
+    }
+  }
+
+  @Override
+  public final AtreusMetaObject getOwnerObject() {
+    return ownerObject;
+  }
+
+  @Override
+  public final void unbindEntity(Row row, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.unbindEntity(row, entity);
+    }
+  }
 
 } // end of class

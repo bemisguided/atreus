@@ -49,6 +49,4 @@ public interface AtreusMetaField {
 
   public void unbindEntity(Row row, Object entity);
 
-
-
 }

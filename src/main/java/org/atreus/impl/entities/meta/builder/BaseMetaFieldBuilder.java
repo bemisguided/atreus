@@ -28,6 +28,7 @@ import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.DynamicMetaComplexFieldImpl;
 import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
@@ -56,13 +57,18 @@ public abstract class BaseMetaFieldBuilder extends BaseMetaPropertyBuilder {
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  protected DynamicMetaSimpleFieldImpl createDynamicMetaField(MetaEntityImpl metaEntity, String name, Field field) {
-    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, name, field.getType());
+  protected DynamicMetaComplexFieldImpl createDynamicMetaComplexField(MetaEntityImpl metaEntity, String name, Class<?> type) {
+    DynamicMetaComplexFieldImpl metaField = new DynamicMetaComplexFieldImpl(metaEntity, name, type);
+    return metaField;
+  }
+
+  protected DynamicMetaSimpleFieldImpl createDynamicMetaSimpleField(MetaEntityImpl metaEntity, String name, Class<?> type) {
+    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, name, type);
     metaField.setColumn(name);
     return metaField;
   }
 
-  protected StaticMetaSimpleFieldImpl createStaticMetaField(MetaEntityImpl metaEntity, Field field) {
+  protected StaticMetaSimpleFieldImpl createStaticMetaSimpleField(MetaEntityImpl metaEntity, Field field) {
     StaticMetaSimpleFieldImpl metaField = new StaticMetaSimpleFieldImpl(metaEntity, field);
     metaField.setColumn(field.getName());
     return metaField;

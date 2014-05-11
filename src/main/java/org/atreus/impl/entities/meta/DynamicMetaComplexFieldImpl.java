@@ -21,63 +21,65 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
-import org.atreus.impl.util.StringUtils;
-
-import java.lang.reflect.Field;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaObject;
 
 /**
- * Simple field meta field builder.
+ * Dynamic meta complex field.
  *
  * @author Martin Crawford
  */
-public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class DynamicMetaComplexFieldImpl extends BaseMetaComplexFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final String name;
+  private final Class<?> type;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SimpleMetaFieldBuilder(Environment environment) {
-    super(environment);
+  public DynamicMetaComplexFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+    super(ownerObject);
+    this.name = name;
+    this.type = type;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    // Assumption is this is the last field builder to be called and therefore a simple field
-
-    // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
-
-    // Check for a field annotation
-    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
-    if (fieldAnnotation != null) {
-      String fieldColumn = fieldAnnotation.value();
-      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
-        metaField.setColumn(fieldColumn);
-      }
-    }
-
-    // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, metaField, field);
-
-    // Add the field to the meta entity
-    metaEntity.addField(metaField);
-    return true;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public Object getValue(Object entity) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    return ((AtreusManagedEntity) entity).getDynamicFields().get(name);
+  }
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return type;
+  }
 
 } // end of class

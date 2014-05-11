@@ -24,14 +24,14 @@
 package org.atreus.impl.entities.meta.builder;
 
 import org.atreus.core.annotations.AtreusComposite;
+import org.atreus.core.annotations.NullType;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaCompositeImpl;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.*;
 import org.atreus.impl.util.ReflectionUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -62,24 +62,41 @@ public class ParentMetaCompositeBuilder extends BaseMetaFieldBuilder {
       return false;
     }
 
-    Class<?> entityType = resolveEntityType(field, compositeAnnotation.type());
-    MetaEntityImpl childMetaEntity = (MetaEntityImpl) getEnvironment().getEntityManager().getMetaEntity(entityType);
+    // Resolve the child entity type
+    Class<?> childEntityType = resolveEntityType(field, compositeAnnotation.type());
+
+    // Resolve the child meta entity
+    MetaEntityImpl childMetaEntity = (MetaEntityImpl) getEnvironment().getEntityManager().getMetaEntity(childEntityType);
     if (childMetaEntity == null) {
-      throw new RuntimeException("Child entity type not managed " + entityType);
+      throw new RuntimeException("Child entity type not managed " + childEntityType);
     }
+
+    // Ensure that the primary key is a simple field type
+    if (!(childMetaEntity.getPrimaryKeyField() instanceof AtreusMetaSimpleField)) {
+      throw new RuntimeException("Primary key of a child must be a simple field type " + childEntityType);
+    }
+
+    // Find an existing meta composite or create one
     MetaCompositeImpl metaComposite = findOrCreateMetaComposite(parentMetaEntity, childMetaEntity);
-    StaticMetaSimpleFieldImpl parentMetaField = createStaticMetaField(parentMetaEntity, field);
+    // TODO this will become an associate meta field
+    StaticMetaSimpleFieldImpl parentMetaField = createStaticMetaSimpleField(parentMetaEntity, field);
     metaComposite.setParentField(parentMetaField);
 
     // Create the parent primary key on the child
-    createDynamicMetaField(childMetaEntity, parentMetaEntity.getTable() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn(), field);
+    String childPrimaryKeyName = parentMetaEntity.getTable() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn();
+
+    DynamicMetaComplexFieldImpl childPrimaryKey = createDynamicMetaComplexField(childMetaEntity, childPrimaryKeyName, Serializable.class);
+    DynamicMetaSimpleFieldImpl childParentKey = createDynamicMetaSimpleField(childMetaEntity, childPrimaryKeyName, parentMetaEntity.getPrimaryKeyField().getType());
+    childPrimaryKey.addField(childParentKey);
+    childPrimaryKey.addField((AtreusMetaSimpleField) childMetaEntity.getPrimaryKeyField());
+    childMetaEntity.setPrimaryKeyField(childPrimaryKey);
     return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   protected Class<?> resolveEntityType(Field field, Class<?> providedType) {
-    if (providedType != null) {
+    if (providedType != null && !providedType.equals(NullType.class)) {
       return providedType;
     }
     if (Collection.class.isAssignableFrom(field.getType())) {
@@ -97,6 +114,9 @@ public class ParentMetaCompositeBuilder extends BaseMetaFieldBuilder {
     for (AtreusMetaComposite metaComposite : childMetaEntity.getCompositeAssociations()) {
       if (metaComposite.getParentEntity().equals(parentMetaEntity)) {
         return (MetaCompositeImpl) metaComposite;
+      }
+      if (metaComposite.getChildEntity().equals(childMetaEntity)) {
+        throw new RuntimeException("An entity can only be the child of one composite association " + childMetaEntity.getEntityType());
       }
     }
     for (AtreusMetaComposite metaComposite : parentMetaEntity.getCompositeAssociations()) {

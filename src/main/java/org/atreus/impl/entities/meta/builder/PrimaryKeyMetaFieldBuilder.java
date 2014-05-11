@@ -68,7 +68,7 @@ public class PrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the Primary Key meta field
-    StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaSimpleField(metaEntity, field);
     String primaryKeyColumn = primaryKeyAnnotation.value();
     if (StringUtils.isNotNullOrEmpty(primaryKeyColumn)) {
       primaryKeyMetaField.setColumn(primaryKeyColumn);

@@ -66,7 +66,7 @@ public class CollectionMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the static field
-    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaSimpleField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);

@@ -191,6 +191,7 @@ public class EntityManager {
     fieldPropertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
     fieldPropertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
     fieldPropertyBuilders.add(new TtlMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new ParentMetaCompositeBuilder(environment));
     fieldPropertyBuilders.add(new CollectionMetaFieldBuilder(environment));
     fieldPropertyBuilders.add(new MapMetaFieldBuilder(environment));
     fieldPropertyBuilders.add(new SimpleMetaFieldBuilder(environment));

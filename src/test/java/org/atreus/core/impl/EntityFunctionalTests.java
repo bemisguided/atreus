@@ -31,6 +31,7 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.tests.entities.errors.*;
 import org.atreus.core.tests.entities.functional.*;
+import org.atreus.impl.queries.QueryHelper;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
 import org.junit.Test;
@@ -206,7 +207,6 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     }
   }
 
-
   @Test(expected = AtreusDataBindingException.class)
   public void testTimeToLiveEntityBadValue() throws Exception {
     LOG.info("Running testTimeToLiveEntityBadValue");
@@ -279,6 +279,19 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect value for 'value2'", otherEntity.getMapField2().get("value2"));
 
     executeCQL("DROP TABLE default.CollectionTestEntity");
+  }
+
+  @Test
+  public void testSimpleCompositeEntityAssociation() throws Exception {
+    LOG.info("Running testSimpleCompositeEntityAssociation");
+    addEntity(ParentCompositeTestEntity.class);
+    addEntity(ChildCompositeTestEntity.class);
+    initEnvironment();
+
+    AtreusMetaEntity parentMetaEntity = getEnvironment().getEntityManager().getMetaEntity(ParentCompositeTestEntity.class);
+    AtreusMetaEntity childMetaEntity = getEnvironment().getEntityManager().getMetaEntity(ChildCompositeTestEntity.class);
+    LOG.info("parentMetaEntity: {}", QueryHelper.selectEntity(parentMetaEntity));
+    LOG.info("childMetaEntity: {}", QueryHelper.selectEntity(childMetaEntity));
   }
 
   @Test

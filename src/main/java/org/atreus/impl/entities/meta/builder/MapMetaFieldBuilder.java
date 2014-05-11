@@ -67,7 +67,7 @@ public class MapMetaFieldBuilder extends BaseMetaFieldBuilder {
     }
 
     // Create the static field
-    StaticMetaSimpleFieldImpl mapMetaField = createStaticMetaField(metaEntity, field);
+    StaticMetaSimpleFieldImpl mapMetaField = createStaticMetaSimpleField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
