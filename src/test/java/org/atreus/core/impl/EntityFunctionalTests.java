@@ -31,7 +31,6 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.tests.entities.errors.*;
 import org.atreus.core.tests.entities.functional.*;
-import org.atreus.impl.queries.QueryHelper;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
 import org.junit.Test;
@@ -288,10 +287,20 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     addEntity(ChildCompositeTestEntity.class);
     initEnvironment();
 
-    AtreusMetaEntity parentMetaEntity = getEnvironment().getEntityManager().getMetaEntity(ParentCompositeTestEntity.class);
-    AtreusMetaEntity childMetaEntity = getEnvironment().getEntityManager().getMetaEntity(ChildCompositeTestEntity.class);
-    LOG.info("parentMetaEntity: {}", QueryHelper.selectEntity(parentMetaEntity));
-    LOG.info("childMetaEntity: {}", QueryHelper.selectEntity(childMetaEntity));
+    executeCQL("CREATE TABLE default.ParentCompositeTestEntity (" +
+        "id text, " +
+        "PRIMARY KEY(id))");
+
+    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
+        "ParentCompositeTestEntity_id text, " +
+        "id text, " +
+        "PRIMARY KEY(ParentCompositeTestEntity_id, id))");
+
+    ParentCompositeTestEntity parentEntity = new ParentCompositeTestEntity();
+    ChildCompositeTestEntity childEntity = new ChildCompositeTestEntity();
+    parentEntity.setChildEntity(childEntity);
+    getSession().save(parentEntity);
+
   }
 
   @Test

@@ -35,6 +35,8 @@ import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,6 +53,8 @@ import java.util.Map;
 public class MetaEntityImpl implements AtreusMetaEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(MetaEntityImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -126,10 +130,15 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
     // Broadcast entity
     for (AtreusEntityListener listener : listeners) {
+      LOG.info("AtreusEntityListener: {}", listener.getClass().getCanonicalName());
       if (!listenerClass.isAssignableFrom(listener.getClass())) {
         continue;
       }
       listener.acceptEntity(session, managedEntity);
+
+      for(AtreusMetaComposite metaComposite : compositeAssociations) {
+        listener.acceptCompositeAssociation(session, managedEntity, metaComposite);
+      }
     }
 
   }

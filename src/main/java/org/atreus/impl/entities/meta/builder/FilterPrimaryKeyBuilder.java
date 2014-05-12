@@ -34,7 +34,7 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class FilterPrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class FilterPrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -42,14 +42,14 @@ public class FilterPrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public FilterPrimaryKeyMetaFieldBuilder(Environment environment) {
+  public FilterPrimaryKeyBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
     return field.getAnnotation(AtreusPrimaryKey.class) != null;
   }
 

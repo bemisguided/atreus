@@ -21,37 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.listeners;
+package org.atreus.impl.entities.meta.builder;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+
+import java.lang.reflect.Field;
 
 /**
- * Atreus Entity Visitor base.
+ * Make field accessible meta field builder.
  *
  * @author Martin Crawford
  */
-public abstract class AtreusAbstractEntityListener {
+public class MakeAccessibleBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusAbstractEntityListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-
+  public MakeAccessibleBuilder(Environment environment) {
+    super(environment);
   }
 
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
+  // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    field.setAccessible(true);
+    return false;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

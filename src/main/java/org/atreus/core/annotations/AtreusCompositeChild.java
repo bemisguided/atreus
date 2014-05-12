@@ -21,17 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.meta;
+package org.atreus.core.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface for a managed composite association.
+ * Annotation that indicates the field of the child entity in a composite association.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaComposite extends AtreusMetaAssociation {
-
-  public AtreusMetaSimpleField getAssociatedEntityParentKeyField();
-
-  public AtreusMetaField getAssociatedEntityChildKeyField();
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface AtreusCompositeChild {
 
 }

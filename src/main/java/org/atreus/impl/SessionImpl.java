@@ -155,7 +155,7 @@ public class SessionImpl implements AtreusSessionExt {
       // Make sure it is saved to the session
       AtreusManagedEntity managedEntity = (AtreusManagedEntity) entity;
       CompositeKey managedEntityKey = new CompositeKey(managedEntity.getEntity(), managedEntity.getPrimaryKey());
-       managedEntities.put(managedEntityKey, managedEntity);
+      managedEntities.put(managedEntityKey, managedEntity);
       return managedEntity;
     }
 
@@ -184,11 +184,13 @@ public class SessionImpl implements AtreusSessionExt {
 
   @Override
   public BoundStatement prepareQuery(String cql) {
+    LOG.info("CQL: {}", cql);
     return getQueryManager().generate(cql);
   }
 
   @Override
   public BoundStatement prepareQuery(RegularStatement regularStatement) {
+    LOG.info("CQL: {}", regularStatement.getQueryString());
     return getQueryManager().generate(regularStatement);
   }
 

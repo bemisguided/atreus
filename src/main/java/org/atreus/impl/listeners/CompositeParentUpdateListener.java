@@ -29,23 +29,25 @@ import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.entities.collections.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
 /**
- * Update Composite Association Entity visitor.
+ * Update Composite Parent Association Entity listener.
  *
  * @author Martin Crawford
  */
-public class ParentCompositeUpdateListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener, AtreusOnUpdateListener {
+public class CompositeParentUpdateListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener, AtreusOnUpdateListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ParentCompositeUpdateListener.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeParentUpdateListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -54,23 +56,18 @@ public class ParentCompositeUpdateListener extends AtreusAbstractEntityListener 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
-    // Only applicable on the parent being updated
-    if (managedEntity.getMetaEntity().equals(metaComposite.getChildEntity())) {
-      return;
-    }
-
-    Class<?> parentFieldType = metaComposite.getParentField().getType();
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaComposite metaComposite) {
+    Class<?> parentFieldType = metaComposite.getOwnerField().getType();
     if (Collection.class.isAssignableFrom(parentFieldType)) {
-      Collection collection = (Collection) metaComposite.getParentField().getValue(managedEntity);
-      updateCollection(session, collection);
+      Collection collection = (Collection) metaComposite.getOwnerField().getValue(parentEntity);
+      updateCollection(session, metaComposite, parentEntity, collection);
     }
     else if (Map.class.isAssignableFrom(parentFieldType)) {
       // do maps
     }
     else {
-      Object entity = metaComposite.getParentField().getValue(managedEntity);
-      updateEntity(session, entity);
+      Object childEntity = metaComposite.getOwnerField().getValue(parentEntity);
+      updateEntity(session, metaComposite, parentEntity, childEntity);
     }
   }
 
@@ -78,15 +75,15 @@ public class ParentCompositeUpdateListener extends AtreusAbstractEntityListener 
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void updateCollection(AtreusSessionExt session, Collection collection) {
+  private void updateCollection(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, Collection collection) {
     if (collection instanceof ManagedCollection) {
-      updateManagedCollection(session, (ManagedCollection) collection);
+      updateManagedCollection(session, metaComposite, parentEntity, (ManagedCollection) collection);
       return;
     }
     // TODO delete and update all
   }
 
-  private void updateManagedCollection(AtreusSessionExt session, ManagedCollection managedCollection) {
+  private void updateManagedCollection(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
 
     for (Object addedEntity : managedCollection.getAddedEntities()) {
       session.save(addedEntity);
@@ -97,18 +94,25 @@ public class ParentCompositeUpdateListener extends AtreusAbstractEntityListener 
     }
 
     for (Object entity : managedCollection.getCollection()) {
-      updateEntity(session, entity);
+      updateEntity(session, metaComposite, parentEntity, entity);
     }
 
   }
 
-  private void updateEntity(AtreusSessionExt session, Object entity) {
-    if (entity instanceof AtreusManagedEntity) {
-      if (!((AtreusManagedEntity) entity).isUpdated()) {
-        return;
-      }
+  private void updateEntity(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, Object entity) {
+    AtreusManagedEntity childEntity = session.getManagedEntity(entity);
+    if (!childEntity.isUpdated()) {
+      return;
     }
-    session.save(entity);
+    AtreusMetaSimpleField parentKeyField = metaComposite.getAssociatedEntityParentKeyField();
+    Serializable childParentKeyValue = (Serializable) childEntity.getFieldValue(parentKeyField);
+    Serializable parentPrimaryKey = parentEntity.getPrimaryKey();
+    if (!parentPrimaryKey.equals(childParentKeyValue)) {
+      childEntity.setFieldValue(parentKeyField, parentPrimaryKey);
+    }
+    session.getManagedEntity(childEntity); // TODO this should be not needed but it is for now
+    parentEntity.setFieldValue(metaComposite.getOwnerField(), childEntity);
+    session.save(childEntity);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

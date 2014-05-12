@@ -21,65 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.listeners;
 
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Dynamic meta complex field.
+ * Update Composite Child Association Entity listener.
  *
  * @author Martin Crawford
  */
-public class DynamicMetaComplexFieldImpl extends BaseMetaComplexFieldImpl {
+public class CompositeChildUpdateListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener, AtreusOnUpdateListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeChildUpdateListener.class);
 
-  private final String name;
-  private final Class<?> type;
+  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public DynamicMetaComplexFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
-    super(ownerObject);
-    this.name = name;
-    this.type = type;
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
+
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public Object getValue(Object entity) {
-    if (!(entity instanceof AtreusManagedEntity)) {
-      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
-    }
-    return ((AtreusManagedEntity) entity).getDynamicFields().get(name);
-  }
-
-  @Override
-  public void setValue(Object entity, Object value) {
-    if (!(entity instanceof AtreusManagedEntity)) {
-      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
-    }
-    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
-  }
-
-  @Override
-  public Class<?> getType() {
-    return type;
-  }
 
 } // end of class

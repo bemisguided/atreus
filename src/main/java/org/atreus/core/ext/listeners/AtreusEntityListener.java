@@ -36,8 +36,6 @@ public interface AtreusEntityListener {
 
   public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
-  public void acceptField(AtreusSessionExt session, AtreusManagedEntity managedEntity);
-
   public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite);
 
 }

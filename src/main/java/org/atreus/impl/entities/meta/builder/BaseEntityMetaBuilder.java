@@ -23,52 +23,49 @@
  */
 package org.atreus.impl.entities.meta.builder;
 
-import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.util.StringUtils;
+
+import java.lang.reflect.Field;
 
 /**
- * Default meta entity property builder.
+ * Base Meta Property Builder.
  *
  * @author Martin Crawford
  */
-public class DefaultMetaEntityBuilder extends BaseMetaPropertyBuilder {
+public abstract class BaseEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final Environment environment;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public DefaultMetaEntityBuilder(Environment environment) {
-    super(environment);
+  protected BaseEntityMetaBuilder(Environment environment) {
+    this.environment = environment;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public boolean acceptEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
+  public boolean acceptsEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
+    return true;
+  }
 
-    AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
-    if (entityAnnotation == null) {
-      return false;
-    }
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return true;
+  }
 
-    String name = entityAnnotation.value();
-    String keySpace = entityAnnotation.keySpace();
-    String table = entityAnnotation.table();
+  public void validateField(MetaEntityImpl metaEntity, Field field) {
 
-    if (StringUtils.isNotNullOrEmpty(name)) {
-      metaEntity.setName(name);
-    }
-    if (StringUtils.isNotNullOrEmpty(keySpace)) {
-      metaEntity.setKeySpace(keySpace);
-    }
-    if (StringUtils.isNotNullOrEmpty(table)) {
-      metaEntity.setTable(table);
-    }
+  }
 
+  public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
+    return false;
+  }
+
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
     return false;
   }
 
@@ -77,5 +74,9 @@ public class DefaultMetaEntityBuilder extends BaseMetaPropertyBuilder {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  protected Environment getEnvironment() {
+    return environment;
+  }
 
 } // end of class

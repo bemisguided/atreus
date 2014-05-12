@@ -21,43 +21,72 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext.listeners;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 
 /**
- * Atreus Entity Visitor base.
+ * Base meta association bean.
  *
  * @author Martin Crawford
  */
-public abstract class AtreusAbstractEntityListener {
+public class BaseMetaAssociationImpl implements AtreusMetaAssociation {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusAbstractEntityListener.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private AtreusMetaEntity ownerEntity;
+  private AtreusMetaField ownerField;
+  private AtreusMetaEntity associatedEntity;
+  private AtreusMetaField associatedEntityField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-
-  }
-
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
-
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public AtreusMetaEntity getOwnerEntity() {
+    return ownerEntity;
+  }
+
+  public void setOwnerEntity(AtreusMetaEntity ownerEntity) {
+    this.ownerEntity = ownerEntity;
+  }
+
+  @Override
+  public AtreusMetaField getOwnerField() {
+    return ownerField;
+  }
+
+  public void setOwnerField(AtreusMetaField ownerField) {
+    this.ownerField = ownerField;
+  }
+
+  @Override
+  public AtreusMetaEntity getAssociatedEntity() {
+    return associatedEntity;
+  }
+
+  public void setAssociatedEntity(AtreusMetaEntity associatedEntity) {
+    this.associatedEntity = associatedEntity;
+  }
+
+  @Override
+  public AtreusMetaField getAssociatedEntityField() {
+    return associatedEntityField;
+  }
+
+  public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
+    this.associatedEntityField = associatedEntityField;
+  }
 
 } // end of class

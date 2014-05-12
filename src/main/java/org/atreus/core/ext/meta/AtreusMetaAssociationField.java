@@ -21,34 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.atreus.core.ext.meta;
 
 /**
- * Annotation that indicates a composite association for a field.
+ * Atreus meta property interface defining an association managed field.
  *
  * @author Martin Crawford
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface AtreusComposite {
+public interface AtreusMetaAssociationField extends AtreusMetaField {
 
-  /**
-   * Sets the type of the value of this composite association. Type must be an entity managed by Atreus.
-   *
-   * @return
-   */
-  public Class<?> type() default NullType.class;
-
-  /**
-   * Indicates if the annotated field belongs to the parent of the composite association.
-   *
-   * @return
-   */
-  public boolean parent() default true;
+  public AtreusMetaEntity getEntity();
 
 }

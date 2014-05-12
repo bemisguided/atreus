@@ -56,8 +56,8 @@ public class EntityManager {
   private final Environment environment;
   private Map<Class<?>, MetaEntityImpl> metaEntityByClass = new HashMap<>();
   private Map<String, MetaEntityImpl> metaEntityByName = new HashMap<>();
-  private List<BaseMetaPropertyBuilder> entityPropertyBuilders = new ArrayList<>();
-  private List<BaseMetaPropertyBuilder> fieldPropertyBuilders = new ArrayList<>();
+  private List<BaseEntityMetaBuilder> entityPropertyBuilders = new ArrayList<>();
+  private List<BaseEntityMetaBuilder> fieldPropertyBuilders = new ArrayList<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -77,6 +77,9 @@ public class EntityManager {
   }
 
   public AtreusMetaEntity getMetaEntity(Object entity) {
+    if (entity instanceof AtreusManagedEntity) {
+      return ((AtreusManagedEntity) entity).getMetaEntity();
+    }
     return getMetaEntity(entity.getClass());
   }
 
@@ -99,8 +102,9 @@ public class EntityManager {
       for (Field field : entityType.getDeclaredFields()) {
 
         // Execute the meta property builder rule bindValue
-        for (BaseMetaPropertyBuilder propertyBuilder : fieldPropertyBuilders) {
-          if (propertyBuilder.acceptField(metaEntity, field)) {
+        for (BaseEntityMetaBuilder propertyBuilder : fieldPropertyBuilders) {
+          if (propertyBuilder.acceptsField(metaEntity, field) &&
+              propertyBuilder.handleField(metaEntity, field)) {
             break;
           }
         }
@@ -153,16 +157,18 @@ public class EntityManager {
     MetaEntityImpl metaEntity = createMetaEntity(entityType);
 
     // Execute the meta property builder rule bindValue on entity
-    for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
-      if (metaPropertyBuilder.acceptEntity(metaEntity, entityType)) {
+    for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
+      if (propertyBuilder.acceptsEntity(metaEntity, entityType) &&
+          propertyBuilder.handleEntity(metaEntity, entityType)) {
         break;
       }
     }
 
     // Execute the meta property rule bindValue on fields (first pass)
     for (Field field : entityType.getDeclaredFields()) {
-      for (BaseMetaPropertyBuilder metaPropertyBuilder : entityPropertyBuilders) {
-        if (metaPropertyBuilder.acceptField(metaEntity, field)) {
+      for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
+        if (propertyBuilder.acceptsField(metaEntity, field) &&
+            propertyBuilder.handleField(metaEntity, field)) {
           break;
         }
       }
@@ -181,20 +187,20 @@ public class EntityManager {
 
   private void initPropertyBuilders() {
     // Entity meta property builders
-    entityPropertyBuilders.add(new DefaultMetaEntityBuilder(environment));
-    entityPropertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
-    entityPropertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
-    entityPropertyBuilders.add(new PrimaryKeyMetaFieldBuilder(environment));
+    entityPropertyBuilders.add(new DefaultEntityBuilder(environment));
+    entityPropertyBuilders.add(new FilterTransientFieldBuilder(environment));
+    entityPropertyBuilders.add(new MakeAccessibleBuilder(environment));
+    entityPropertyBuilders.add(new PrimaryKeyBuilder(environment));
 
     // Field meta property builders
-    fieldPropertyBuilders.add(new FilterPrimaryKeyMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new FilterTransientMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new MakeAccessibleMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new TtlMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new ParentMetaCompositeBuilder(environment));
-    fieldPropertyBuilders.add(new CollectionMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new MapMetaFieldBuilder(environment));
-    fieldPropertyBuilders.add(new SimpleMetaFieldBuilder(environment));
+    fieldPropertyBuilders.add(new FilterPrimaryKeyBuilder(environment));
+    fieldPropertyBuilders.add(new FilterTransientFieldBuilder(environment));
+    fieldPropertyBuilders.add(new MakeAccessibleBuilder(environment));
+    fieldPropertyBuilders.add(new TtlFieldBuilder(environment));
+    fieldPropertyBuilders.add(new CompositeParentBuilder(environment));
+    fieldPropertyBuilders.add(new CollectionFieldBuilder(environment));
+    fieldPropertyBuilders.add(new MapFieldBuilder(environment));
+    fieldPropertyBuilders.add(new SimpleFieldBuilder(environment));
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

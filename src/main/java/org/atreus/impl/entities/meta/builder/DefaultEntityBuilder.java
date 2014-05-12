@@ -23,23 +23,17 @@
  */
 package org.atreus.impl.entities.meta.builder;
 
-import org.atreus.core.AtreusInitialisationException;
-import org.atreus.core.annotations.AtreusTtl;
-import org.atreus.core.annotations.AtreusTtlTranslator;
-import org.atreus.core.ext.strategies.AtreusTtlStrategy;
+import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
-import org.atreus.impl.types.TypeManager;
-
-import java.lang.reflect.Field;
+import org.atreus.impl.util.StringUtils;
 
 /**
- * Time-to-live meta field builder.
+ * Default meta entity property builder.
  *
  * @author Martin Crawford
  */
-public class TtlMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class DefaultEntityBuilder extends BaseEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,68 +41,40 @@ public class TtlMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TtlMetaFieldBuilder(Environment environment) {
+  public DefaultEntityBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+  public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
 
-    // Check if this is annotated as a  time-to-live field
-    AtreusTtl ttlAnnotation = field.getAnnotation(AtreusTtl.class);
-    if (ttlAnnotation == null) {
+    AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
+    if (entityAnnotation == null) {
       return false;
     }
 
-    // Create the time-to-live meta field
-    StaticMetaSimpleFieldImpl ttlMetaField = createStaticMetaSimpleField(metaEntity, field);
+    String name = entityAnnotation.value();
+    String keySpace = entityAnnotation.keySpace();
+    String table = entityAnnotation.table();
 
-    // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, ttlMetaField, field);
+    if (StringUtils.isNotNullOrEmpty(name)) {
+      metaEntity.setName(name);
+    }
+    if (StringUtils.isNotNullOrEmpty(keySpace)) {
+      metaEntity.setKeySpace(keySpace);
+    }
+    if (StringUtils.isNotNullOrEmpty(table)) {
+      metaEntity.setTable(table);
+    }
 
-    // Add time-to-live field to the meta entity
-    metaEntity.setTtlField(ttlMetaField);
-
-    // Resolve the time-to-live strategy
-    resolveTtlStrategy(metaEntity, field);
-
-    return true;
+    return false;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private void resolveTtlStrategy(MetaEntityImpl metaEntity, Field field) {
-
-    // Query for @AtreusTtlTranslator
-    AtreusTtlTranslator ttlStrategyAnnotation = field.getAnnotation(AtreusTtlTranslator.class);
-
-    // Exists an annotation
-    if (ttlStrategyAnnotation != null) {
-
-      // Attempt to assign the Type Strategy
-      Class<? extends AtreusTtlStrategy> ttlStrategyClass = ttlStrategyAnnotation.value();
-      try {
-        metaEntity.setTtlStrategy(ttlStrategyClass.newInstance());
-        return;
-      }
-      catch (InstantiationException | IllegalAccessException e) {
-        // Instantiation exception translate to Atreus Exception
-        throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID,
-            metaEntity.toString(), ttlStrategyClass.getCanonicalName(), e);
-      }
-    }
-
-    TypeManager typeManager = getEnvironment().getTypeManager();
-
-    AtreusTtlStrategy ttlStrategy = typeManager.findTtlStrategy(field.getType());
-    if (ttlStrategy != null) {
-      metaEntity.setTtlStrategy(ttlStrategy);
-    }
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

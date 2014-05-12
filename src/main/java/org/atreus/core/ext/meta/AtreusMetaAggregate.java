@@ -28,13 +28,7 @@ package org.atreus.core.ext.meta;
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaAggregate {
-
-  public AtreusMetaEntity getAssociatedEntity();
-
-  public AtreusMetaField getField();
-
-  public AtreusMetaEntity getOwnerEntity();
+public interface AtreusMetaAggregate extends AtreusMetaAssociation {
 
   public boolean isNavigable();
 

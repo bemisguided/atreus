@@ -26,9 +26,10 @@ package org.atreus.impl.entities.meta.builder;
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.AtreusMap;
 import org.atreus.core.annotations.NullType;
 import org.atreus.core.ext.AtreusCQLDataType;
-import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
+import org.atreus.core.ext.strategies.AtreusMapTypeStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
@@ -36,14 +37,14 @@ import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
+import java.util.Map;
 
 /**
- * Collections meta field builder.
+ * Map meta field builder.
  *
  * @author Martin Crawford
  */
-public class CollectionMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class MapFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -51,66 +52,82 @@ public class CollectionMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public CollectionMetaFieldBuilder(Environment environment) {
+  public MapFieldBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return Map.class.isAssignableFrom(field.getType());
+  }
 
-    // Check if this is a Collection class
-    if (!Collection.class.isAssignableFrom(field.getType())) {
-      return false;
-    }
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
     // Create the static field
-    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl mapMetaField = createStaticMetaSimpleField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
     if (fieldAnnotation != null) {
       String fieldColumn = fieldAnnotation.value();
       if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
-        collectionMetaField.setColumn(fieldColumn);
+        mapMetaField.setColumn(fieldColumn);
       }
     }
 
     // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, collectionMetaField, field);
+    resolveTypeStrategy(metaEntity, mapMetaField, field);
 
-    // Resolve the value class and corresponding CQL data type
-    Class<?> valueClass = resolveCollectionValueClass(field);
+    // Resolve the key and value classes and corresponding CQL data types
+    Class<?> valueClass = resolveMapValueClass(field);
+    Class<?> keyClass = resolveMapKeyClass(field);
     AtreusCQLDataType valueDataType = AtreusCQLDataType.mapClassToDataType(valueClass);
+    AtreusCQLDataType keyDataType = AtreusCQLDataType.mapClassToDataType(keyClass);
 
     if (valueClass == null || valueDataType == null) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
-          collectionMetaField);
+          mapMetaField);
     }
 
-    if (!(collectionMetaField.getTypeStrategy() instanceof AtreusCollectionTypeStrategy)) {
-      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID,
-          collectionMetaField, collectionMetaField.getTypeStrategy());
+    if (keyClass == null || keyDataType == null) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE,
+          mapMetaField);
     }
 
-    AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) collectionMetaField.getTypeStrategy();
-    collectionTypeStrategy.setValueDataType(valueDataType);
+    if (!(mapMetaField.getTypeStrategy() instanceof AtreusMapTypeStrategy)) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MAP_TYPE_STRATEGY_INVALID,
+          mapMetaField, mapMetaField.getTypeStrategy());
+    }
+
+    AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) mapMetaField.getTypeStrategy();
+    mapTypeStrategy.setValueDataType(valueDataType);
+    mapTypeStrategy.setKeyDataType(keyDataType);
 
     // Add to the meta entity
-    metaEntity.addField(collectionMetaField);
+    metaEntity.addField(mapMetaField);
 
     return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  protected Class<?> resolveCollectionValueClass(Field field) {
+  protected Class<?> resolveMapValueClass(Field field) {
     AtreusCollection collectionAnnotation = field.getAnnotation(AtreusCollection.class);
     if (collectionAnnotation != null && !NullType.class.isAssignableFrom(collectionAnnotation.type())) {
       return collectionAnnotation.type();
     }
-    return ReflectionUtils.findCollectionValueClass(field);
+    return ReflectionUtils.findMapValueClass(field);
+  }
+
+  protected Class<?> resolveMapKeyClass(Field field) {
+    AtreusMap mapAnnotation = field.getAnnotation(AtreusMap.class);
+    if (mapAnnotation != null && !NullType.class.isAssignableFrom(mapAnnotation.key())) {
+      return mapAnnotation.key();
+    }
+    return ReflectionUtils.findMapKeyClass(field);
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

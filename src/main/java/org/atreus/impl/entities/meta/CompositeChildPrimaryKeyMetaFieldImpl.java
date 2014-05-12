@@ -21,63 +21,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.meta;
 
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
-import org.atreus.impl.util.StringUtils;
-
-import java.lang.reflect.Field;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 
 /**
- * Simple field meta field builder.
+ * Composite Child Primary Key meta field.
  *
  * @author Martin Crawford
  */
-public class SimpleMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class CompositeChildPrimaryKeyMetaFieldImpl extends BaseMetaComplexFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final String name;
+  private final AtreusMetaSimpleField childKeyField;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SimpleMetaFieldBuilder(Environment environment) {
-    super(environment);
+  public CompositeChildPrimaryKeyMetaFieldImpl(AtreusMetaEntity ownerObject, String name, AtreusMetaSimpleField parentKeyField) {
+    super(ownerObject);
+    this.name = name;
+    this.childKeyField = (AtreusMetaSimpleField) ownerObject.getPrimaryKeyField();
+    addField(parentKeyField);
+    addField(childKeyField);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    // Assumption is this is the last field builder to be called and therefore a simple field
-
-    // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
-
-    // Check for a field annotation
-    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
-    if (fieldAnnotation != null) {
-      String fieldColumn = fieldAnnotation.value();
-      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
-        metaField.setColumn(fieldColumn);
-      }
-    }
-
-    // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, metaField, field);
-
-    // Add the field to the meta entity
-    metaEntity.addField(metaField);
-    return true;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public Object getValue(Object entity) {
+    return childKeyField.getValue(entity);
+  }
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    childKeyField.setValue(entity, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return childKeyField.getType();
+  }
 
 } // end of class

@@ -118,8 +118,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement deleteAllChildCompositeEntities(AtreusMetaComposite metaComposite) {
-    AtreusMetaEntity parentEntity = metaComposite.getParentEntity();
-    AtreusMetaEntity childEntity = metaComposite.getChildEntity();
+    AtreusMetaEntity parentEntity = metaComposite.getOwnerEntity();
+    AtreusMetaEntity childEntity = metaComposite.getAssociatedEntity();
     Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
     Delete.Where where = null;
     for (String columnName : listPrimaryKeyColumnNames(parentEntity)) {

@@ -25,6 +25,8 @@ package org.atreus.impl.entities.meta;
 
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements a meta field instance for dynamically defined fields.
@@ -34,6 +36,8 @@ import org.atreus.core.ext.meta.AtreusMetaObject;
 public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaSimpleFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -68,7 +72,8 @@ public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
       throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
     }
 
-    return ((AtreusManagedEntity) entity).getDynamicFields().get(name);
+    Object value = ((AtreusManagedEntity) entity).getDynamicFields().get(name);
+    return value;
   }
 
   @Override

@@ -28,10 +28,14 @@ package org.atreus.core.ext.meta;
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaComposite extends AtreusMetaAssociation {
+public interface AtreusMetaAssociation {
 
-  public AtreusMetaSimpleField getAssociatedEntityParentKeyField();
+  public AtreusMetaEntity getAssociatedEntity();
 
-  public AtreusMetaField getAssociatedEntityChildKeyField();
+  public AtreusMetaField getAssociatedEntityField();
+
+  public AtreusMetaEntity getOwnerEntity();
+
+  public AtreusMetaField getOwnerField();
 
 }

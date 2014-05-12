@@ -42,30 +42,32 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class PrimaryKeyMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class PrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyMetaFieldBuilder.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyBuilder.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public PrimaryKeyMetaFieldBuilder(Environment environment) {
+  public PrimaryKeyBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return field.getAnnotation(AtreusPrimaryKey.class) != null;
+  }
+
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
     // Check if this is annotated as a primary key
     AtreusPrimaryKey primaryKeyAnnotation = field.getAnnotation(AtreusPrimaryKey.class);
-    if (primaryKeyAnnotation == null) {
-      return false;
-    }
 
     // Create the Primary Key meta field
     StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaSimpleField(metaEntity, field);

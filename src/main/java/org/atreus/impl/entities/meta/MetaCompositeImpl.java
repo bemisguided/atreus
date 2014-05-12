@@ -26,22 +26,25 @@ package org.atreus.impl.entities.meta;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 
 /**
  * Meta Composite bean.
  *
  * @author Martin Crawford
  */
-public class MetaCompositeImpl implements AtreusMetaComposite {
+public class MetaCompositeImpl extends BaseMetaAssociationImpl implements AtreusMetaComposite {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusMetaEntity parentEntity;
-  private AtreusMetaField parentField;
-  private AtreusMetaEntity childEntity;
-  private AtreusMetaField childField;
+  private AtreusMetaEntity ownerEntity;
+  private AtreusMetaField ownerField;
+  private AtreusMetaEntity associatedEntity;
+  private AtreusMetaSimpleField associatedEntityChildKeyField;
+  private AtreusMetaField associatedEntityField;
+  private AtreusMetaSimpleField associatedEntityParentKeyField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -54,39 +57,57 @@ public class MetaCompositeImpl implements AtreusMetaComposite {
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public AtreusMetaEntity getParentEntity() {
-    return parentEntity;
+  public AtreusMetaEntity getOwnerEntity() {
+    return ownerEntity;
   }
 
-  public void setParentEntity(AtreusMetaEntity parentEntity) {
-    this.parentEntity = parentEntity;
-  }
-
-  @Override
-  public AtreusMetaField getParentField() {
-    return parentField;
-  }
-
-  public void setParentField(AtreusMetaField parentField) {
-    this.parentField = parentField;
+  public void setOwnerEntity(AtreusMetaEntity ownerEntity) {
+    this.ownerEntity = ownerEntity;
   }
 
   @Override
-  public AtreusMetaEntity getChildEntity() {
-    return childEntity;
+  public AtreusMetaField getOwnerField() {
+    return ownerField;
   }
 
-  public void setChildEntity(AtreusMetaEntity childEntity) {
-    this.childEntity = childEntity;
+  public void setOwnerField(AtreusMetaField ownerField) {
+    this.ownerField = ownerField;
   }
 
   @Override
-  public AtreusMetaField getChildField() {
-    return childField;
+  public AtreusMetaEntity getAssociatedEntity() {
+    return associatedEntity;
   }
 
-  public void setChildField(AtreusMetaField childField) {
-    this.childField = childField;
+  public void setAssociatedEntity(AtreusMetaEntity associatedEntity) {
+    this.associatedEntity = associatedEntity;
+  }
+
+  @Override
+  public AtreusMetaField getAssociatedEntityField() {
+    return associatedEntityField;
+  }
+
+  public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
+    this.associatedEntityField = associatedEntityField;
+  }
+
+  @Override
+  public AtreusMetaSimpleField getAssociatedEntityChildKeyField() {
+    return associatedEntityChildKeyField;
+  }
+
+  public void setAssociatedEntityChildKeyField(AtreusMetaSimpleField associatedEntityChildKeyField) {
+    this.associatedEntityChildKeyField = associatedEntityChildKeyField;
+  }
+
+  @Override
+  public AtreusMetaSimpleField getAssociatedEntityParentKeyField() {
+    return associatedEntityParentKeyField;
+  }
+
+  public void setAssociatedEntityParentKeyField(AtreusMetaSimpleField associatedEntityParentKeyField) {
+    this.associatedEntityParentKeyField = associatedEntityParentKeyField;
   }
 
 } // end of class

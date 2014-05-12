@@ -28,6 +28,8 @@ import com.datastax.driver.core.Row;
 import org.atreus.core.ext.meta.AtreusMetaComplexField;
 import org.atreus.core.ext.meta.AtreusMetaObject;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,6 +42,8 @@ import java.util.Map;
 public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseMetaComplexFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -79,9 +83,7 @@ public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField
 
   @Override
   public final void bindValue(BoundStatement boundStatement, Object value) {
-    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
-      metaSimpleField.bindValue(boundStatement, value);
-    }
+     // TODO figure this one out
   }
 
   @Override

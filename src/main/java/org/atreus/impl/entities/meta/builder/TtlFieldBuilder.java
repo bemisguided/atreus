@@ -23,18 +23,23 @@
  */
 package org.atreus.impl.entities.meta.builder;
 
+import org.atreus.core.AtreusInitialisationException;
+import org.atreus.core.annotations.AtreusTtl;
+import org.atreus.core.annotations.AtreusTtlTranslator;
+import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.types.TypeManager;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 /**
- * Filter out transient fields meta field builder.
+ * Time-to-live meta field builder.
  *
  * @author Martin Crawford
  */
-public class FilterTransientMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class TtlFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -42,21 +47,67 @@ public class FilterTransientMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public FilterTransientMetaFieldBuilder(Environment environment) {
+  public TtlFieldBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    // if this is transient then end the chain
-    return Modifier.isTransient(field.getModifiers());
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return field.getAnnotation(AtreusTtl.class) != null;
+  }
+
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+
+    // Create the time-to-live meta field
+    StaticMetaSimpleFieldImpl ttlMetaField = createStaticMetaSimpleField(metaEntity, field);
+
+    // Resolve the type strategy
+    resolveTypeStrategy(metaEntity, ttlMetaField, field);
+
+    // Add time-to-live field to the meta entity
+    metaEntity.setTtlField(ttlMetaField);
+
+    // Resolve the time-to-live strategy
+    resolveTtlStrategy(metaEntity, field);
+
+    return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void resolveTtlStrategy(MetaEntityImpl metaEntity, Field field) {
+
+    // Query for @AtreusTtlTranslator
+    AtreusTtlTranslator ttlStrategyAnnotation = field.getAnnotation(AtreusTtlTranslator.class);
+
+    // Exists an annotation
+    if (ttlStrategyAnnotation != null) {
+
+      // Attempt to assign the Type Strategy
+      Class<? extends AtreusTtlStrategy> ttlStrategyClass = ttlStrategyAnnotation.value();
+      try {
+        metaEntity.setTtlStrategy(ttlStrategyClass.newInstance());
+        return;
+      }
+      catch (InstantiationException | IllegalAccessException e) {
+        // Instantiation exception translate to Atreus Exception
+        throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID,
+            metaEntity.toString(), ttlStrategyClass.getCanonicalName(), e);
+      }
+    }
+
+    TypeManager typeManager = getEnvironment().getTypeManager();
+
+    AtreusTtlStrategy ttlStrategy = typeManager.findTtlStrategy(field.getType());
+    if (ttlStrategy != null) {
+      metaEntity.setTtlStrategy(ttlStrategy);
+    }
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

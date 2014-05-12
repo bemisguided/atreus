@@ -27,34 +27,31 @@ import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
- * Base Meta Property Builder.
+ * Filter out transient fields meta field builder.
  *
  * @author Martin Crawford
  */
-public abstract class BaseMetaPropertyBuilder {
+public class FilterTransientFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Environment environment;
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  protected BaseMetaPropertyBuilder(Environment environment) {
-    this.environment = environment;
+  public FilterTransientFieldBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public boolean acceptEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
-    return false;
-  }
-
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    return false;
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    // if this is transient then end the chain
+    return Modifier.isTransient(field.getModifiers());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -62,9 +59,5 @@ public abstract class BaseMetaPropertyBuilder {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  protected Environment getEnvironment() {
-    return environment;
-  }
 
 } // end of class

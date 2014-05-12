@@ -23,17 +23,20 @@
  */
 package org.atreus.impl.entities.meta.builder;
 
+import org.atreus.core.annotations.AtreusField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.util.StringUtils;
 
 import java.lang.reflect.Field;
 
 /**
- * Make field accessible meta field builder.
+ * Simple field meta field builder.
  *
  * @author Martin Crawford
  */
-public class MakeAccessibleMetaFieldBuilder extends BaseMetaFieldBuilder {
+public class SimpleFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -41,16 +44,34 @@ public class MakeAccessibleMetaFieldBuilder extends BaseMetaFieldBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public MakeAccessibleMetaFieldBuilder(Environment environment) {
+  public SimpleFieldBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean acceptField(MetaEntityImpl metaEntity, Field field) {
-    field.setAccessible(true);
-    return false;
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    // Assumption is this is the last field builder to be called and therefore a simple field
+
+    // Create the static field
+    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
+
+    // Check for a field annotation
+    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
+    if (fieldAnnotation != null) {
+      String fieldColumn = fieldAnnotation.value();
+      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
+        metaField.setColumn(fieldColumn);
+      }
+    }
+
+    // Resolve the type strategy
+    resolveTypeStrategy(metaEntity, metaField, field);
+
+    // Add the field to the meta entity
+    metaEntity.addField(metaField);
+    return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
