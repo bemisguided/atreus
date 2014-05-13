@@ -182,7 +182,6 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
       Assert.assertNotNull("Expect to be not null", otherEntity);
       Assert.assertEquals(primaryKey, otherEntity.getId());
       Assert.assertEquals("I am a text value", otherEntity.getValue());
-      Assert.assertNull("Time-to-live value should be null", otherEntity.getTtl());
 
       // Wait until expired
       sleepSeconds(3); // Sleep for 3 secs

@@ -69,13 +69,11 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public void delete() {
     metaEntity.broadcastListeners(session, this, AtreusOnDeleteListener.class);
-    session.unmanageEntity(this);
   }
 
   @Override
   public void fetch() {
     metaEntity.broadcastListeners(session, this, AtreusOnFetchListener.class);
-    session.manageEntity(this);
   }
 
   @Override
@@ -116,13 +114,11 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public void save() {
     metaEntity.broadcastListeners(session, this, AtreusOnSaveListener.class);
-    session.manageEntity(this);
   }
 
   @Override
   public void update() {
     metaEntity.broadcastListeners(session, this, AtreusOnUpdateListener.class);
-    session.manageEntity(this);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

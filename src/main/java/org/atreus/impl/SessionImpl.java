@@ -28,8 +28,7 @@ import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.impl.commands.BaseCommand;
-import org.atreus.impl.commands.FindByPrimaryKeyCommand;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.entities.EntityManager;
 import org.atreus.impl.queries.QueryHelper;
 import org.atreus.impl.queries.QueryManager;
@@ -112,6 +111,32 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   @Override
+  public void fetch(AtreusManagedEntity managedEntity) {
+    // Assert input params
+    AssertUtils.notNull(managedEntity, "managedEntity is a required parameter");
+
+    Serializable primaryKey = managedEntity.getPrimaryKey();
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+
+    managedEntity = fetchEntity(metaEntity, primaryKey, managedEntity);
+    if (managedEntity == null) {
+      throw new RuntimeException("Managed entity could not be fetched as it does not exist " + primaryKey + " " + metaEntity.getEntityType());
+    }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T findOne(Class<T> entityType, Serializable primaryKey) {
+    // Assert input params
+    AssertUtils.notNull(entityType, "entityType is a required parameter");
+    AssertUtils.notNull(primaryKey, "primaryKey is a required parameter");
+    AtreusMetaEntity metaEntity = assertGetMetaEntity(entityType);
+
+    AtreusManagedEntity managedEntity = fetchEntity(metaEntity, primaryKey, null);
+    return (T) managedEntity;
+  }
+
+  @Override
   public void flush() {
     if (batchStatement == null) {
       return;
@@ -130,47 +155,6 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   @Override
-  public Row fetchRow(Class<?> entityType, Serializable primaryKey) {
-    // Assert input params
-    AssertUtils.notNull(entityType, "entityType is a required parameter");
-    AssertUtils.notNull(primaryKey, "primaryKey is a required parameter");
-    AtreusMetaEntity metaEntity = assertGetMetaEntity(entityType);
-    return fetchRow(metaEntity, primaryKey);
-  }
-
-  @Override
-  public Row fetchRow(AtreusMetaEntity metaEntity, Serializable primaryKey) {
-    // Assert input params
-    AssertUtils.notNull(metaEntity, "metaEntity is a required parameter");
-    AssertUtils.notNull(primaryKey, "primaryKey is a required parameter");
-
-    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
-    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
-    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
-    ResultSet resultSet = execute(boundStatement);
-    Row row = resultSet.one();
-    if (row == null) {
-      return null;
-    }
-    return row;
-  }
-
-  @Override
-  public <T> T findOne(Class<T> entityType, Serializable primaryKey) {
-    // Assert input params
-    AssertUtils.notNull(entityType, "entityType is a required parameter");
-    AtreusMetaEntity metaEntity = assertGetMetaEntity(entityType);
-
-    // Build command
-    FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand();
-    command.setMetaEntity(metaEntity);
-    command.setPrimaryKey(primaryKey);
-
-    // Execute (not a batchable command)
-    return doExecute(command, entityType);
-  }
-
-  @Override
   public AtreusManagedEntity manageEntity(Object entity) {
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
@@ -185,10 +169,7 @@ public class SessionImpl implements AtreusSessionExt {
     }
 
     // Check the session for a matching managed entity
-    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entity);
-    if (metaEntity == null) {
-      throw new RuntimeException(entity.getClass().getCanonicalName() + " is not managed by Atreus");
-    }
+    AtreusMetaEntity metaEntity = assertGetMetaEntity(entity);
 
     Class<?> entityType = metaEntity.getEntityType();
     Serializable primaryKey = (Serializable) metaEntity.getPrimaryKeyField().getValue(entity);
@@ -244,6 +225,7 @@ public class SessionImpl implements AtreusSessionExt {
     AssertUtils.notNull(entity, "entity is a required parameter");
     AtreusManagedEntity managedEntity = manageEntity(entity);
     managedEntity.save();
+    manageEntity(managedEntity);
     return (T) managedEntity;
   }
 
@@ -273,11 +255,6 @@ public class SessionImpl implements AtreusSessionExt {
 
   protected QueryManager getQueryManager() {
     return getEnvironment().getQueryManager();
-  }
-
-  @SuppressWarnings("unchecked")
-  protected <T> T doExecute(BaseCommand command, Class<T> type) {
-    return (T) command.execute(environment, this);
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
@@ -327,6 +304,33 @@ public class SessionImpl implements AtreusSessionExt {
       return;
     }
     getCassandraSession().execute(statement);
+  }
+
+  private AtreusManagedEntity fetchEntity(AtreusMetaEntity metaEntity, Serializable primaryKey, AtreusManagedEntity managedEntity) {
+    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
+    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
+    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
+    ResultSet resultSet = execute(boundStatement);
+    Row row = resultSet.one();
+    if (row == null) {
+      return null;
+    }
+
+    if (managedEntity == null) {
+      try {
+        Object entity = metaEntity.getEntityType().newInstance();
+        metaEntity.getPrimaryKeyField().unbindEntity(row, entity);
+        managedEntity = manageEntity(entity);
+      }
+      catch (InstantiationException | IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    for (AtreusMetaField metaField : metaEntity.getFields()) {
+      metaField.unbindEntity(row, managedEntity);
+    }
+    return managedEntity;
   }
 
   private void uncacheEntry(AtreusManagedEntity managedEntity) {
