@@ -48,6 +48,7 @@ public class AtreusConfiguration {
   private String keySpace;
   private int port;
   private String[] scanPaths;
+  private boolean sessionCache = true;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -123,6 +124,14 @@ public class AtreusConfiguration {
 
   public void setScanPaths(String... scanPaths) {
     this.scanPaths = scanPaths;
+  }
+
+  public boolean isSessionCache() {
+    return sessionCache;
+  }
+
+  public void setSessionCache(boolean sessionCache) {
+    this.sessionCache = sessionCache;
   }
 
 }

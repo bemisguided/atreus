@@ -30,11 +30,11 @@ import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.commands.BaseCommand;
 import org.atreus.impl.commands.FindByPrimaryKeyCommand;
-import org.atreus.impl.commands.SaveCommand;
 import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.queries.QueryHelper;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.util.AssertUtils;
-import org.atreus.impl.util.CompositeKey;
+import org.atreus.impl.util.CompositeMapKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,9 @@ public class SessionImpl implements AtreusSessionExt {
 
   private final Environment environment;
 
-  private Map<CompositeKey, AtreusManagedEntity> managedEntities = new HashMap<>();
+  private Map<CompositeMapKey, AtreusManagedEntity> cachedEntities = new HashMap<>();
+
+  private boolean sessionCache;
 
   private ConsistencyLevel readConsistencyLevel;
 
@@ -77,6 +79,7 @@ public class SessionImpl implements AtreusSessionExt {
     writeBatch = getConfiguration().isDefaultWriteBatch();
     readConsistencyLevel = getConfiguration().getDefaultReadConsistencyLevel();
     writeConsistencyLevel = getConfiguration().getDefaultWriteConsistencyLevel();
+    sessionCache = getConfiguration().isSessionCache();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -127,13 +130,36 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   @Override
+  public Row fetchRow(Class<?> entityType, Serializable primaryKey) {
+    // Assert input params
+    AssertUtils.notNull(entityType, "entityType is a required parameter");
+    AssertUtils.notNull(primaryKey, "primaryKey is a required parameter");
+    AtreusMetaEntity metaEntity = assertGetMetaEntity(entityType);
+    return fetchRow(metaEntity, primaryKey);
+  }
+
+  @Override
+  public Row fetchRow(AtreusMetaEntity metaEntity, Serializable primaryKey) {
+    // Assert input params
+    AssertUtils.notNull(metaEntity, "metaEntity is a required parameter");
+    AssertUtils.notNull(primaryKey, "primaryKey is a required parameter");
+
+    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
+    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
+    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
+    ResultSet resultSet = execute(boundStatement);
+    Row row = resultSet.one();
+    if (row == null) {
+      return null;
+    }
+    return row;
+  }
+
+  @Override
   public <T> T findOne(Class<T> entityType, Serializable primaryKey) {
     // Assert input params
     AssertUtils.notNull(entityType, "entityType is a required parameter");
-    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entityType);
-    if (metaEntity == null) {
-      throw new RuntimeException(entityType.getCanonicalName() + " is not managed by Atreus");
-    }
+    AtreusMetaEntity metaEntity = assertGetMetaEntity(entityType);
 
     // Build command
     FindByPrimaryKeyCommand command = new FindByPrimaryKeyCommand();
@@ -145,7 +171,7 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   @Override
-  public AtreusManagedEntity getManagedEntity(Object entity) {
+  public AtreusManagedEntity manageEntity(Object entity) {
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
 
@@ -154,32 +180,49 @@ public class SessionImpl implements AtreusSessionExt {
 
       // Make sure it is saved to the session
       AtreusManagedEntity managedEntity = (AtreusManagedEntity) entity;
-      CompositeKey managedEntityKey = new CompositeKey(managedEntity.getEntity(), managedEntity.getPrimaryKey());
-      managedEntities.put(managedEntityKey, managedEntity);
+      cacheEntity(managedEntity);
       return managedEntity;
     }
 
     // Check the session for a matching managed entity
     AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entity);
+    if (metaEntity == null) {
+      throw new RuntimeException(entity.getClass().getCanonicalName() + " is not managed by Atreus");
+    }
+
     Class<?> entityType = metaEntity.getEntityType();
-    Object primaryKey = metaEntity.getPrimaryKeyField().getValue(entity);
+    Serializable primaryKey = (Serializable) metaEntity.getPrimaryKeyField().getValue(entity);
 
     // A primary key has not been bindValue so create a managed entity and return unsaved to the session
     if (primaryKey == null) {
-      return getEntityManager().toManagedEntity(entity);
+      return getEntityManager().manageEntity(this, entity);
     }
 
-    // Look up with a composite key
-    CompositeKey managedEntityKey = new CompositeKey(entityType, primaryKey);
-    AtreusManagedEntity managedEntity = managedEntities.get(managedEntityKey);
+    // Look up with in the cache
+    AtreusManagedEntity managedEntity = getCachedEntity(entityType, primaryKey);
     if (managedEntity != null) {
       return managedEntity;
     }
 
     // Create a new managed entity and save to the session
-    managedEntity = getEntityManager().toManagedEntity(entity);
-    managedEntities.put(managedEntityKey, managedEntity);
+    managedEntity = getEntityManager().manageEntity(this, entity);
+    cacheEntity(managedEntity);
     return managedEntity;
+  }
+
+  @Override
+  public AtreusManagedEntity getCachedEntity(Class<?> entityType, Serializable primaryKey) {
+    if (!sessionCache) {
+      return null;
+    }
+    CompositeMapKey managedEntityKey = new CompositeMapKey(entityType, primaryKey);
+    return cachedEntities.get(managedEntityKey);
+  }
+
+  @Override
+  public Object unmanageEntity(AtreusManagedEntity managedEntity) {
+    uncacheEntry(managedEntity);
+    return managedEntity.getEntity();
   }
 
   @Override
@@ -195,26 +238,19 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   @Override
-  public void save(Object entity) {
+  @SuppressWarnings("unchecked")
+  public <T> T save(T entity) {
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
-    AtreusMetaEntity managedEntity = getEntityManager().getMetaEntity(entity);
-    if (managedEntity == null) {
-      throw new RuntimeException(entity.getClass().getCanonicalName() + " is not managed by Atreus");
-    }
-
-    // Build command
-    SaveCommand command = new SaveCommand();
-    command.setEntity(entity);
-
-    // Execute or batch
-    doExecute(command, null);
+    AtreusManagedEntity managedEntity = manageEntity(entity);
+    managedEntity.save();
+    return (T) managedEntity;
   }
 
   @Override
   public void close() {
     flush();
-    managedEntities.clear();
+    cacheClear();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -246,6 +282,38 @@ public class SessionImpl implements AtreusSessionExt {
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
+  private AtreusMetaEntity assertGetMetaEntity(Object entity) {
+    Class<?> entityType = entity.getClass();
+    return assertGetMetaEntity(entityType);
+  }
+
+  private AtreusMetaEntity assertGetMetaEntity(Class<?> entityType) {
+    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entityType);
+    if (metaEntity == null) {
+      throw new RuntimeException(entityType.getCanonicalName() + " is not managed by Atreus");
+    }
+    return metaEntity;
+  }
+
+  private void cacheClear() {
+    cachedEntities.clear();
+  }
+
+  private void cacheEntity(AtreusManagedEntity managedEntity) {
+    if (!sessionCache) {
+      return;
+    }
+    Class<?> entityType = managedEntity.getMetaEntity().getEntityType();
+    Serializable primaryKey = managedEntity.getPrimaryKey();
+
+    // Cannot cache with null primary ket
+    if (primaryKey == null) {
+      return;
+    }
+    CompositeMapKey managedEntityKey = new CompositeMapKey(entityType, primaryKey);
+    cachedEntities.put(managedEntityKey, managedEntity);
+  }
+
   private ResultSet executeRead(Statement statement) {
     statement.setConsistencyLevel(getReadConsistencyLevel());
     return getCassandraSession().execute(statement);
@@ -259,6 +327,18 @@ public class SessionImpl implements AtreusSessionExt {
       return;
     }
     getCassandraSession().execute(statement);
+  }
+
+  private void uncacheEntry(AtreusManagedEntity managedEntity) {
+    if (!sessionCache) {
+      return;
+    }
+
+    Class<?> entityType = managedEntity.getMetaEntity().getEntityType();
+    Serializable primaryKey = managedEntity.getPrimaryKey();
+
+    CompositeMapKey managedEntityKey = new CompositeMapKey(entityType, primaryKey);
+    cachedEntities.remove(managedEntityKey);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

@@ -38,7 +38,7 @@ public interface AtreusMetaEntity extends AtreusMetaObject {
 
   public void addListener(AtreusEntityListener listener);
 
-  public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity);
+  public void broadcastListeners(AtreusSessionExt session, AtreusManagedEntity managedEntity, Class<? extends AtreusEntityListener> event);
 
   public AtreusMetaComposite[] getCompositeAssociations();
 
@@ -55,9 +55,5 @@ public interface AtreusMetaEntity extends AtreusMetaObject {
   public AtreusMetaSimpleField getTtlField();
 
   public AtreusTtlStrategy getTtlStrategy();
-
-  public void save(AtreusSessionExt session, AtreusManagedEntity managedEntity);
-
-  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
 }

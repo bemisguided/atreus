@@ -24,6 +24,11 @@
 package org.atreus.impl.entities;
 
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
+import org.atreus.core.ext.listeners.AtreusOnFetchListener;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
@@ -49,15 +54,29 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   private final Map<String, Object> dynamicFields = new HashMap<>();
   private final Object entity;
   private final AtreusMetaEntity metaEntity;
+  private final AtreusSessionExt session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedEntityImpl(AtreusMetaEntity metaEntity, Object entity) {
+  public ManagedEntityImpl(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
+    this.session = session;
     this.entity = entity;
     this.metaEntity = metaEntity;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public void delete() {
+    metaEntity.broadcastListeners(session, this, AtreusOnDeleteListener.class);
+    session.unmanageEntity(this);
+  }
+
+  @Override
+  public void fetch() {
+    metaEntity.broadcastListeners(session, this, AtreusOnFetchListener.class);
+    session.manageEntity(this);
+  }
 
   @Override
   public Map<String, Object> getDynamicFields() {
@@ -92,6 +111,18 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public boolean isUpdated() {
     return true;
+  }
+
+  @Override
+  public void save() {
+    metaEntity.broadcastListeners(session, this, AtreusOnSaveListener.class);
+    session.manageEntity(this);
+  }
+
+  @Override
+  public void update() {
+    metaEntity.broadcastListeners(session, this, AtreusOnUpdateListener.class);
+    session.manageEntity(this);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

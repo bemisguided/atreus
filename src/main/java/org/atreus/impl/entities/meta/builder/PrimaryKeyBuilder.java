@@ -35,6 +35,7 @@ import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 /**
@@ -63,6 +64,7 @@ public class PrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
     return field.getAnnotation(AtreusPrimaryKey.class) != null;
   }
 
+
   @Override
   public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
@@ -89,6 +91,14 @@ public class PrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
       resolvePrimaryKeyStrategy(metaEntity, field);
     }
     return true;
+  }
+
+  @Override
+  public void validateField(MetaEntityImpl metaEntity, Field field) {
+    if (!Serializable.class.isAssignableFrom(field.getType())) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_NOT_SERIALIZABLE,
+          metaEntity.getName());
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -400,6 +400,19 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     }
   }
 
+  @Test(expected = AtreusInitialisationException.class)
+  public void testPrimaryKeysNotSerializable() {
+    LOG.info("Running testPrimaryKeysNotSerializable");
+    try {
+      addEntity(PrimaryKeyNotSerializableTestEntity.class);
+      initEnvironment();
+    }
+    catch (AtreusInitialisationException e) {
+      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_NOT_SERIALIZABLE, e.getErrorCode());
+      throw e;
+    }
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

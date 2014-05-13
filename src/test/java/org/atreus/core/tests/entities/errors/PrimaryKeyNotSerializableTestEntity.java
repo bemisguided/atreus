@@ -21,41 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.commands;
+package org.atreus.core.tests.entities.errors;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.impl.Environment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusPrimaryKey;
+import org.atreus.core.tests.entities.common.TestEntity;
 
 /**
- * Save command.
+ * PrimaryKeyNotSerializableTestEntity
  *
  * @author Martin Crawford
  */
-public class SaveCommand extends BaseCommand {
+@AtreusEntity
+public class PrimaryKeyNotSerializableTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(SaveCommand.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Object entity;
+  @AtreusPrimaryKey
+  private TestEntity id;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public Object execute(Environment environment, AtreusSessionExt session) {
-    AtreusMetaEntity metaEntity = environment.getEntityManager().getMetaEntity(entity);
-    AtreusManagedEntity managedEntity = session.getManagedEntity(entity);
-    metaEntity.save(session, managedEntity);
-    return null;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -63,12 +52,12 @@ public class SaveCommand extends BaseCommand {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public Object getEntity() {
-    return entity;
+  public TestEntity getId() {
+    return id;
   }
 
-  public void setEntity(Object entity) {
-    this.entity = entity;
+  public void setId(TestEntity id) {
+    this.id = id;
   }
 
 } // end of class

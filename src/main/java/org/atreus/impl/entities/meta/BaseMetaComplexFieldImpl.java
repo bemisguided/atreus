@@ -83,7 +83,9 @@ public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField
 
   @Override
   public final void bindValue(BoundStatement boundStatement, Object value) {
-     // TODO figure this one out
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindValue(boundStatement, value);
+    }
   }
 
   @Override

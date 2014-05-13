@@ -26,6 +26,7 @@ package org.atreus.impl.entities.proxy;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.entities.ManagedEntityImpl;
 import org.slf4j.Logger;
@@ -62,14 +63,14 @@ public class ProxyManager {
     proxyClasses.put(entityType, proxyClass);
   }
 
-  public AtreusManagedEntity createManagedEntity(AtreusMetaEntity metaEntity, Object entity) {
+  public AtreusManagedEntity createManagedEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
     Class<AtreusManagedEntity> proxyClass = proxyClasses.get(metaEntity.getEntityType());
     if (proxyClass == null) {
       throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
     }
     try {
       AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
-      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(metaEntity, entity);
+      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(session, metaEntity, entity);
       EntityProxyHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
       ((Proxy) managedEntityProxy).setHandler(proxyHandler);
       return managedEntityProxy;

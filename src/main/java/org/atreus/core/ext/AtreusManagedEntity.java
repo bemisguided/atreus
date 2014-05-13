@@ -36,6 +36,10 @@ import java.util.Map;
  */
 public interface AtreusManagedEntity {
 
+  public void delete();
+
+  public void fetch();
+
   public Map<String, Object> getDynamicFields();
 
   public Object getEntity();
@@ -50,5 +54,8 @@ public interface AtreusManagedEntity {
 
   public boolean isUpdated();
 
+  public void save();
+
+  public void update();
 
 }

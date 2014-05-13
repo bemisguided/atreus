@@ -61,7 +61,7 @@ public interface AtreusSession {
 
   public void flush(boolean async);
 
-  public void save(Object entity);
+  public <T> T save(T entity);
 
   public BoundStatement prepareQuery(String cql);
 

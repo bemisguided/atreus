@@ -100,7 +100,7 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
   }
 
   private void updateEntity(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, Object entity) {
-    AtreusManagedEntity childEntity = session.getManagedEntity(entity);
+    AtreusManagedEntity childEntity = session.manageEntity(entity);
     if (!childEntity.isUpdated()) {
       return;
     }
@@ -110,7 +110,7 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
     if (!parentPrimaryKey.equals(childParentKeyValue)) {
       childEntity.setFieldValue(parentKeyField, parentPrimaryKey);
     }
-    session.getManagedEntity(childEntity); // TODO this should be not needed but it is for now
+    session.manageEntity(childEntity);
     parentEntity.setFieldValue(metaComposite.getOwnerField(), childEntity);
     session.save(childEntity);
   }

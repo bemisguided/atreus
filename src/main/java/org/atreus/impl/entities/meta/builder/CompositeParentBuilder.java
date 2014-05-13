@@ -26,7 +26,6 @@ package org.atreus.impl.entities.meta.builder;
 import org.atreus.core.annotations.AtreusCompositeParent;
 import org.atreus.core.annotations.NullType;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
@@ -79,7 +78,7 @@ public class CompositeParentBuilder extends BaseFieldEntityMetaBuilder {
 
     // Create a meta composite
     MetaCompositeImpl metaComposite = createMetaComposite(parentMetaEntity, childMetaEntity);
-    parentMetaEntity.setCompositeAssociations(new AtreusMetaComposite[]{metaComposite});
+    parentMetaEntity.addCompositeAssociation(metaComposite);
 
     // Build Composite Parent meta entity
     buildCompositeParentEntity(parentMetaEntity, field, metaComposite);

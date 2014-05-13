@@ -28,6 +28,7 @@ import org.atreus.impl.entities.ManagedEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -57,10 +58,16 @@ class EntityProxyHandler implements MethodHandler {
 
   @Override
   public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
-    if (forwarder == null) {
-      return overridden.invoke(managedEntity, args);
+    try {
+      if (forwarder == null) {
+        return overridden.invoke(managedEntity, args);
+      }
+
+      return overridden.invoke(entity, args);
     }
-    return overridden.invoke(entity, args);
+    catch (InvocationTargetException e) {
+      throw e.getTargetException();
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

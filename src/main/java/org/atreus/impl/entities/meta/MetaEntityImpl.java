@@ -26,9 +26,6 @@ package org.atreus.impl.entities.meta;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.core.ext.listeners.AtreusOnSaveListener;
-import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
@@ -38,12 +35,7 @@ import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-;
+import java.util.*;
 
 /**
  * Managed Entity bean.
@@ -58,7 +50,7 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusMetaComposite[] compositeAssociations = new AtreusMetaComposite[0];
+  private Set<AtreusMetaComposite> compositeAssociations = new HashSet<>();
 
   private Class<?> entityType;
 
@@ -85,15 +77,6 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public AtreusMetaComposite[] getCompositeAssociations() {
-    return compositeAssociations;
-  }
-
-  public void setCompositeAssociations(AtreusMetaComposite[] compositeAssociations) {
-    this.compositeAssociations = compositeAssociations;
-  }
-
-  @Override
   public void addField(AtreusMetaField metaField) {
     fieldsByName.put(metaField.getName(), metaField);
   }
@@ -103,26 +86,12 @@ public class MetaEntityImpl implements AtreusMetaEntity {
     listeners.add(listener);
   }
 
-  @Override
-  public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    broadcastListeners(session, managedEntity, AtreusOnDeleteListener.class);
+  public void addCompositeAssociation(AtreusMetaComposite metaComposite) {
+    compositeAssociations.add(metaComposite);
   }
 
   @Override
-  public void save(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    broadcastListeners(session, managedEntity, AtreusOnSaveListener.class);
-  }
-
-  @Override
-  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    broadcastListeners(session, managedEntity, AtreusOnUpdateListener.class);
-  }
-
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private void broadcastListeners(AtreusSessionExt session, AtreusManagedEntity managedEntity, Class<? extends AtreusEntityListener> listenerClass) {
+  public void broadcastListeners(AtreusSessionExt session, AtreusManagedEntity managedEntity, Class<? extends AtreusEntityListener> listenerClass) {
 
     if (!managedEntity.getMetaEntity().equals(this)) {
       throw new RuntimeException("Expected entity of type " + entityType + " provided type " + managedEntity.getMetaEntity().getEntityType());
@@ -136,14 +105,24 @@ public class MetaEntityImpl implements AtreusMetaEntity {
       }
       listener.acceptEntity(session, managedEntity);
 
-      for(AtreusMetaComposite metaComposite : compositeAssociations) {
+      for (AtreusMetaComposite metaComposite : compositeAssociations) {
         listener.acceptCompositeAssociation(session, managedEntity, metaComposite);
       }
     }
 
   }
 
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public AtreusMetaComposite[] getCompositeAssociations() {
+    AtreusMetaComposite[] result = new AtreusMetaComposite[compositeAssociations.size()];
+    return compositeAssociations.toArray(result);
+  }
 
   @Override
   public String getName() {

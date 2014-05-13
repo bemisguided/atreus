@@ -23,7 +23,11 @@
  */
 package org.atreus.core.ext;
 
+import com.datastax.driver.core.Row;
 import org.atreus.core.AtreusSession;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+
+import java.io.Serializable;
 
 /**
  * Extension Atreus Session.
@@ -32,6 +36,14 @@ import org.atreus.core.AtreusSession;
  */
 public interface AtreusSessionExt extends AtreusSession {
 
-  public AtreusManagedEntity getManagedEntity(Object entity);
+  public Row fetchRow(Class<?> entityType, Serializable primaryKey);
+
+  public Row fetchRow(AtreusMetaEntity metaEntity, Serializable primaryKey);
+
+  public AtreusManagedEntity getCachedEntity(Class<?> entityType, Serializable primaryKey);
+
+  public AtreusManagedEntity manageEntity(Object entity);
+
+  public Object unmanageEntity(AtreusManagedEntity managedEntity);
 
 }

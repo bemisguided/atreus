@@ -23,15 +23,11 @@
  */
 package org.atreus.impl.commands;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.Environment;
-import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,15 +56,11 @@ public class FindByPrimaryKeyCommand extends BaseCommand {
 
   @Override
   public Object execute(Environment environment, AtreusSessionExt session) {
-    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
-    BoundStatement boundStatement = environment.getQueryManager().generate(regularStatement);
-    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
-    ResultSet resultSet = session.execute(boundStatement);
-    Row row = resultSet.one();
-    if (row == null) {
-      return null;
-    }
     try {
+      Row row = session.fetchRow(metaEntity, primaryKey);
+      if (row == null) {
+        return null;
+      }
       Object entity = metaEntity.getEntityType().newInstance();
       metaEntity.getPrimaryKeyField().unbindEntity(row, entity);
       for (AtreusMetaField metaField : metaEntity.getFields()) {

@@ -25,6 +25,7 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
@@ -66,7 +67,7 @@ public class EntityManager {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addEntity(Class<?> entityType) {
+  public void addEntityType(Class<?> entityType) {
     buildMetaEntity(entityType);
   }
 
@@ -85,9 +86,9 @@ public class EntityManager {
     return metaEntityByClass.get(entityType);
   }
 
-  public AtreusManagedEntity toManagedEntity(Object entity) {
+  public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
     AtreusMetaEntity metaEntity = getMetaEntity(entity);
-    return proxyManager.createManagedEntity(metaEntity, entity);
+    return proxyManager.createManagedEntity(session, metaEntity, entity);
   }
 
   public void initMetaEntities() {
@@ -101,8 +102,11 @@ public class EntityManager {
 
         // Execute the meta property builder rule bindValue
         for (BaseEntityMetaBuilder propertyBuilder : fieldPropertyBuilders) {
-          if (propertyBuilder.acceptsField(metaEntity, field) &&
-              propertyBuilder.handleField(metaEntity, field)) {
+          if (!propertyBuilder.acceptsField(metaEntity, field)) {
+            continue;
+          }
+          propertyBuilder.validateField(metaEntity, field);
+          if (propertyBuilder.handleField(metaEntity, field)) {
             break;
           }
         }
@@ -125,7 +129,7 @@ public class EntityManager {
 
     // Iterate and process each found entity class
     for (Class<?> entityType : entityTypes) {
-      addEntity(entityType);
+      addEntityType(entityType);
     }
   }
 
@@ -156,8 +160,10 @@ public class EntityManager {
 
     // Execute the meta property builder rule bindValue on entity
     for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
-      if (propertyBuilder.acceptsEntity(metaEntity, entityType) &&
-          propertyBuilder.handleEntity(metaEntity, entityType)) {
+      if (!propertyBuilder.acceptsEntity(metaEntity, entityType)) {
+        continue;
+      }
+      if (propertyBuilder.handleEntity(metaEntity, entityType)) {
         break;
       }
     }
@@ -165,8 +171,11 @@ public class EntityManager {
     // Execute the meta property rule bindValue on fields (first pass)
     for (Field field : entityType.getDeclaredFields()) {
       for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
-        if (propertyBuilder.acceptsField(metaEntity, field) &&
-            propertyBuilder.handleField(metaEntity, field)) {
+        if (!propertyBuilder.acceptsField(metaEntity, field)) {
+          continue;
+        }
+        propertyBuilder.validateField(metaEntity, field);
+        if (propertyBuilder.handleField(metaEntity, field)) {
           break;
         }
       }

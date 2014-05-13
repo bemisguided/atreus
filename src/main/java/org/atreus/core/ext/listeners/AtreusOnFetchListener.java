@@ -28,6 +28,6 @@ package org.atreus.core.ext.listeners;
  *
  * @author Martin Crawford
  */
-public interface AtreusOnRetrieveListener extends AtreusEntityListener {
+public interface AtreusOnFetchListener extends AtreusEntityListener {
   
 }

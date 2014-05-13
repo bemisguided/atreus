@@ -21,52 +21,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.util;
+package org.atreus.impl.util;
 
-import junit.framework.Assert;
-import org.atreus.impl.util.CompositeKey;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 /**
- * Unit tests for the Composite Key.
+ * Utility composite key for use with java.util.Map.
  *
  * @author Martin Crawford
  */
-public class CompositeKeyTests {
+public class CompositeMapKey {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeKeyTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeMapKey.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private Object[] keys;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public CompositeMapKey(Object... keys) {
+    this.keys = keys;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Test
-  public void testEquals() {
-    String key1 = "1234";
-    Integer key2 = 1234;
-    Assert.assertEquals(new CompositeKey(key1, key2), new CompositeKey(key1, key2));
-    Assert.assertEquals(new CompositeKey(key1, null), new CompositeKey(key1, null));
-    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1, key1));
-    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1));
-    Assert.assertNotSame(new CompositeKey(key1, key2), new CompositeKey(key1, null));
+  @Override
+  public int hashCode() {
+    int result = 0;
+    for (Object keyValue : keys) {
+      if (keyValue != null) {
+        result += keyValue.hashCode();
+      }
+    }
+    return result;
   }
 
-  @Test
-  public void testHashCode() {
-    String key1 = "1234";
-    Integer key2 = 1234;
-    Assert.assertEquals(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, key2).hashCode());
-    Assert.assertEquals(new CompositeKey(key1, null).hashCode(), new CompositeKey(key1, null).hashCode());
-    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, key1).hashCode());
-    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1).hashCode());
-    Assert.assertNotSame(new CompositeKey(key1, key2).hashCode(), new CompositeKey(key1, null).hashCode());
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof CompositeMapKey)) {
+      return false;
+    }
+    CompositeMapKey that = (CompositeMapKey) obj;
+    return Arrays.equals(keys, that.keys);
+  }
 
+  @Override
+  public String toString() {
+    return "CompositeKey{" + Arrays.toString(keys) + '}';
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

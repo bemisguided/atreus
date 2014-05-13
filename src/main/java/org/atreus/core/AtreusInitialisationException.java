@@ -47,6 +47,7 @@ public class AtreusInitialisationException extends AtreusException {
   public static int ERROR_CODE_TTL_STRATEGY_INVALID = 104;
   public static int ERROR_CODE_PRIMARY_KEY_STRATEGY_INVALID = 105;
   public static int ERROR_CODE_PRIMARY_KEY_MULTIPLE = 106;
+  public static int ERROR_CODE_PRIMARY_KEY_NOT_SERIALIZABLE = 107;
   public static int ERROR_CODE_REGISTER_TYPE_STRATEGY = 120;
   public static int ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY = 121;
   public static int ERROR_CODE_REGISTER_TTL_STRATEGY = 122;
