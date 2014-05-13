@@ -30,8 +30,6 @@ import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.builder.*;
 import org.atreus.impl.entities.proxy.ProxyManager;
-import org.atreus.impl.listeners.EntityUpdateListener;
-import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
 import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,10 +171,6 @@ public class EntityManager {
         }
       }
     }
-
-    // TODO optimize reuse of objectss
-    metaEntity.addListener(new PrimaryKeyGeneratorListener());
-    metaEntity.addListener(new EntityUpdateListener());
 
     // Build Proxy Class
     proxyManager.createProxyClass(entityType);

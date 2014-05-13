@@ -24,8 +24,11 @@
 package org.atreus.impl.entities.meta.builder;
 
 import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.listeners.EntityUpdateListener;
+import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
 import org.atreus.impl.util.StringUtils;
 
 /**
@@ -36,6 +39,9 @@ import org.atreus.impl.util.StringUtils;
 public class DefaultEntityBuilder extends BaseEntityMetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final AtreusEntityListener PRIMARY_KEY_GENERATOR_LISTENER = new PrimaryKeyGeneratorListener();
+  private static final AtreusEntityListener ENTITY_UPDATE_LISTENER = new EntityUpdateListener();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -69,6 +75,8 @@ public class DefaultEntityBuilder extends BaseEntityMetaBuilder {
       metaEntity.setTable(table);
     }
 
+    metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);
+    metaEntity.addListener(ENTITY_UPDATE_LISTENER);
     return false;
   }
 

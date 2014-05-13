@@ -26,7 +26,6 @@ package org.atreus.impl.entities;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,21 +71,12 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   @Override
   public Object getFieldValue(AtreusMetaField metaField) {
-    // TODO this feels not right need to review the encapsulation of dynamic and static simple fields
-    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
-      return metaField.getValue(this);
-    }
-    return metaField.getValue(entity);
+    return metaField.getValue(this);
   }
 
   @Override
   public void setFieldValue(AtreusMetaField metaField, Object value) {
-    // TODO this feels not right need to review the encapsulation of dynamic and static simple fields
-    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
-      metaField.setValue(this, value);
-      return;
-    }
-    metaField.setValue(entity, value);
+    metaField.setValue(this, value);
   }
 
   @Override
