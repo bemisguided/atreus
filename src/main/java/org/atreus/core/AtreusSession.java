@@ -29,6 +29,8 @@ import java.io.Serializable;
 
 public interface AtreusSession {
 
+  public boolean isClosed();
+
   public boolean isWriteAsync();
 
   public void setWriteAsync(boolean writeAsync);

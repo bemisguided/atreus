@@ -25,10 +25,6 @@ package org.atreus.impl.entities;
 
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.core.ext.listeners.AtreusOnFetchListener;
-import org.atreus.core.ext.listeners.AtreusOnSaveListener;
-import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
@@ -67,16 +63,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void delete() {
-    metaEntity.broadcastListeners(session, this, AtreusOnDeleteListener.class);
-  }
-
-  @Override
-  public void fetch() {
-    metaEntity.broadcastListeners(session, this, AtreusOnFetchListener.class);
-  }
-
-  @Override
   public Map<String, Object> getDynamicFields() {
     return dynamicFields;
   }
@@ -109,16 +95,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public boolean isUpdated() {
     return true;
-  }
-
-  @Override
-  public void save() {
-    metaEntity.broadcastListeners(session, this, AtreusOnSaveListener.class);
-  }
-
-  @Override
-  public void update() {
-    metaEntity.broadcastListeners(session, this, AtreusOnUpdateListener.class);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

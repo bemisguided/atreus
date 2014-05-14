@@ -24,6 +24,7 @@
 package org.atreus.core.ext;
 
 import org.atreus.core.AtreusSession;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
 
 import java.io.Serializable;
 
@@ -33,6 +34,8 @@ import java.io.Serializable;
  * @author Martin Crawford
  */
 public interface AtreusSessionExt extends AtreusSession {
+
+  public AtreusManagedEntity entityInstance(AtreusMetaEntity metaEntity, Serializable primaryKey);
 
   public void fetch(AtreusManagedEntity managedEntity);
 
