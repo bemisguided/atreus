@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusTtl;
@@ -29,7 +29,7 @@ import org.atreus.core.annotations.AtreusTtlTranslator;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 
 import java.lang.reflect.Field;
@@ -39,7 +39,7 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class TtlFieldBuilder extends BaseFieldEntityMetaBuilder {
+class TtlFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -47,7 +47,7 @@ public class TtlFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public TtlFieldBuilder(Environment environment) {
+  public TtlFieldComponentBuilder(Environment environment) {
     super(environment);
   }
 

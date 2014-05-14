@@ -21,33 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.entities.meta.fields;
 
-import org.atreus.core.ext.AtreusManagedEntity;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.meta.AtreusMetaComplexField;
+import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Implements a meta field instance for statically defined fields.
+ * Base meta complex field.
  *
  * @author Martin Crawford
  */
-public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
+public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseMetaComplexFieldImpl.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Field javaField;
+  private final AtreusMetaObject ownerObject;
+  private Map<String, AtreusMetaSimpleField> fields = new LinkedHashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public StaticMetaSimpleFieldImpl(MetaEntityImpl ownerObject, Field javaField) {
-    super(ownerObject);
-    this.javaField = javaField;
+  protected BaseMetaComplexFieldImpl(AtreusMetaObject ownerObject) {
+    this.ownerObject = ownerObject;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  public void addField(AtreusMetaSimpleField metaSimpleField) {
+    fields.put(metaSimpleField.getName(), metaSimpleField);
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -56,43 +69,35 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public String getName() {
-    return javaField.getName();
+  public final AtreusMetaSimpleField[] getFields() {
+    AtreusMetaSimpleField[] result = new AtreusMetaSimpleField[fields.size()];
+    return fields.values().toArray(result);
   }
 
   @Override
-  public Object getValue(Object entity) {
-    // First check if the entity is a managed entity and if so get the underlining object entity
-    if (entity instanceof AtreusManagedEntity) {
-      entity = ((AtreusManagedEntity) entity).getEntity();
-    }
-    try {
-      // Otherwise extract the value using java reflection directly
-      return javaField.get(entity);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+  public final void bindEntity(BoundStatement boundStatement, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindEntity(boundStatement, entity);
     }
   }
 
   @Override
-  public void setValue(Object entity, Object value) {
-    // First check if the entity is a managed entity and if so get the underlining object entity
-    if (entity instanceof AtreusManagedEntity) {
-      entity = ((AtreusManagedEntity) entity).getEntity();
-    }
-    try {
-      // Otherwise bindValue the value using java reflection directly
-      javaField.set(entity, value);
-    }
-    catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+  public final void bindValue(BoundStatement boundStatement, Object value) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindValue(boundStatement, value);
     }
   }
 
   @Override
-  public Class<?> getType() {
-    return javaField.getType();
+  public final AtreusMetaObject getOwnerObject() {
+    return ownerObject;
+  }
+
+  @Override
+  public final void unbindEntity(Row row, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.unbindEntity(row, entity);
+    }
   }
 
 } // end of class

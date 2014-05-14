@@ -21,45 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.listeners;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import org.atreus.core.ext.meta.AtreusMetaComplexField;
-import org.atreus.core.ext.meta.AtreusMetaObject;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnFetchListener;
+import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
- * Base meta complex field.
+ * Update Composite Parent Association Entity fetch listener.
  *
  * @author Martin Crawford
  */
-public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField {
+public class CompositeParentFetchListener extends AtreusAbstractEntityListener implements AtreusOnFetchListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseMetaComplexFieldImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeParentFetchListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusMetaObject ownerObject;
-  private Map<String, AtreusMetaSimpleField> fields = new LinkedHashMap<>();
-
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  protected BaseMetaComplexFieldImpl(AtreusMetaObject ownerObject) {
-    this.ownerObject = ownerObject;
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addField(AtreusMetaSimpleField metaSimpleField) {
-    fields.put(metaSimpleField.getName(), metaSimpleField);
+  @Override
+  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaComposite metaComposite) {
+    // TODO rough and incomplete implementation
+    BoundStatement boundStatement = session.prepareQuery(QueryHelper.selectCompositeChildEntities(metaComposite));
+    metaComposite.getAssociatedEntityParentKeyField().bindValue(boundStatement, parentEntity.getPrimaryKey());
+    ResultSet resultSet = session.execute(boundStatement);
+    Row row = resultSet.one();
+    try {
+      Object entity = metaComposite.getAssociatedEntity().getEntityType().newInstance();
+      metaComposite.getAssociatedEntityChildKeyField().unbindEntity(row, entity);
+      for (AtreusMetaField metaField : metaComposite.getAssociatedEntity().getFields()) {
+        metaField.unbindEntity(row, entity);
+      }
+      AtreusManagedEntity childEntity = session.manageEntity(entity);
+      metaComposite.getOwnerField().setValue(parentEntity, childEntity);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -67,37 +78,5 @@ public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  @Override
-  public final AtreusMetaSimpleField[] getFields() {
-    AtreusMetaSimpleField[] result = new AtreusMetaSimpleField[fields.size()];
-    return fields.values().toArray(result);
-  }
-
-  @Override
-  public final void bindEntity(BoundStatement boundStatement, Object entity) {
-    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
-      metaSimpleField.bindEntity(boundStatement, entity);
-    }
-  }
-
-  @Override
-  public final void bindValue(BoundStatement boundStatement, Object value) {
-    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
-      metaSimpleField.bindValue(boundStatement, value);
-    }
-  }
-
-  @Override
-  public final AtreusMetaObject getOwnerObject() {
-    return ownerObject;
-  }
-
-  @Override
-  public final void unbindEntity(Row row, Object entity) {
-    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
-      metaSimpleField.unbindEntity(row, entity);
-    }
-  }
 
 } // end of class

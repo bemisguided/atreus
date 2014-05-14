@@ -28,15 +28,15 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.builder.*;
-import org.atreus.impl.entities.proxy.ProxyManager;
+import org.atreus.impl.entities.builder.MetaEntityBuilder;
 import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Registry of managed entities.
@@ -51,24 +51,27 @@ public class EntityManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final ProxyManager proxyManager = new ProxyManager();
+  private final MetaEntityBuilder metaEntityBuilder;
   private final Environment environment;
-  private Map<Class<?>, MetaEntityImpl> metaEntityByClass = new HashMap<>();
-  private Map<String, MetaEntityImpl> metaEntityByName = new HashMap<>();
-  private List<BaseEntityMetaBuilder> entityPropertyBuilders = new ArrayList<>();
-  private List<BaseEntityMetaBuilder> fieldPropertyBuilders = new ArrayList<>();
+  private Map<Class<?>, AtreusMetaEntity> metaEntityByClass = new HashMap<>();
+  private Map<String, AtreusMetaEntity> metaEntityByName = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   public EntityManager(Environment environment) {
     this.environment = environment;
-    initPropertyBuilders();
+    this.metaEntityBuilder = new MetaEntityBuilder(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   public void addEntityType(Class<?> entityType) {
-    buildMetaEntity(entityType);
+    metaEntityBuilder.addEntityType(entityType);
+  }
+
+  public void addManagedEntity(AtreusMetaEntity metaEntity) {
+    metaEntityByClass.put(metaEntity.getEntityType(), metaEntity);
+    metaEntityByName.put(metaEntity.getName(), metaEntity);
   }
 
   public AtreusMetaEntity getMetaEntity(String name) {
@@ -86,33 +89,17 @@ public class EntityManager {
     return metaEntityByClass.get(entityType);
   }
 
-  public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
-    AtreusMetaEntity metaEntity = getMetaEntity(entity);
-    return proxyManager.createManagedEntity(session, metaEntity, entity);
+  public Collection<AtreusMetaEntity> getMetaEntities() {
+    return metaEntityByName.values();
   }
 
-  public void initMetaEntities() {
+  public void init() {
+    metaEntityBuilder.build();
+  }
 
-    // Iterate and process fields for each manged entity
-    for (MetaEntityImpl metaEntity : metaEntityByClass.values()) {
-      Class<?> entityType = metaEntity.getEntityType();
-
-      // Build the fields
-      for (Field field : entityType.getDeclaredFields()) {
-
-        // Execute the meta property builder rule bindValue
-        for (BaseEntityMetaBuilder propertyBuilder : fieldPropertyBuilders) {
-          if (!propertyBuilder.acceptsField(metaEntity, field)) {
-            continue;
-          }
-          propertyBuilder.validateField(metaEntity, field);
-          if (propertyBuilder.handleField(metaEntity, field)) {
-            break;
-          }
-        }
-
-      }
-    }
+  public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
+    AtreusMetaEntity metaEntity = getMetaEntity(entity);
+    return environment.getProxyManager().createManagedEntity(session, metaEntity, entity);
   }
 
   public void scanPaths(String[] paths) {
@@ -136,75 +123,6 @@ public class EntityManager {
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private void addManagedEntity(MetaEntityImpl metaEntity) {
-    metaEntityByClass.put(metaEntity.getEntityType(), metaEntity);
-    metaEntityByName.put(metaEntity.getName(), metaEntity);
-  }
-
-  private MetaEntityImpl createMetaEntity(Class<?> entityType) {
-    String className = entityType.getSimpleName();
-    MetaEntityImpl managedEntity = new MetaEntityImpl();
-    managedEntity.setEntityType(entityType);
-    managedEntity.setName(className);
-    managedEntity.setTable(className);
-    managedEntity.setKeySpace(environment.getConfiguration().getKeySpace());
-    return managedEntity;
-  }
-
-  private void buildMetaEntity(Class<?> entityType) {
-    LOG.info("Processing Entity entityType={}", entityType.getCanonicalName());
-
-    // Create the managed entity with defaults
-    MetaEntityImpl metaEntity = createMetaEntity(entityType);
-
-    // Execute the meta property builder rule bindValue on entity
-    for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
-      if (!propertyBuilder.acceptsEntity(metaEntity, entityType)) {
-        continue;
-      }
-      if (propertyBuilder.handleEntity(metaEntity, entityType)) {
-        break;
-      }
-    }
-
-    // Execute the meta property rule bindValue on fields (first pass)
-    for (Field field : entityType.getDeclaredFields()) {
-      for (BaseEntityMetaBuilder propertyBuilder : entityPropertyBuilders) {
-        if (!propertyBuilder.acceptsField(metaEntity, field)) {
-          continue;
-        }
-        propertyBuilder.validateField(metaEntity, field);
-        if (propertyBuilder.handleField(metaEntity, field)) {
-          break;
-        }
-      }
-    }
-
-    // Build Proxy Class
-    proxyManager.createProxyClass(entityType);
-
-    LOG.debug("Registered Entity name={} {}", metaEntity.getName(), metaEntity.getEntityType());
-    addManagedEntity(metaEntity);
-  }
-
-  private void initPropertyBuilders() {
-    // Entity meta property builders
-    entityPropertyBuilders.add(new DefaultEntityBuilder(environment));
-    entityPropertyBuilders.add(new FilterTransientFieldBuilder(environment));
-    entityPropertyBuilders.add(new MakeAccessibleBuilder(environment));
-    entityPropertyBuilders.add(new PrimaryKeyBuilder(environment));
-
-    // Field meta property builders
-    fieldPropertyBuilders.add(new FilterPrimaryKeyBuilder(environment));
-    fieldPropertyBuilders.add(new FilterTransientFieldBuilder(environment));
-    fieldPropertyBuilders.add(new MakeAccessibleBuilder(environment));
-    fieldPropertyBuilders.add(new TtlFieldBuilder(environment));
-    fieldPropertyBuilders.add(new CompositeParentBuilder(environment));
-    fieldPropertyBuilders.add(new CollectionFieldBuilder(environment));
-    fieldPropertyBuilders.add(new MapFieldBuilder(environment));
-    fieldPropertyBuilders.add(new SimpleFieldBuilder(environment));
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

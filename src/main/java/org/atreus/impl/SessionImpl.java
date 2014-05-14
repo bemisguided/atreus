@@ -392,6 +392,7 @@ public class SessionImpl implements AtreusSessionExt {
     for (AtreusMetaField metaField : metaEntity.getFields()) {
       metaField.unbindEntity(row, managedEntity);
     }
+    managedEntity.setFetched(true);
     return managedEntity;
   }
 

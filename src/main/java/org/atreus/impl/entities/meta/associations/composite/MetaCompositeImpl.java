@@ -21,34 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.entities.meta.associations.composite;
 
+import org.atreus.core.ext.meta.AtreusMetaComposite;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.impl.entities.meta.associations.BaseMetaAssociationImpl;
 
 /**
- * Composite Child Primary Key meta field.
+ * Meta Composite bean.
  *
  * @author Martin Crawford
  */
-public class CompositeChildPrimaryKeyMetaFieldImpl extends BaseMetaComplexFieldImpl {
+public class MetaCompositeImpl extends BaseMetaAssociationImpl implements AtreusMetaComposite {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final String name;
-  private final AtreusMetaSimpleField childKeyField;
+  private AtreusMetaEntity ownerEntity;
+  private AtreusMetaField ownerField;
+  private AtreusMetaEntity associatedEntity;
+  private AtreusMetaSimpleField associatedEntityChildKeyField;
+  private AtreusMetaField associatedEntityField;
+  private AtreusMetaSimpleField associatedEntityParentKeyField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
-
-  public CompositeChildPrimaryKeyMetaFieldImpl(AtreusMetaEntity ownerObject, String name, AtreusMetaSimpleField parentKeyField) {
-    super(ownerObject);
-    this.name = name;
-    this.childKeyField = (AtreusMetaSimpleField) ownerObject.getPrimaryKeyField();
-    addField(parentKeyField);
-    addField(childKeyField);
-  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
@@ -59,23 +58,57 @@ public class CompositeChildPrimaryKeyMetaFieldImpl extends BaseMetaComplexFieldI
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public String getName() {
-    return name;
+  public AtreusMetaEntity getOwnerEntity() {
+    return ownerEntity;
+  }
+
+  public void setOwnerEntity(AtreusMetaEntity ownerEntity) {
+    this.ownerEntity = ownerEntity;
   }
 
   @Override
-  public Object getValue(Object entity) {
-    return childKeyField.getValue(entity);
+  public AtreusMetaField getOwnerField() {
+    return ownerField;
+  }
+
+  public void setOwnerField(AtreusMetaField ownerField) {
+    this.ownerField = ownerField;
   }
 
   @Override
-  public void setValue(Object entity, Object value) {
-    childKeyField.setValue(entity, value);
+  public AtreusMetaEntity getAssociatedEntity() {
+    return associatedEntity;
+  }
+
+  public void setAssociatedEntity(AtreusMetaEntity associatedEntity) {
+    this.associatedEntity = associatedEntity;
   }
 
   @Override
-  public Class<?> getType() {
-    return childKeyField.getType();
+  public AtreusMetaField getAssociatedEntityField() {
+    return associatedEntityField;
+  }
+
+  public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
+    this.associatedEntityField = associatedEntityField;
+  }
+
+  @Override
+  public AtreusMetaSimpleField getAssociatedEntityChildKeyField() {
+    return associatedEntityChildKeyField;
+  }
+
+  public void setAssociatedEntityChildKeyField(AtreusMetaSimpleField associatedEntityChildKeyField) {
+    this.associatedEntityChildKeyField = associatedEntityChildKeyField;
+  }
+
+  @Override
+  public AtreusMetaSimpleField getAssociatedEntityParentKeyField() {
+    return associatedEntityParentKeyField;
+  }
+
+  public void setAssociatedEntityParentKeyField(AtreusMetaSimpleField associatedEntityParentKeyField) {
+    this.associatedEntityParentKeyField = associatedEntityParentKeyField;
   }
 
 } // end of class

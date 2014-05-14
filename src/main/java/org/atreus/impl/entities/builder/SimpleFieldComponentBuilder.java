@@ -21,53 +21,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.proxy;
+package org.atreus.impl.entities.builder;
 
-import javassist.util.proxy.MethodHandler;
-import org.atreus.impl.entities.ManagedEntityImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.annotations.AtreusField;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.util.StringUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
 /**
- * Implements a Method Handler for a proxied managed entity.
+ * Simple field meta field builder.
  *
  * @author Martin Crawford
  */
-class EntityProxyHandler implements MethodHandler {
+class SimpleFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyHandler.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private final Object entity;
-  private final ManagedEntityImpl managedEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public EntityProxyHandler(ManagedEntityImpl managedEntity, Object entity) {
-    this.entity = entity;
-    this.managedEntity = managedEntity;
+  public SimpleFieldComponentBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
-    try {
-      if (forwarder == null) {
-        return overridden.invoke(managedEntity, args);
-      }
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    // Assumption is this is the last field builder to be called and therefore a simple field
 
-      return overridden.invoke(entity, args);
+    // Create the static field
+    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
+
+    // Check for a field annotation
+    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
+    if (fieldAnnotation != null) {
+      String fieldColumn = fieldAnnotation.value();
+      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
+        metaField.setColumn(fieldColumn);
+      }
     }
-    catch (InvocationTargetException e) {
-      throw e.getTargetException();
-    }
+
+    // Resolve the type strategy
+    resolveTypeStrategy(metaEntity, metaField, field);
+
+    // Add the field to the meta entity
+    metaEntity.addField(metaField);
+    return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

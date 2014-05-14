@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.entities.meta.fields;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;

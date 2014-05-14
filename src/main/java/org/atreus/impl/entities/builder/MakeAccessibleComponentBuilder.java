@@ -21,91 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities;
+package org.atreus.impl.entities.builder;
 
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Field;
 
 /**
- * Implements a managed entity.
+ * Make field accessible meta field builder.
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+class MakeAccessibleComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private final Map<String, Object> dynamicFields = new HashMap<>();
-  private final Object entity;
-  private boolean fetched;
-  private final AtreusMetaEntity metaEntity;
-  private final AtreusSessionExt session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedEntityImpl(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
-    this.session = session;
-    this.entity = entity;
-    this.metaEntity = metaEntity;
+  public MakeAccessibleComponentBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean isFetched() {
-    return fetched;
-  }
-
-  @Override
-  public void setFetched(boolean fetched) {
-    this.fetched = fetched;
-  }
-
-  @Override
-  public Map<String, Object> getDynamicFields() {
-    return dynamicFields;
-  }
-
-  @Override
-  public Object getEntity() {
-    return entity;
-  }
-
-  @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(this);
-  }
-
-  @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(this, value);
-  }
-
-  @Override
-  public AtreusMetaEntity getMetaEntity() {
-    return metaEntity;
-  }
-
-  @Override
-  public Serializable getPrimaryKey() {
-    return (Serializable) getMetaEntity().getPrimaryKeyField().getValue(entity);
-  }
-
-  @Override
-  public boolean isUpdated() {
-    return true;
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    field.setAccessible(true);
+    return false;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

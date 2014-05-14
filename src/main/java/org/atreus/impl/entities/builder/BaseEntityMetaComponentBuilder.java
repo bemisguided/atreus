@@ -21,63 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.proxy;
+package org.atreus.impl.entities.builder;
 
-import javassist.util.proxy.Proxy;
-import javassist.util.proxy.ProxyFactory;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.impl.entities.ManagedEntityImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.Environment;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Field;
 
 /**
- * Proxy Manager.
+ * Base Meta Property Builder.
  *
  * @author Martin Crawford
  */
-public class ProxyManager {
+abstract class BaseEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManager.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Map<Class<?>, Class<AtreusManagedEntity>> proxyClasses = new HashMap<>();
+  private final Environment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @SuppressWarnings("unchecked")
-  public void createProxyClass(Class<?> entityType) {
-    ProxyFactory proxyFactory = new ProxyFactory();
-    proxyFactory.setSuperclass(entityType);
-    proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class});
-    Class<AtreusManagedEntity> proxyClass = proxyFactory.createClass();
-    proxyClasses.put(entityType, proxyClass);
+  protected BaseEntityMetaComponentBuilder(Environment environment) {
+    this.environment = environment;
   }
 
-  public AtreusManagedEntity createManagedEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
-    Class<AtreusManagedEntity> proxyClass = proxyClasses.get(metaEntity.getEntityType());
-    if (proxyClass == null) {
-      throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
-    }
-    try {
-      AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
-      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(session, metaEntity, entity);
-      EntityProxyHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
-      ((Proxy) managedEntityProxy).setHandler(proxyHandler);
-      return managedEntityProxy;
-    }
-    catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Proxy class could not be created for " + metaEntity.getEntityType());
-    }
+  // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  public boolean acceptsEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
+    return true;
+  }
+
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return true;
+  }
+
+  public void validateField(MetaEntityImpl metaEntity, Field field) {
+
+  }
+
+  public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
+    return false;
+  }
+
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    return false;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -85,5 +74,9 @@ public class ProxyManager {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  protected Environment getEnvironment() {
+    return environment;
+  }
 
 } // end of class

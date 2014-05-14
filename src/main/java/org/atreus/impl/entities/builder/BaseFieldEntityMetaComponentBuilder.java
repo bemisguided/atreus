@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusFieldType;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.DynamicMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 
 import java.lang.reflect.Field;
@@ -40,7 +40,7 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public abstract class BaseFieldEntityMetaBuilder extends BaseEntityMetaBuilder {
+abstract class BaseFieldEntityMetaComponentBuilder extends BaseEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -48,7 +48,7 @@ public abstract class BaseFieldEntityMetaBuilder extends BaseEntityMetaBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  protected BaseFieldEntityMetaBuilder(Environment environment) {
+  protected BaseFieldEntityMetaComponentBuilder(Environment environment) {
     super(environment);
   }
 

@@ -21,72 +21,69 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.proxy;
 
-import org.atreus.core.ext.meta.AtreusMetaAssociation;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.entities.ManagedEntityImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Base meta association bean.
+ * Proxy Manager.
  *
  * @author Martin Crawford
  */
-public class BaseMetaAssociationImpl implements AtreusMetaAssociation {
+public class ProxyManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManager.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusMetaEntity ownerEntity;
-  private AtreusMetaField ownerField;
-  private AtreusMetaEntity associatedEntity;
-  private AtreusMetaField associatedEntityField;
+  private Map<Class<?>, Class<AtreusManagedEntity>> proxyClasses = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @SuppressWarnings("unchecked")
+  public void createProxyClass(Class<?> entityType) {
+    ProxyFactory proxyFactory = new ProxyFactory();
+    proxyFactory.setSuperclass(entityType);
+    proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class});
+    Class<AtreusManagedEntity> proxyClass = proxyFactory.createClass();
+    proxyClasses.put(entityType, proxyClass);
+  }
+
+  public AtreusManagedEntity createManagedEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
+    Class<AtreusManagedEntity> proxyClass = proxyClasses.get(metaEntity.getEntityType());
+    if (proxyClass == null) {
+      throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
+    }
+    try {
+      AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
+      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(session, metaEntity, entity);
+      EntityProxyHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
+      ((Proxy) managedEntityProxy).setHandler(proxyHandler);
+      return managedEntityProxy;
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException("Proxy class could not be created for " + metaEntity.getEntityType());
+    }
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  @Override
-  public AtreusMetaEntity getOwnerEntity() {
-    return ownerEntity;
-  }
-
-  public void setOwnerEntity(AtreusMetaEntity ownerEntity) {
-    this.ownerEntity = ownerEntity;
-  }
-
-  @Override
-  public AtreusMetaField getOwnerField() {
-    return ownerField;
-  }
-
-  public void setOwnerField(AtreusMetaField ownerField) {
-    this.ownerField = ownerField;
-  }
-
-  @Override
-  public AtreusMetaEntity getAssociatedEntity() {
-    return associatedEntity;
-  }
-
-  public void setAssociatedEntity(AtreusMetaEntity associatedEntity) {
-    this.associatedEntity = associatedEntity;
-  }
-
-  @Override
-  public AtreusMetaField getAssociatedEntityField() {
-    return associatedEntityField;
-  }
-
-  public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
-    this.associatedEntityField = associatedEntityField;
-  }
 
 } // end of class

@@ -21,63 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
-import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.listeners.EntityUpdateListener;
-import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
-import org.atreus.impl.util.StringUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
- * Default meta entity property builder.
+ * Filter out transient fields meta field builder.
  *
  * @author Martin Crawford
  */
-public class DefaultEntityBuilder extends BaseEntityMetaBuilder {
+class FilterTransientFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
-
-  private static final AtreusEntityListener PRIMARY_KEY_GENERATOR_LISTENER = new PrimaryKeyGeneratorListener();
-  private static final AtreusEntityListener ENTITY_UPDATE_LISTENER = new EntityUpdateListener();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public DefaultEntityBuilder(Environment environment) {
+  public FilterTransientFieldComponentBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
-
-    AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
-    if (entityAnnotation == null) {
-      return false;
-    }
-
-    String name = entityAnnotation.value();
-    String keySpace = entityAnnotation.keySpace();
-    String table = entityAnnotation.table();
-
-    if (StringUtils.isNotNullOrEmpty(name)) {
-      metaEntity.setName(name);
-    }
-    if (StringUtils.isNotNullOrEmpty(keySpace)) {
-      metaEntity.setKeySpace(keySpace);
-    }
-    if (StringUtils.isNotNullOrEmpty(table)) {
-      metaEntity.setTable(table);
-    }
-
-    metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);
-    metaEntity.addListener(ENTITY_UPDATE_LISTENER);
-    return false;
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    // if this is transient then end the chain
+    return Modifier.isTransient(field.getModifiers());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

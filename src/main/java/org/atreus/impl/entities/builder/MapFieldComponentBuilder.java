@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusCollection;
@@ -32,7 +32,7 @@ import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.strategies.AtreusMapTypeStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
 
@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * @author Martin Crawford
  */
-public class MapFieldBuilder extends BaseFieldEntityMetaBuilder {
+class MapFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -52,7 +52,7 @@ public class MapFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public MapFieldBuilder(Environment environment) {
+  public MapFieldComponentBuilder(Environment environment) {
     super(environment);
   }
 

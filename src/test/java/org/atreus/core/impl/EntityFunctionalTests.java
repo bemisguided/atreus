@@ -299,7 +299,12 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     ChildCompositeTestEntity childEntity = new ChildCompositeTestEntity();
     parentEntity.setChildEntity(childEntity);
     getSession().save(parentEntity);
+    getSession().flush();
 
+    ParentCompositeTestEntity otherEntity = getSession().findOne(ParentCompositeTestEntity.class, parentEntity.getId());
+
+    Assert.assertNotNull("child entity should not be null", otherEntity.getChildEntity());
+    Assert.assertEquals(childEntity.getId(), otherEntity.getChildEntity().getId());
   }
 
   @Test

@@ -21,43 +21,72 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.meta.fields;
 
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Filter out transient fields meta field builder.
+ * Implements a meta field instance for dynamically defined fields.
  *
  * @author Martin Crawford
  */
-public class FilterTransientFieldBuilder extends BaseFieldEntityMetaBuilder {
+public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaSimpleFieldImpl.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private final String name;
+
+  private final Class<?> type;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public FilterTransientFieldBuilder(Environment environment) {
-    super(environment);
+  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+    super(ownerObject);
+    this.name = name;
+    this.type = type;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
-    // if this is transient then end the chain
-    return Modifier.isTransient(field.getModifiers());
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public Object getValue(Object entity) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+
+    Object value = ((AtreusManagedEntity) entity).getDynamicFields().get(name);
+    return value;
+  }
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return type;
+  }
 
 } // end of class

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
 import org.atreus.core.annotations.AtreusCompositeParent;
 import org.atreus.core.annotations.NullType;
@@ -29,11 +29,12 @@ import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.CompositeChildPrimaryKeyMetaFieldImpl;
-import org.atreus.impl.entities.meta.MetaCompositeImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.associations.composite.CompositeChildPrimaryKeyMetaFieldImpl;
+import org.atreus.impl.entities.meta.associations.composite.MetaCompositeImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.listeners.CompositeChildUpdateListener;
+import org.atreus.impl.listeners.CompositeParentFetchListener;
 import org.atreus.impl.listeners.CompositeParentUpdateListener;
 import org.atreus.impl.util.ReflectionUtils;
 
@@ -46,18 +47,19 @@ import java.util.Map;
  *
  * @author Martin Crawford
  */
-public class CompositeParentBuilder extends BaseFieldEntityMetaBuilder {
+class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final AtreusEntityListener COMPOSITE_PARENT_UPDATE_LISTENER = new CompositeParentUpdateListener();
+  private static final AtreusEntityListener COMPOSITE_PARENT_FETCH_LISTENER = new CompositeParentFetchListener();
   private static final AtreusEntityListener COMPOSITE_CHILD_UPDATE_LISTENER = new CompositeChildUpdateListener();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public CompositeParentBuilder(Environment environment) {
+  public CompositeParentComponentBuilder(Environment environment) {
     super(environment);
   }
 
@@ -88,6 +90,7 @@ public class CompositeParentBuilder extends BaseFieldEntityMetaBuilder {
 
     // Add the appropriate listeners
     parentMetaEntity.addListener(COMPOSITE_PARENT_UPDATE_LISTENER);
+    parentMetaEntity.addListener(COMPOSITE_PARENT_FETCH_LISTENER);
     childMetaEntity.addListener(COMPOSITE_CHILD_UPDATE_LISTENER);
     return true;
   }

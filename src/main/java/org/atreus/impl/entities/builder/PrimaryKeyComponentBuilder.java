@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
 import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.annotations.AtreusPrimaryKey;
@@ -29,7 +29,7 @@ import org.atreus.core.annotations.AtreusPrimaryKeyGenerator;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
 import org.atreus.impl.util.StringUtils;
 import org.slf4j.Logger;
@@ -43,17 +43,17 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class PrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
+class PrimaryKeyComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyBuilder.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(PrimaryKeyComponentBuilder.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public PrimaryKeyBuilder(Environment environment) {
+  public PrimaryKeyComponentBuilder(Environment environment) {
     super(environment);
   }
 

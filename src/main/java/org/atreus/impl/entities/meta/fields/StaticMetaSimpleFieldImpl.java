@@ -21,36 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.entities.meta.fields;
 
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.meta.AtreusMetaObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.entities.meta.MetaEntityImpl;
+
+import java.lang.reflect.Field;
 
 /**
- * Implements a meta field instance for dynamically defined fields.
+ * Implements a meta field instance for statically defined fields.
  *
  * @author Martin Crawford
  */
-public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
+public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaSimpleFieldImpl.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final String name;
-
-  private final Class<?> type;
+  private final Field javaField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+  public StaticMetaSimpleFieldImpl(MetaEntityImpl ownerObject, Field javaField) {
     super(ownerObject);
-    this.name = name;
-    this.type = type;
+    this.javaField = javaField;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -63,30 +58,42 @@ public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   @Override
   public String getName() {
-    return name;
+    return javaField.getName();
   }
 
   @Override
   public Object getValue(Object entity) {
-    if (!(entity instanceof AtreusManagedEntity)) {
-      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    // First check if the entity is a managed entity and if so get the underlining object entity
+    if (entity instanceof AtreusManagedEntity) {
+      entity = ((AtreusManagedEntity) entity).getEntity();
     }
-
-    Object value = ((AtreusManagedEntity) entity).getDynamicFields().get(name);
-    return value;
+    try {
+      // Otherwise extract the value using java reflection directly
+      return javaField.get(entity);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public void setValue(Object entity, Object value) {
-    if (!(entity instanceof AtreusManagedEntity)) {
-      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    // First check if the entity is a managed entity and if so get the underlining object entity
+    if (entity instanceof AtreusManagedEntity) {
+      entity = ((AtreusManagedEntity) entity).getEntity();
     }
-    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
+    try {
+      // Otherwise bindValue the value using java reflection directly
+      javaField.set(entity, value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public Class<?> getType() {
-    return type;
+    return javaField.getType();
   }
 
 } // end of class

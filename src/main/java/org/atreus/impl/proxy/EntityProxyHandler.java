@@ -21,36 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.proxy;
 
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
+import javassist.util.proxy.MethodHandler;
+import org.atreus.impl.entities.ManagedEntityImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
- * Make field accessible meta field builder.
+ * Implements a Method Handler for a proxied managed entity.
  *
  * @author Martin Crawford
  */
-public class MakeAccessibleBuilder extends BaseFieldEntityMetaBuilder {
+class EntityProxyHandler implements MethodHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyHandler.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+
+  private final Object entity;
+  private final ManagedEntityImpl managedEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public MakeAccessibleBuilder(Environment environment) {
-    super(environment);
+  public EntityProxyHandler(ManagedEntityImpl managedEntity, Object entity) {
+    this.entity = entity;
+    this.managedEntity = managedEntity;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
-    field.setAccessible(true);
-    return false;
+  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
+    try {
+      if (forwarder == null) {
+        return overridden.invoke(managedEntity, args);
+      }
+
+      return overridden.invoke(entity, args);
+    }
+    catch (InvocationTargetException e) {
+      throw e.getTargetException();
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

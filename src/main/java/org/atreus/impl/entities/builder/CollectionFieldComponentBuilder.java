@@ -21,22 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
+import org.atreus.core.AtreusInitialisationException;
+import org.atreus.core.annotations.AtreusCollection;
 import org.atreus.core.annotations.AtreusField;
+import org.atreus.core.annotations.NullType;
+import org.atreus.core.ext.AtreusCQLDataType;
+import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.util.ReflectionUtils;
 import org.atreus.impl.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 
 /**
- * Simple field meta field builder.
+ * Collections meta field builder.
  *
  * @author Martin Crawford
  */
-public class SimpleFieldBuilder extends BaseFieldEntityMetaBuilder {
+class CollectionFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -44,37 +51,67 @@ public class SimpleFieldBuilder extends BaseFieldEntityMetaBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SimpleFieldBuilder(Environment environment) {
+  public CollectionFieldComponentBuilder(Environment environment) {
     super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
+  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
+    return Collection.class.isAssignableFrom(field.getType());
+  }
+
+  @Override
   public boolean handleField(MetaEntityImpl metaEntity, Field field) {
-    // Assumption is this is the last field builder to be called and therefore a simple field
 
     // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaSimpleField(metaEntity, field);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
     if (fieldAnnotation != null) {
       String fieldColumn = fieldAnnotation.value();
       if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
-        metaField.setColumn(fieldColumn);
+        collectionMetaField.setColumn(fieldColumn);
       }
     }
 
     // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, metaField, field);
+    resolveTypeStrategy(metaEntity, collectionMetaField, field);
 
-    // Add the field to the meta entity
-    metaEntity.addField(metaField);
+    // Resolve the value class and corresponding CQL data type
+    Class<?> valueClass = resolveCollectionValueClass(field);
+    AtreusCQLDataType valueDataType = AtreusCQLDataType.mapClassToDataType(valueClass);
+
+    if (valueClass == null || valueDataType == null) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE,
+          collectionMetaField);
+    }
+
+    if (!(collectionMetaField.getTypeStrategy() instanceof AtreusCollectionTypeStrategy)) {
+      throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID,
+          collectionMetaField, collectionMetaField.getTypeStrategy());
+    }
+
+    AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) collectionMetaField.getTypeStrategy();
+    collectionTypeStrategy.setValueDataType(valueDataType);
+
+    // Add to the meta entity
+    metaEntity.addField(collectionMetaField);
+
     return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  protected Class<?> resolveCollectionValueClass(Field field) {
+    AtreusCollection collectionAnnotation = field.getAnnotation(AtreusCollection.class);
+    if (collectionAnnotation != null && !NullType.class.isAssignableFrom(collectionAnnotation.type())) {
+      return collectionAnnotation.type();
+    }
+    return ReflectionUtils.findCollectionValueClass(field);
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

@@ -29,6 +29,7 @@ import com.datastax.driver.core.exceptions.DriverException;
 import org.atreus.core.AtreusClusterConnectivityException;
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.proxy.ProxyManager;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ public class Environment {
   private final AtreusConfiguration configuration;
   private final EntityManager entityManager;
   private final QueryManager queryManager;
+  private final ProxyManager proxyManager;
   private final TypeManager typeManager;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -61,6 +63,7 @@ public class Environment {
     this.entityManager = new EntityManager(this);
     this.queryManager = new QueryManager(this);
     this.typeManager = new TypeManager(this);
+    this.proxyManager = new ProxyManager();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -91,7 +94,7 @@ public class Environment {
 
   private void initEntityManager() {
     getEntityManager().scanPaths(getConfiguration().getScanPaths());
-    getEntityManager().initMetaEntities();
+    getEntityManager().init();
   }
 
   private void initTypeManager() {
@@ -126,6 +129,10 @@ public class Environment {
 
   public QueryManager getQueryManager() {
     return queryManager;
+  }
+
+  public ProxyManager getProxyManager() {
+    return proxyManager;
   }
 
   public TypeManager getTypeManager() {

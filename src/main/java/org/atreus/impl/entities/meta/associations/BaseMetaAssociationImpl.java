@@ -21,19 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta;
+package org.atreus.impl.entities.meta.associations;
 
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 
 /**
- * Meta Composite bean.
+ * Base meta association bean.
  *
  * @author Martin Crawford
  */
-public class MetaCompositeImpl extends BaseMetaAssociationImpl implements AtreusMetaComposite {
+public class BaseMetaAssociationImpl implements AtreusMetaAssociation {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -42,9 +41,7 @@ public class MetaCompositeImpl extends BaseMetaAssociationImpl implements Atreus
   private AtreusMetaEntity ownerEntity;
   private AtreusMetaField ownerField;
   private AtreusMetaEntity associatedEntity;
-  private AtreusMetaSimpleField associatedEntityChildKeyField;
   private AtreusMetaField associatedEntityField;
-  private AtreusMetaSimpleField associatedEntityParentKeyField;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -90,24 +87,6 @@ public class MetaCompositeImpl extends BaseMetaAssociationImpl implements Atreus
 
   public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
     this.associatedEntityField = associatedEntityField;
-  }
-
-  @Override
-  public AtreusMetaSimpleField getAssociatedEntityChildKeyField() {
-    return associatedEntityChildKeyField;
-  }
-
-  public void setAssociatedEntityChildKeyField(AtreusMetaSimpleField associatedEntityChildKeyField) {
-    this.associatedEntityChildKeyField = associatedEntityChildKeyField;
-  }
-
-  @Override
-  public AtreusMetaSimpleField getAssociatedEntityParentKeyField() {
-    return associatedEntityParentKeyField;
-  }
-
-  public void setAssociatedEntityParentKeyField(AtreusMetaSimpleField associatedEntityParentKeyField) {
-    this.associatedEntityParentKeyField = associatedEntityParentKeyField;
   }
 
 } // end of class

@@ -21,42 +21,77 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.meta.associations.composite;
 
-import org.atreus.core.annotations.AtreusPrimaryKey;
-import org.atreus.impl.Environment;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.impl.entities.meta.fields.BaseMetaComplexFieldImpl;
 
-import java.lang.reflect.Field;
+import java.io.Serializable;
 
 /**
- * Filter out the primary key meta field builder.
+ * Composite Child Primary Key meta field.
  *
  * @author Martin Crawford
  */
-public class FilterPrimaryKeyBuilder extends BaseFieldEntityMetaBuilder {
+public class CompositeChildPrimaryKeyMetaFieldImpl extends BaseMetaComplexFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final String name;
+  private final AtreusMetaSimpleField parentKeyField;
+  private final AtreusMetaSimpleField childKeyField;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public FilterPrimaryKeyBuilder(Environment environment) {
-    super(environment);
+  public CompositeChildPrimaryKeyMetaFieldImpl(AtreusMetaEntity ownerObject, String name, AtreusMetaSimpleField parentKeyField) {
+    super(ownerObject);
+    this.name = name;
+    this.parentKeyField = parentKeyField;
+    this.childKeyField = (AtreusMetaSimpleField) ownerObject.getPrimaryKeyField();
+    addField(parentKeyField);
+    addField(childKeyField);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
-    return field.getAnnotation(AtreusPrimaryKey.class) != null;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public Object getValue(Object entity) {
+    if (entity instanceof AtreusManagedEntity) {
+      Serializable parentKey = (Serializable) parentKeyField.getValue(entity);
+      Serializable childKey = (Serializable) childKeyField.getValue(entity);
+      return new CompositeChildPrimaryKey(parentKey, childKey);
+    }
+    return childKeyField.getValue(entity);
+  }
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (value instanceof CompositeChildPrimaryKey && entity instanceof AtreusManagedEntity) {
+      parentKeyField.setValue(entity, ((CompositeChildPrimaryKey) value).getParentKey());
+      childKeyField.setValue(entity, ((CompositeChildPrimaryKey) value).getChildKey());
+      return;
+    }
+    childKeyField.setValue(entity, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return CompositeChildPrimaryKey.class;
+  }
 
 } // end of class

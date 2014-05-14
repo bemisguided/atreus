@@ -24,8 +24,8 @@
 package org.atreus.core.impl.queries;
 
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.fields.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -40,6 +40,10 @@ public interface AtreusManagedEntity {
 
   public Object getEntity();
 
+  public boolean isFetched();
+
+  public void setFetched(boolean fetched);
+
   public Object getFieldValue(AtreusMetaField metaField);
 
   public void setFieldValue(AtreusMetaField metaField, Object value);

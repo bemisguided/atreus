@@ -21,51 +21,62 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.meta.builder;
+package org.atreus.impl.entities.builder;
 
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
-
-import java.lang.reflect.Field;
+import org.atreus.impl.listeners.EntityUpdateListener;
+import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
+import org.atreus.impl.util.StringUtils;
 
 /**
- * Base Meta Property Builder.
+ * Default meta entity property builder.
  *
  * @author Martin Crawford
  */
-public abstract class BaseEntityMetaBuilder {
+class DefaultEntityComponentBuilder extends BaseEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+  private static final AtreusEntityListener PRIMARY_KEY_GENERATOR_LISTENER = new PrimaryKeyGeneratorListener();
+  private static final AtreusEntityListener ENTITY_UPDATE_LISTENER = new EntityUpdateListener();
 
-  private final Environment environment;
+  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  protected BaseEntityMetaBuilder(Environment environment) {
-    this.environment = environment;
+  public DefaultEntityComponentBuilder(Environment environment) {
+    super(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public boolean acceptsEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
-    return true;
-  }
-
-  public boolean acceptsField(MetaEntityImpl metaEntity, Field field) {
-    return true;
-  }
-
-  public void validateField(MetaEntityImpl metaEntity, Field field) {
-
-  }
-
+  @Override
   public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
-    return false;
-  }
 
-  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
+    if (entityAnnotation == null) {
+      return false;
+    }
+
+    String name = entityAnnotation.value();
+    String keySpace = entityAnnotation.keySpace();
+    String table = entityAnnotation.table();
+
+    if (StringUtils.isNotNullOrEmpty(name)) {
+      metaEntity.setName(name);
+    }
+    if (StringUtils.isNotNullOrEmpty(keySpace)) {
+      metaEntity.setKeySpace(keySpace);
+    }
+    if (StringUtils.isNotNullOrEmpty(table)) {
+      metaEntity.setTable(table);
+    }
+
+    metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);
+    metaEntity.addListener(ENTITY_UPDATE_LISTENER);
     return false;
   }
 
@@ -74,9 +85,5 @@ public abstract class BaseEntityMetaBuilder {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  protected Environment getEnvironment() {
-    return environment;
-  }
 
 } // end of class

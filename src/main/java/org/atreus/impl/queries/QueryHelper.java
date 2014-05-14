@@ -80,6 +80,20 @@ public class QueryHelper {
     return select;
   }
 
+  public static RegularStatement selectCompositeChildEntities(AtreusMetaComposite metaComposite) {
+    AtreusMetaEntity metaEntity = metaComposite.getAssociatedEntity();
+    Select select = select().all().from(metaEntity.getKeySpace(), metaEntity.getTable());
+    Select.Where where = null;
+    for (String columnName : listColumnNames(metaComposite.getAssociatedEntityParentKeyField(), null)) {
+      if (where == null) {
+        where = select.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
+    }
+    return select;
+  }
+
   public static RegularStatement updateEntity(AtreusMetaEntity metaEntity) {
     return updateEntity(metaEntity, false);
   }
@@ -169,16 +183,20 @@ public class QueryHelper {
     return columnNames;
   }
 
-  private static void listColumnNames(AtreusMetaField metaField, List<String> columnNames) {
+  private static List<String> listColumnNames(AtreusMetaField metaField, List<String> columnNames) {
+    if (columnNames == null) {
+      columnNames = new ArrayList<>();
+    }
     if (metaField instanceof AtreusMetaSimpleField) {
       columnNames.add(((AtreusMetaSimpleField) metaField).getColumn());
-      return;
+      return columnNames;
     }
     if (metaField instanceof AtreusMetaComplexField) {
       for (AtreusMetaSimpleField metaSimpleField : ((AtreusMetaComplexField) metaField).getFields()) {
         columnNames.add(metaSimpleField.getColumn());
       }
     }
+    return columnNames;
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
