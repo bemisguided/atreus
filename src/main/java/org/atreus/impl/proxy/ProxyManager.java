@@ -29,11 +29,11 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.entities.ManagedEntityImpl;
+import org.atreus.impl.entities.collections.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Proxy Manager.
@@ -48,23 +48,53 @@ public class ProxyManager {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Map<Class<?>, Class<AtreusManagedEntity>> proxyClasses = new HashMap<>();
+  private Map<Class<?>, Class<AtreusManagedEntity>> entityProxyClasses = new HashMap<>();
+  private Map<Class<?>, Class<ManagedCollection>> collectionProxyClasses = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @SuppressWarnings("unchecked")
-  public void createProxyClass(Class<?> entityType) {
+  public void defineEntityProxy(Class<?> entityType) {
     ProxyFactory proxyFactory = new ProxyFactory();
     proxyFactory.setSuperclass(entityType);
     proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class});
     Class<AtreusManagedEntity> proxyClass = proxyFactory.createClass();
-    proxyClasses.put(entityType, proxyClass);
+    entityProxyClasses.put(entityType, proxyClass);
+  }
+
+  @SuppressWarnings("unchecked")
+  public Class<ManagedCollection> defineCollectionProxy(Class<? extends Collection> collectionType) {
+    Class<? extends Collection> implType = resolveCollectionClass(collectionType);
+    ProxyFactory proxyFactory = new ProxyFactory();
+    proxyFactory.setSuperclass(implType);
+    proxyFactory.setInterfaces(new Class[]{ManagedCollection.class});
+    Class<ManagedCollection> proxyClass = proxyFactory.createClass();
+    collectionProxyClasses.put(collectionType, proxyClass);
+    return proxyClass;
+  }
+
+  public ManagedCollection createManagedCollection(Class<? extends Collection> collectionType) {
+    Class<ManagedCollection> proxyClass = collectionProxyClasses.get(collectionType);
+    if (proxyClass == null) {
+      proxyClass = defineCollectionProxy(collectionType);
+    }
+    try {
+      ManagedCollection managedCollection = proxyClass.newInstance();
+      Class<? extends  Collection> collectionClass = resolveCollectionClass(collectionType);
+      Collection collection = collectionClass.newInstance();
+      CollectionProxyHandler proxyHandler = new CollectionProxyHandler(collection);
+      ((Proxy) managedCollection).setHandler(proxyHandler);
+      return managedCollection;
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException("Proxy class could not be created for " + collectionType);
+    }
   }
 
   public AtreusManagedEntity createManagedEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
-    Class<AtreusManagedEntity> proxyClass = proxyClasses.get(metaEntity.getEntityType());
+    Class<AtreusManagedEntity> proxyClass = entityProxyClasses.get(metaEntity.getEntityType());
     if (proxyClass == null) {
       throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
     }
@@ -83,6 +113,25 @@ public class ProxyManager {
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private Class<? extends Collection> resolveCollectionClass(Class<? extends Collection> collectionType) {
+    if (!collectionType.isInterface()) {
+      return collectionType;
+    }
+    if (SortedSet.class.isAssignableFrom(collectionType)) {
+      return TreeSet.class;
+    }
+    if (Set.class.isAssignableFrom(collectionType)) {
+      return HashSet.class;
+    }
+    if (Queue.class.isAssignableFrom(collectionType)) {
+      return LinkedList.class;
+    }
+    if (List.class.isAssignableFrom(collectionType)) {
+      return ArrayList.class;
+    }
+    throw new RuntimeException("Could not resolve collection type " + collectionType);
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

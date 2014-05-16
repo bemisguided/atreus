@@ -34,7 +34,7 @@ import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.associations.MetaAssociatedEntityImpl;
 import org.atreus.impl.entities.meta.associations.MetaAssociationImpl;
 import org.atreus.impl.entities.meta.associations.composite.CompositeChildPrimaryKeyMetaFieldImpl;
-import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.entities.meta.fields.MetaAssociationFieldImpl;
 import org.atreus.impl.listeners.CompositeChildUpdateListener;
 import org.atreus.impl.listeners.CompositeParentFetchListener;
 import org.atreus.impl.listeners.CompositeParentUpdateListener;
@@ -144,6 +144,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
     // Update the meta composite
     ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setAssociationKeyField(parentKeyField);
     ((MetaAssociatedEntityImpl) metaAssociation.getAssociation()).setAssociationKeyField(childMetaEntity.getPrimaryKeyField());
+    metaAssociation.setOutboundTable(childMetaEntity.getTable());
 
     // Create the composite child primary key using the existing primary key with the parent reference
     CompositeChildPrimaryKeyMetaFieldImpl childKeyField = new CompositeChildPrimaryKeyMetaFieldImpl(childMetaEntity, parentKeyName, parentKeyField);
@@ -151,9 +152,9 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
   }
 
   private void buildCompositeParentEntity(MetaEntityImpl parentMetaEntity, Field field, MetaAssociationImpl metaAssociation) {
-    // TODO this will become an associate meta field
-    StaticMetaSimpleFieldImpl parentMetaField = createStaticMetaSimpleField(parentMetaEntity, field);
+    MetaAssociationFieldImpl parentMetaField = new MetaAssociationFieldImpl(parentMetaEntity, field, metaAssociation);
     ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setAssociationField(parentMetaField);
+    parentMetaEntity.addField(parentMetaField);
   }
 
   private MetaAssociationImpl createMetaAssociation(MetaEntityImpl ownerEntity, MetaEntityImpl associationEntity) {

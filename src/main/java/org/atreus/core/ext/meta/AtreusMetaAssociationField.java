@@ -30,6 +30,6 @@ package org.atreus.core.ext.meta;
  */
 public interface AtreusMetaAssociationField extends AtreusMetaField {
 
-  public AtreusMetaEntity getEntity();
+  public AtreusMetaAssociation getAssociation();
 
 }

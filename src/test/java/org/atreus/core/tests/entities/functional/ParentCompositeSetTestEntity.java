@@ -23,16 +23,20 @@
  */
 package org.atreus.core.tests.entities.functional;
 
+import org.atreus.core.annotations.AtreusCompositeParent;
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.annotations.AtreusPrimaryKey;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * ChildCompositeTestEntity.
+ * ParentCompositeSetTestEntity.
  *
  * @author Martin Crawford
  */
 @AtreusEntity
-public class ChildCompositeTestEntity {
+public class ParentCompositeSetTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -41,32 +45,12 @@ public class ChildCompositeTestEntity {
   @AtreusPrimaryKey
   private String id;
 
+  @AtreusCompositeParent
+  private List<ChildCompositeTestEntity> childEntities = new ArrayList<>();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    ChildCompositeTestEntity that = (ChildCompositeTestEntity) o;
-
-    if (id != null ? !id.equals(that.id) : that.id != null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return id != null ? id.hashCode() : 0;
-  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
@@ -82,4 +66,11 @@ public class ChildCompositeTestEntity {
     this.id = id;
   }
 
+  public List<ChildCompositeTestEntity> getChildEntities() {
+    return childEntities;
+  }
+
+  public void setChildEntities(List<ChildCompositeTestEntity> childEntities) {
+    this.childEntities = childEntities;
+  }
 } // end of class

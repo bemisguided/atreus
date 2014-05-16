@@ -26,6 +26,7 @@ package org.atreus.impl.entities.meta.associations;
 import org.atreus.core.ext.meta.AtreusAssociationType;
 import org.atreus.core.ext.meta.AtreusMetaAssociatedEntity;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
+import org.atreus.impl.util.StringUtils;
 
 /**
  * Meta association bean.
@@ -38,10 +39,11 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusMetaAssociatedEntity owner = new MetaAssociatedEntityImpl();
   private AtreusMetaAssociatedEntity association = new MetaAssociatedEntityImpl();
+  private String inboundTable;
+  private String outboundTable;
+  private AtreusMetaAssociatedEntity owner = new MetaAssociatedEntityImpl();
   private AtreusAssociationType type;
-  private boolean navigable;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -53,10 +55,6 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  @Override
-  public AtreusMetaAssociatedEntity getOwner() {
-    return owner;
-  }
 
   @Override
   public AtreusMetaAssociatedEntity getAssociation() {
@@ -65,11 +63,30 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
 
   @Override
   public boolean isNavigable() {
-    return navigable;
+    return StringUtils.isNotNullOrEmpty(inboundTable);
   }
 
-  public void setNavigable(boolean navigable) {
-    this.navigable = navigable;
+  @Override
+  public String getInboundTable() {
+    return inboundTable;
+  }
+
+  public void setInboundTable(String inboundTable) {
+    this.inboundTable = inboundTable;
+  }
+
+  @Override
+  public String getOutboundTable() {
+    return outboundTable;
+  }
+
+  public void setOutboundTable(String outboundTable) {
+    this.outboundTable = outboundTable;
+  }
+
+  @Override
+  public AtreusMetaAssociatedEntity getOwner() {
+    return owner;
   }
 
   @Override
@@ -80,4 +97,5 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
   public void setType(AtreusAssociationType type) {
     this.type = type;
   }
+
 } // end of class

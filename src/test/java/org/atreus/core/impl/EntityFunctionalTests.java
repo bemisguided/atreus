@@ -305,6 +305,43 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
     Assert.assertNotNull("child entity should not be null", otherEntity.getChildEntity());
     Assert.assertEquals(childEntity.getId(), otherEntity.getChildEntity().getId());
+
+    executeCQL("DROP TABLE default.ParentCompositeTestEntity");
+    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
+  }
+
+  @Test
+  public void testSetCompositeEntityAssociation() throws Exception {
+    LOG.info("Running testSetCompositeEntityAssociation");
+    addEntity(ParentCompositeSetTestEntity.class);
+    addEntity(ChildCompositeTestEntity.class);
+    initEnvironment();
+
+    executeCQL("CREATE TABLE default.ParentCompositeSetTestEntity (" +
+        "id text, " +
+        "PRIMARY KEY(id))");
+
+    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
+        "ParentCompositeSetTestEntity_id text, " +
+        "id text, " +
+        "PRIMARY KEY(ParentCompositeSetTestEntity_id, id))");
+
+    ParentCompositeSetTestEntity parentEntity = new ParentCompositeSetTestEntity();
+    ChildCompositeTestEntity childEntity1 = new ChildCompositeTestEntity();
+    ChildCompositeTestEntity childEntity2 = new ChildCompositeTestEntity();
+    parentEntity.getChildEntities().add(childEntity1);
+    parentEntity.getChildEntities().add(childEntity2);
+    getSession().save(parentEntity);
+    getSession().flush();
+
+    ParentCompositeSetTestEntity otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, parentEntity.getId());
+
+    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
+
+    executeCQL("DROP TABLE default.ParentCompositeSetTestEntity");
+    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
   }
 
   @Test

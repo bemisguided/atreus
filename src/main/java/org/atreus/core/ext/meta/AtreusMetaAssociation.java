@@ -32,7 +32,11 @@ public interface AtreusMetaAssociation {
 
   public AtreusMetaAssociatedEntity getAssociation();
 
+  public String getInboundTable();
+
   public boolean isNavigable();
+
+  public String getOutboundTable();
 
   public AtreusMetaAssociatedEntity getOwner();
 

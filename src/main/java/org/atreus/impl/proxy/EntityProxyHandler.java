@@ -62,7 +62,6 @@ class EntityProxyHandler implements MethodHandler {
       if (forwarder == null) {
         return overridden.invoke(managedEntity, args);
       }
-
       return overridden.invoke(entity, args);
     }
     catch (InvocationTargetException e) {

@@ -62,6 +62,7 @@ abstract class BaseFieldEntityMetaComponentBuilder extends BaseEntityMetaCompone
     return metaField;
   }
 
+
   protected StaticMetaSimpleFieldImpl createStaticMetaSimpleField(MetaEntityImpl metaEntity, Field field) {
     StaticMetaSimpleFieldImpl metaField = new StaticMetaSimpleFieldImpl(metaEntity, field);
     metaField.setColumn(field.getName());

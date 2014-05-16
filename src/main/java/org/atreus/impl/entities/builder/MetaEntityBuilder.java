@@ -139,7 +139,7 @@ public class MetaEntityBuilder {
     }
 
     // Build Proxy Class
-    environment.getProxyManager().createProxyClass(entityType);
+    environment.getProxyManager().defineEntityProxy(entityType);
 
     LOG.debug("Registered Entity name={} {}", metaEntity.getName(), metaEntity.getEntityType());
     environment.getEntityManager().addManagedEntity(metaEntity);

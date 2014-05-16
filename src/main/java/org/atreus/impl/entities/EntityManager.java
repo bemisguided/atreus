@@ -26,9 +26,12 @@ package org.atreus.impl.entities;
 import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaAssociationField;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.builder.MetaEntityBuilder;
+import org.atreus.impl.entities.collections.ManagedCollection;
 import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,9 +100,25 @@ public class EntityManager {
     metaEntityBuilder.build();
   }
 
+  @SuppressWarnings("unchecked")
   public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
     AtreusMetaEntity metaEntity = getMetaEntity(entity);
-    return environment.getProxyManager().createManagedEntity(session, metaEntity, entity);
+    AtreusManagedEntity managedEntity = environment.getProxyManager().createManagedEntity(session, metaEntity, entity);
+    for(AtreusMetaField metaField : metaEntity.getFields()){
+      if (!(metaField instanceof AtreusMetaAssociationField)) {
+        continue;
+      }
+      if (!Collection.class.isAssignableFrom(metaField.getType())) {
+        continue;
+      }
+      ManagedCollection managedCollection = environment.getProxyManager().createManagedCollection((Class<? extends Collection>) metaField.getType());
+      Collection collection = (Collection) managedEntity.getFieldValue(metaField);
+      if (collection != null) {
+        managedCollection.getCollection().addAll(collection);
+      }
+      managedEntity.setFieldValue(metaField, managedCollection);
+    }
+    return managedEntity;
   }
 
   public void scanPaths(String[] paths) {

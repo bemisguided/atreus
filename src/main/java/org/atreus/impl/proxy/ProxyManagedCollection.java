@@ -21,33 +21,71 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.collections;
+package org.atreus.impl.proxy;
 
+import org.atreus.impl.entities.collections.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
- * Managed bindValue.
+ * Proxied Managed Collection.
  *
  * @author Martin Crawford
  */
-public class ManagedSet extends BaseManagedCollection implements Set {
+public class ProxyManagedCollection implements ManagedCollection {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedSet.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManagedCollection.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final Collection collection;
+  private Collection memento = new ArrayList();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ManagedSet(Set delegate) {
-    super(delegate);
+  public ProxyManagedCollection(Collection collection) {
+    this.collection = collection;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public Collection getAddedEntities() {
+    Collection result = new ArrayList();
+    for(Object entity: collection) {
+      if (!memento.contains(entity)) {
+        result.add(entity);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public Collection getCollection() {
+    return collection;
+  }
+
+  @Override
+  public Collection getRemovedEntities() {
+    Collection result = new ArrayList();
+    for(Object entity: memento) {
+      if (!collection.contains(entity)) {
+        result.add(entity);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public void baseline() {
+    memento.clear();
+    memento.addAll(collection);
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

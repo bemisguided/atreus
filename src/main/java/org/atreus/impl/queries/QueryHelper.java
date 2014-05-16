@@ -83,11 +83,11 @@ public class QueryHelper {
     return select;
   }
 
-  public static RegularStatement selectAssociatedEntities(AtreusMetaAssociation metaComposite) {
-    AtreusMetaEntity metaEntity = metaComposite.getAssociation().getMetaEntity();
-    Select select = select().all().from(metaEntity.getKeySpace(), metaEntity.getTable());
+  public static RegularStatement selectAssociatedEntities(AtreusMetaAssociation metaAssociation) {
+    AtreusMetaEntity metaEntity = metaAssociation.getAssociation().getMetaEntity();
+    Select select = select().all().from(metaEntity.getKeySpace(), metaAssociation.getOutboundTable());
     Select.Where where = null;
-    for (String columnName : listColumnNames(metaComposite.getOwner().getAssociationKeyField(), null)) {
+    for (String columnName : listColumnNames(metaAssociation.getOwner().getAssociationKeyField(), null)) {
       if (where == null) {
         where = select.where(eq(columnName, bindMarker(columnName)));
         continue;

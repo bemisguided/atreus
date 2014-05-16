@@ -21,51 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.tests.entities.functional;
+package org.atreus.impl.proxy;
 
-import org.atreus.core.annotations.AtreusEntity;
-import org.atreus.core.annotations.AtreusPrimaryKey;
+import javassist.util.proxy.MethodHandler;
+import org.atreus.impl.entities.collections.ManagedCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
- * ChildCompositeTestEntity.
+ * Proxy Handler for a Managed Collection.
  *
  * @author Martin Crawford
  */
-@AtreusEntity
-public class ChildCompositeTestEntity {
+public class CollectionProxyHandler implements MethodHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
+  private static final transient Logger LOG = LoggerFactory.getLogger(CollectionProxyHandler.class);
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  @AtreusPrimaryKey
-  private String id;
+  private final ManagedCollection managedCollection;
+  private final Collection collection;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  public CollectionProxyHandler(Collection collection) {
+    this.collection = collection;
+    this.managedCollection = new ProxyManagedCollection(collection);
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
+    try {
+      if (forwarder == null) {
+        return overridden.invoke(managedCollection, args);
+      }
+
+      return overridden.invoke(collection, args);
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    catch (InvocationTargetException e) {
+      throw e.getTargetException();
     }
-
-    ChildCompositeTestEntity that = (ChildCompositeTestEntity) o;
-
-    if (id != null ? !id.equals(that.id) : that.id != null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return id != null ? id.hashCode() : 0;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -73,13 +76,5 @@ public class ChildCompositeTestEntity {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
 } // end of class
