@@ -44,13 +44,11 @@ public interface AtreusMetaEntity extends AtreusMetaObject {
 
   public Class<?> getEntityType();
 
-  public String getKeySpace();
-
   public AtreusMetaField getPrimaryKeyField();
 
   public AtreusPrimaryKeyStrategy getPrimaryKeyStrategy();
 
-  public String getTable();
+  public AtreusMetaTable getTable();
 
   public AtreusMetaSimpleField getTtlField();
 

@@ -25,6 +25,7 @@ package org.atreus.core.impl.queries;
 
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaTableImpl;
 import org.atreus.impl.entities.meta.fields.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.junit.Ignore;
@@ -132,8 +133,8 @@ public class QueryHelperTests {
 
   private MetaEntityImpl buildEntity(String keySpaceName, String tableName) {
     MetaEntityImpl metaEntity = new MetaEntityImpl();
-    metaEntity.setKeySpace(keySpaceName);
-    metaEntity.setTable(tableName);
+    ((MetaTableImpl) metaEntity.getTable()).setKeySpace(keySpaceName);
+    ((MetaTableImpl) metaEntity.getTable()).setName(tableName);
     return metaEntity;
   }
 

@@ -340,6 +340,19 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
     Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
 
+
+    ChildCompositeTestEntity childEntity3 = new ChildCompositeTestEntity();
+    otherEntity.getChildEntities().add(childEntity3);
+    getSession().save(parentEntity);
+    getSession().flush();
+
+    otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, parentEntity.getId());
+
+    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity3));
+
     executeCQL("DROP TABLE default.ParentCompositeSetTestEntity");
     executeCQL("DROP TABLE default.ChildCompositeTestEntity");
   }
@@ -353,8 +366,8 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     AtreusMetaEntity metaEntity = getEnvironment().getEntityManager().getMetaEntity(NameOverrideTestEntity.class);
     Assert.assertNotNull("Expect an entity", metaEntity);
     Assert.assertEquals("EntityName", metaEntity.getName());
-    Assert.assertEquals("KeySpaceName", metaEntity.getKeySpace());
-    Assert.assertEquals("TableName", metaEntity.getTable());
+    Assert.assertEquals("KeySpaceName", metaEntity.getTable().getKeySpace());
+    Assert.assertEquals("TableName", metaEntity.getTable().getName());
 
     Assert.assertEquals("primaryKey", ((AtreusMetaSimpleField) metaEntity.getPrimaryKeyField()).getColumn());
     Assert.assertEquals(StringPrimaryKeyStrategy.class, metaEntity.getPrimaryKeyStrategy().getClass());

@@ -27,6 +27,7 @@ import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaTableImpl;
 import org.atreus.impl.listeners.EntityUpdateListener;
 import org.atreus.impl.listeners.PrimaryKeyGeneratorListener;
 import org.atreus.impl.util.StringUtils;
@@ -69,10 +70,10 @@ class DefaultEntityComponentBuilder extends BaseEntityMetaComponentBuilder {
       metaEntity.setName(name);
     }
     if (StringUtils.isNotNullOrEmpty(keySpace)) {
-      metaEntity.setKeySpace(keySpace);
+      ((MetaTableImpl) metaEntity.getTable()).setKeySpace(keySpace);
     }
     if (StringUtils.isNotNullOrEmpty(table)) {
-      metaEntity.setTable(table);
+      ((MetaTableImpl) metaEntity.getTable()).setName(table);
     }
 
     metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);

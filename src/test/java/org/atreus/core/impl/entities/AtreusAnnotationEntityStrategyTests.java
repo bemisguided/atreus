@@ -68,9 +68,9 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
 
     // Assert TestEntity entity
-    Assert.assertEquals(getEnvironment().getConfiguration().getKeySpace(), managedEntity.getKeySpace());
+    Assert.assertEquals(getEnvironment().getConfiguration().getKeySpace(), managedEntity.getTable().getKeySpace());
     Assert.assertEquals("TestEntity", managedEntity.getName());
-    Assert.assertEquals("TestEntity", managedEntity.getTable());
+    Assert.assertEquals("TestEntity", managedEntity.getTable().getName());
     Assert.assertEquals(TestEntity.class, managedEntity.getEntityType());
 
     // Assert TestEntity primary key

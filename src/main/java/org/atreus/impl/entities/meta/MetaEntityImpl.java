@@ -26,10 +26,7 @@ package org.atreus.impl.entities.meta;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
-import org.atreus.core.ext.meta.AtreusMetaAssociation;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.core.ext.meta.*;
 import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.slf4j.Logger;
@@ -38,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * Managed Entity bean.
+ * Meta Entity bean.
  *
  * @author Martin Crawford
  */
@@ -66,7 +63,7 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   private AtreusPrimaryKeyStrategy primaryKeyGenerator;
 
-  private String table;
+  private AtreusMetaTable table = new MetaTableImpl();
 
   private AtreusMetaSimpleField ttlField;
 
@@ -143,21 +140,8 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   }
 
   @Override
-  public String getKeySpace() {
-    return keySpace;
-  }
-
-  public void setKeySpace(String keySpace) {
-    this.keySpace = keySpace;
-  }
-
-  @Override
-  public String getTable() {
+  public AtreusMetaTable getTable() {
     return table;
-  }
-
-  public void setTable(String table) {
-    this.table = table;
   }
 
   @Override

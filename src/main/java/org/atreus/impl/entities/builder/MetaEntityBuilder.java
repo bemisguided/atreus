@@ -26,6 +26,7 @@ package org.atreus.impl.entities.builder;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaTableImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +99,8 @@ public class MetaEntityBuilder {
     MetaEntityImpl managedEntity = new MetaEntityImpl();
     managedEntity.setEntityType(entityType);
     managedEntity.setName(className);
-    managedEntity.setTable(className);
-    managedEntity.setKeySpace(environment.getConfiguration().getKeySpace());
+    ((MetaTableImpl) managedEntity.getTable()).setName(className);
+    ((MetaTableImpl) managedEntity.getTable()).setKeySpace(environment.getConfiguration().getKeySpace());
     return managedEntity;
   }
 

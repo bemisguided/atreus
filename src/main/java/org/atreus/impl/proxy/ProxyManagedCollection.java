@@ -55,6 +55,7 @@ public class ProxyManagedCollection implements ManagedCollection {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
+  @SuppressWarnings("unchecked")
   public Collection getAddedEntities() {
     Collection result = new ArrayList();
     for(Object entity: collection) {
@@ -71,6 +72,7 @@ public class ProxyManagedCollection implements ManagedCollection {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Collection getRemovedEntities() {
     Collection result = new ArrayList();
     for(Object entity: memento) {
@@ -82,7 +84,8 @@ public class ProxyManagedCollection implements ManagedCollection {
   }
 
   @Override
-  public void baseline() {
+  @SuppressWarnings("unchecked")
+  public void snapshot() {
     memento.clear();
     memento.addAll(collection);
   }

@@ -31,6 +31,7 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.MetaTableImpl;
 import org.atreus.impl.entities.meta.associations.MetaAssociatedEntityImpl;
 import org.atreus.impl.entities.meta.associations.MetaAssociationImpl;
 import org.atreus.impl.entities.meta.associations.composite.CompositeChildPrimaryKeyMetaFieldImpl;
@@ -137,14 +138,15 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
   private void buildCompositeChildEntity(MetaEntityImpl parentMetaEntity, MetaEntityImpl childMetaEntity, MetaAssociationImpl metaAssociation) {
 
     // Create the primary key reference on the child entity
-    String parentKeyName = parentMetaEntity.getTable() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn();
+    String parentKeyName = parentMetaEntity.getTable().getName() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn();
     AtreusMetaSimpleField parentKeyField = createDynamicMetaSimpleField(childMetaEntity, parentKeyName, parentMetaEntity.getPrimaryKeyField().getType());
     parentKeyField.setTypeStrategy(((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getTypeStrategy());
 
     // Update the meta composite
     ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setAssociationKeyField(parentKeyField);
     ((MetaAssociatedEntityImpl) metaAssociation.getAssociation()).setAssociationKeyField(childMetaEntity.getPrimaryKeyField());
-    metaAssociation.setOutboundTable(childMetaEntity.getTable());
+    ((MetaTableImpl) metaAssociation.getOutboundTable()).setKeySpace(childMetaEntity.getTable().getKeySpace());
+    ((MetaTableImpl) metaAssociation.getOutboundTable()).setName(childMetaEntity.getTable().getName());
 
     // Create the composite child primary key using the existing primary key with the parent reference
     CompositeChildPrimaryKeyMetaFieldImpl childKeyField = new CompositeChildPrimaryKeyMetaFieldImpl(childMetaEntity, parentKeyName, parentKeyField);

@@ -38,6 +38,6 @@ public interface ManagedCollection {
 
   public Collection getRemovedEntities();
 
-  public void baseline();
+  public void snapshot();
 
 }

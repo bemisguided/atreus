@@ -59,7 +59,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement insertEntity(AtreusMetaEntity metaEntity, boolean withTtl) {
-    Insert insert = insertInto(metaEntity.getKeySpace(), metaEntity.getTable());
+    AtreusMetaTable table = metaEntity.getTable();
+    Insert insert = insertInto(table.getKeySpace(), table.getName());
     for (String columnName : listAllColumnNames(metaEntity)) {
       insert.value(columnName, bindMarker(columnName));
     }
@@ -71,7 +72,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement selectEntity(AtreusMetaEntity metaEntity) {
-    Select select = select().all().from(metaEntity.getKeySpace(), metaEntity.getTable());
+    AtreusMetaTable table = metaEntity.getTable();
+    Select select = select().all().from(table.getKeySpace(), table.getName());
     Select.Where where = null;
     for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
       if (where == null) {
@@ -84,8 +86,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement selectAssociatedEntities(AtreusMetaAssociation metaAssociation) {
-    AtreusMetaEntity metaEntity = metaAssociation.getAssociation().getMetaEntity();
-    Select select = select().all().from(metaEntity.getKeySpace(), metaAssociation.getOutboundTable());
+    AtreusMetaTable table = metaAssociation.getOutboundTable();
+    Select select = select().all().from(table.getKeySpace(), table.getName());
     Select.Where where = null;
     for (String columnName : listColumnNames(metaAssociation.getOwner().getAssociationKeyField(), null)) {
       if (where == null) {
@@ -102,7 +104,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement updateEntity(AtreusMetaEntity metaEntity, boolean withTtl) {
-    Update update = update(metaEntity.getKeySpace(), metaEntity.getTable());
+    AtreusMetaTable table = metaEntity.getTable();
+    Update update = update(table.getKeySpace(), table.getName());
     Update.Where where = null;
     for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
       if (where == null) {
@@ -122,7 +125,8 @@ public class QueryHelper {
   }
 
   public static RegularStatement deleteEntity(AtreusMetaEntity metaEntity) {
-    Delete delete = delete().from(metaEntity.getKeySpace(), metaEntity.getTable());
+    AtreusMetaTable table = metaEntity.getTable();
+    Delete delete = delete().from(table.getKeySpace(), table.getName());
     Delete.Where where = null;
     for (String columnName : listPrimaryKeyColumnNames(metaEntity)) {
       if (where == null) {

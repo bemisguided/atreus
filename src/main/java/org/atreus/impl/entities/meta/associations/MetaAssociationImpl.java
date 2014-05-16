@@ -26,7 +26,8 @@ package org.atreus.impl.entities.meta.associations;
 import org.atreus.core.ext.meta.AtreusAssociationType;
 import org.atreus.core.ext.meta.AtreusMetaAssociatedEntity;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.core.ext.meta.AtreusMetaTable;
+import org.atreus.impl.entities.meta.MetaTableImpl;
 
 /**
  * Meta association bean.
@@ -40,8 +41,8 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private AtreusMetaAssociatedEntity association = new MetaAssociatedEntityImpl();
-  private String inboundTable;
-  private String outboundTable;
+  private AtreusMetaTable inboundTable;
+  private AtreusMetaTable outboundTable = new MetaTableImpl();
   private AtreusMetaAssociatedEntity owner = new MetaAssociatedEntityImpl();
   private AtreusAssociationType type;
 
@@ -63,25 +64,21 @@ public class MetaAssociationImpl implements AtreusMetaAssociation {
 
   @Override
   public boolean isNavigable() {
-    return StringUtils.isNotNullOrEmpty(inboundTable);
+    return inboundTable != null;
   }
 
   @Override
-  public String getInboundTable() {
+  public AtreusMetaTable getInboundTable() {
     return inboundTable;
   }
 
-  public void setInboundTable(String inboundTable) {
+  public void setInboundTable(AtreusMetaTable inboundTable) {
     this.inboundTable = inboundTable;
   }
 
   @Override
-  public String getOutboundTable() {
+  public AtreusMetaTable getOutboundTable() {
     return outboundTable;
-  }
-
-  public void setOutboundTable(String outboundTable) {
-    this.outboundTable = outboundTable;
   }
 
   @Override
