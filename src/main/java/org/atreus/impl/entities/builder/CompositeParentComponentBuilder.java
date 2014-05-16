@@ -26,12 +26,14 @@ package org.atreus.impl.entities.builder;
 import org.atreus.core.annotations.AtreusCompositeParent;
 import org.atreus.core.annotations.NullType;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
+import org.atreus.core.ext.meta.AtreusAssociationType;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
+import org.atreus.impl.entities.meta.associations.MetaAssociatedEntityImpl;
+import org.atreus.impl.entities.meta.associations.MetaAssociationImpl;
 import org.atreus.impl.entities.meta.associations.composite.CompositeChildPrimaryKeyMetaFieldImpl;
-import org.atreus.impl.entities.meta.associations.composite.MetaCompositeImpl;
 import org.atreus.impl.entities.meta.fields.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.listeners.CompositeChildUpdateListener;
 import org.atreus.impl.listeners.CompositeParentFetchListener;
@@ -79,14 +81,15 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
     MetaEntityImpl childMetaEntity = (MetaEntityImpl) getEnvironment().getEntityManager().getMetaEntity(childEntityType);
 
     // Create a meta composite
-    MetaCompositeImpl metaComposite = createMetaComposite(parentMetaEntity, childMetaEntity);
-    parentMetaEntity.addCompositeAssociation(metaComposite);
+    MetaAssociationImpl metaAssociation = createMetaAssociation(parentMetaEntity, childMetaEntity);
+    metaAssociation.setType(AtreusAssociationType.COMPOSITE);
+    parentMetaEntity.addAssociation(metaAssociation);
 
     // Build Composite Parent meta entity
-    buildCompositeParentEntity(parentMetaEntity, field, metaComposite);
+    buildCompositeParentEntity(parentMetaEntity, field, metaAssociation);
 
     // Build Composite Child meta entity
-    buildCompositeChildEntity(parentMetaEntity, childMetaEntity, metaComposite);
+    buildCompositeChildEntity(parentMetaEntity, childMetaEntity, metaAssociation);
 
     // Add the appropriate listeners
     parentMetaEntity.addListener(COMPOSITE_PARENT_UPDATE_LISTENER);
@@ -131,7 +134,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void buildCompositeChildEntity(MetaEntityImpl parentMetaEntity, MetaEntityImpl childMetaEntity, MetaCompositeImpl metaComposite) {
+  private void buildCompositeChildEntity(MetaEntityImpl parentMetaEntity, MetaEntityImpl childMetaEntity, MetaAssociationImpl metaAssociation) {
 
     // Create the primary key reference on the child entity
     String parentKeyName = parentMetaEntity.getTable() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn();
@@ -139,25 +142,25 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
     parentKeyField.setTypeStrategy(((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getTypeStrategy());
 
     // Update the meta composite
-    metaComposite.setAssociatedEntityParentKeyField(parentKeyField);
-    metaComposite.setAssociatedEntityChildKeyField((AtreusMetaSimpleField) childMetaEntity.getPrimaryKeyField());
+    ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setAssociationKeyField(parentKeyField);
+    ((MetaAssociatedEntityImpl) metaAssociation.getAssociation()).setAssociationKeyField(childMetaEntity.getPrimaryKeyField());
 
     // Create the composite child primary key using the existing primary key with the parent reference
     CompositeChildPrimaryKeyMetaFieldImpl childKeyField = new CompositeChildPrimaryKeyMetaFieldImpl(childMetaEntity, parentKeyName, parentKeyField);
     childMetaEntity.setPrimaryKeyField(childKeyField);
   }
 
-  private void buildCompositeParentEntity(MetaEntityImpl parentMetaEntity, Field field, MetaCompositeImpl metaComposite) {
+  private void buildCompositeParentEntity(MetaEntityImpl parentMetaEntity, Field field, MetaAssociationImpl metaAssociation) {
     // TODO this will become an associate meta field
     StaticMetaSimpleFieldImpl parentMetaField = createStaticMetaSimpleField(parentMetaEntity, field);
-    metaComposite.setOwnerField(parentMetaField);
+    ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setAssociationField(parentMetaField);
   }
 
-  private MetaCompositeImpl createMetaComposite(MetaEntityImpl parentMetaEntity, MetaEntityImpl childMetaEntity) {
-    MetaCompositeImpl metaComposite = new MetaCompositeImpl();
-    metaComposite.setOwnerEntity(parentMetaEntity);
-    metaComposite.setAssociatedEntity(childMetaEntity);
-    return metaComposite;
+  private MetaAssociationImpl createMetaAssociation(MetaEntityImpl ownerEntity, MetaEntityImpl associationEntity) {
+    MetaAssociationImpl metaAssociation = new MetaAssociationImpl();
+    ((MetaAssociatedEntityImpl) metaAssociation.getOwner()).setMetaEntity(ownerEntity);
+    ((MetaAssociatedEntityImpl) metaAssociation.getAssociation()).setMetaEntity(associationEntity);
+    return metaAssociation;
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

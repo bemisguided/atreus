@@ -24,7 +24,10 @@
 package org.atreus.impl.queries;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.querybuilder.*;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 import org.atreus.core.ext.meta.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,11 +83,11 @@ public class QueryHelper {
     return select;
   }
 
-  public static RegularStatement selectCompositeChildEntities(AtreusMetaComposite metaComposite) {
-    AtreusMetaEntity metaEntity = metaComposite.getAssociatedEntity();
+  public static RegularStatement selectAssociatedEntities(AtreusMetaAssociation metaComposite) {
+    AtreusMetaEntity metaEntity = metaComposite.getAssociation().getMetaEntity();
     Select select = select().all().from(metaEntity.getKeySpace(), metaEntity.getTable());
     Select.Where where = null;
-    for (String columnName : listColumnNames(metaComposite.getAssociatedEntityParentKeyField(), null)) {
+    for (String columnName : listColumnNames(metaComposite.getOwner().getAssociationKeyField(), null)) {
       if (where == null) {
         where = select.where(eq(columnName, bindMarker(columnName)));
         continue;
@@ -131,20 +134,20 @@ public class QueryHelper {
     return delete;
   }
 
-  public static RegularStatement deleteAllChildCompositeEntities(AtreusMetaComposite metaComposite) {
-    AtreusMetaEntity parentEntity = metaComposite.getOwnerEntity();
-    AtreusMetaEntity childEntity = metaComposite.getAssociatedEntity();
-    Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
-    Delete.Where where = null;
-    for (String columnName : listPrimaryKeyColumnNames(parentEntity)) {
-      if (where == null) {
-        where = delete.where(eq(columnName, bindMarker(columnName)));
-        continue;
-      }
-      where.and(eq(columnName, bindMarker(columnName)));
-    }
-    return delete;
-  }
+//  public static RegularStatement deleteAllChildCompositeEntities(AtreusMetaComposite metaComposite) {
+//    AtreusMetaEntity parentEntity = metaComposite.getOwnerEntity();
+//    AtreusMetaEntity childEntity = metaComposite.getAssociatedEntity();
+//    Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
+//    Delete.Where where = null;
+//    for (String columnName : listPrimaryKeyColumnNames(parentEntity)) {
+//      if (where == null) {
+//        where = delete.where(eq(columnName, bindMarker(columnName)));
+//        continue;
+//      }
+//      where.and(eq(columnName, bindMarker(columnName)));
+//    }
+//    return delete;
+//  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

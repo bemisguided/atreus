@@ -24,18 +24,18 @@
 package org.atreus.core.ext.meta;
 
 /**
- * Interface for a managed composite association.
+ * Interface for a managed association.
  *
  * @author Martin Crawford
  */
 public interface AtreusMetaAssociation {
 
-  public AtreusMetaEntity getAssociatedEntity();
+  public AtreusMetaAssociatedEntity getAssociation();
 
-  public AtreusMetaField getAssociatedEntityField();
+  public boolean isNavigable();
 
-  public AtreusMetaEntity getOwnerEntity();
+  public AtreusMetaAssociatedEntity getOwner();
 
-  public AtreusMetaField getOwnerField();
+  public AtreusAssociationType getType();
 
 }

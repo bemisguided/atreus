@@ -26,7 +26,7 @@ package org.atreus.impl.entities.meta;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusEntityListener;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
@@ -50,7 +50,7 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Set<AtreusMetaComposite> compositeAssociations = new HashSet<>();
+  private Set<AtreusMetaAssociation> associations = new HashSet<>();
 
   private Class<?> entityType;
 
@@ -86,8 +86,8 @@ public class MetaEntityImpl implements AtreusMetaEntity {
     listeners.add(listener);
   }
 
-  public void addCompositeAssociation(AtreusMetaComposite metaComposite) {
-    compositeAssociations.add(metaComposite);
+  public void addAssociation(AtreusMetaAssociation metaAssociation) {
+    associations.add(metaAssociation);
   }
 
   @Override
@@ -105,8 +105,8 @@ public class MetaEntityImpl implements AtreusMetaEntity {
       }
       listener.acceptEntity(session, managedEntity);
 
-      for (AtreusMetaComposite metaComposite : compositeAssociations) {
-        listener.acceptCompositeAssociation(session, managedEntity, metaComposite);
+      for (AtreusMetaAssociation metaAssociation : associations) {
+        listener.acceptAssociation(session, managedEntity, metaAssociation);
       }
     }
 
@@ -119,9 +119,9 @@ public class MetaEntityImpl implements AtreusMetaEntity {
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public AtreusMetaComposite[] getCompositeAssociations() {
-    AtreusMetaComposite[] result = new AtreusMetaComposite[compositeAssociations.size()];
-    return compositeAssociations.toArray(result);
+  public AtreusMetaAssociation[] getAssociations() {
+    AtreusMetaAssociation[] result = new AtreusMetaAssociation[associations.size()];
+    return associations.toArray(result);
   }
 
   @Override

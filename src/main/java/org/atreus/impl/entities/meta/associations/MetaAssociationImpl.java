@@ -23,25 +23,25 @@
  */
 package org.atreus.impl.entities.meta.associations;
 
+import org.atreus.core.ext.meta.AtreusAssociationType;
+import org.atreus.core.ext.meta.AtreusMetaAssociatedEntity;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
 
 /**
- * Base meta association bean.
+ * Meta association bean.
  *
  * @author Martin Crawford
  */
-public class BaseMetaAssociationImpl implements AtreusMetaAssociation {
+public class MetaAssociationImpl implements AtreusMetaAssociation {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusMetaEntity ownerEntity;
-  private AtreusMetaField ownerField;
-  private AtreusMetaEntity associatedEntity;
-  private AtreusMetaField associatedEntityField;
+  private AtreusMetaAssociatedEntity owner = new MetaAssociatedEntityImpl();
+  private AtreusMetaAssociatedEntity association = new MetaAssociatedEntityImpl();
+  private AtreusAssociationType type;
+  private boolean navigable;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -54,39 +54,30 @@ public class BaseMetaAssociationImpl implements AtreusMetaAssociation {
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
-  public AtreusMetaEntity getOwnerEntity() {
-    return ownerEntity;
-  }
-
-  public void setOwnerEntity(AtreusMetaEntity ownerEntity) {
-    this.ownerEntity = ownerEntity;
+  public AtreusMetaAssociatedEntity getOwner() {
+    return owner;
   }
 
   @Override
-  public AtreusMetaField getOwnerField() {
-    return ownerField;
-  }
-
-  public void setOwnerField(AtreusMetaField ownerField) {
-    this.ownerField = ownerField;
+  public AtreusMetaAssociatedEntity getAssociation() {
+    return association;
   }
 
   @Override
-  public AtreusMetaEntity getAssociatedEntity() {
-    return associatedEntity;
+  public boolean isNavigable() {
+    return navigable;
   }
 
-  public void setAssociatedEntity(AtreusMetaEntity associatedEntity) {
-    this.associatedEntity = associatedEntity;
+  public void setNavigable(boolean navigable) {
+    this.navigable = navigable;
   }
 
   @Override
-  public AtreusMetaField getAssociatedEntityField() {
-    return associatedEntityField;
+  public AtreusAssociationType getType() {
+    return type;
   }
 
-  public void setAssociatedEntityField(AtreusMetaField associatedEntityField) {
-    this.associatedEntityField = associatedEntityField;
+  public void setType(AtreusAssociationType type) {
+    this.type = type;
   }
-
 } // end of class

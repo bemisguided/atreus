@@ -25,7 +25,7 @@ package org.atreus.core.ext.listeners;
 
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 
 /**
  * Atreus Entity event listener.
@@ -36,6 +36,6 @@ public interface AtreusEntityListener {
 
   public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity);
 
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite);
+  public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaAssociation metaAssociation);
 
 }

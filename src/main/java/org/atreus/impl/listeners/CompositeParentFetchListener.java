@@ -30,7 +30,7 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnFetchListener;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
@@ -54,21 +54,22 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaComposite metaComposite) {
+  public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaAssociation metaAssociation) {
     // TODO rough and incomplete implementation
-    BoundStatement boundStatement = session.prepareQuery(QueryHelper.selectCompositeChildEntities(metaComposite));
-    metaComposite.getAssociatedEntityParentKeyField().bindValue(boundStatement, parentEntity.getPrimaryKey());
+    BoundStatement boundStatement = session.prepareQuery(QueryHelper.selectAssociatedEntities(metaAssociation));
+    metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, parentEntity.getPrimaryKey());
     ResultSet resultSet = session.execute(boundStatement);
     Row row = resultSet.one();
     try {
-      Object entity = metaComposite.getAssociatedEntity().getEntityType().newInstance();
-      metaComposite.getAssociatedEntityChildKeyField().unbindEntity(row, entity);
-      for (AtreusMetaField metaField : metaComposite.getAssociatedEntity().getFields()) {
+      Object entity = metaAssociation.getAssociation().getMetaEntity().getEntityType().newInstance();
+      metaAssociation.getAssociation().getAssociationKeyField().unbindEntity(row, entity);
+      for (AtreusMetaField metaField : metaAssociation.getAssociation().getMetaEntity().getFields()) {
         metaField.unbindEntity(row, entity);
       }
       AtreusManagedEntity childEntity = session.manageEntity(entity);
-      metaComposite.getOwnerField().setValue(parentEntity, childEntity);
-    } catch (Exception e) {
+      metaAssociation.getOwner().getAssociationKeyField().setValue(parentEntity, childEntity);
+    }
+    catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

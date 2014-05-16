@@ -40,7 +40,7 @@ public interface AtreusMetaEntity extends AtreusMetaObject {
 
   public void broadcastListeners(AtreusSessionExt session, AtreusManagedEntity managedEntity, Class<? extends AtreusEntityListener> event);
 
-  public AtreusMetaComposite[] getCompositeAssociations();
+  public AtreusMetaAssociation[] getAssociations();
 
   public Class<?> getEntityType();
 

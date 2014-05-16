@@ -28,7 +28,7 @@ import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ public class CompositeChildUpdateListener extends AtreusAbstractEntityListener i
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaComposite metaComposite) {
+  public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaAssociation metaAssociation) {
 
   }
 

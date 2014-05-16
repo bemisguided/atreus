@@ -28,7 +28,8 @@ import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
-import org.atreus.core.ext.meta.AtreusMetaComposite;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.entities.collections.ManagedCollection;
 import org.slf4j.Logger;
@@ -56,18 +57,19 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void acceptCompositeAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaComposite metaComposite) {
-    Class<?> parentFieldType = metaComposite.getOwnerField().getType();
+  public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaAssociation metaAssociation) {
+    AtreusMetaField ownerField = metaAssociation.getOwner().getAssociationField();
+    Class<?> parentFieldType = ownerField.getType();
     if (Collection.class.isAssignableFrom(parentFieldType)) {
-      Collection collection = (Collection) metaComposite.getOwnerField().getValue(parentEntity);
-      updateCollection(session, metaComposite, parentEntity, collection);
+      Collection collection = (Collection) ownerField.getValue(parentEntity);
+      updateCollection(session, metaAssociation, parentEntity, collection);
     }
     else if (Map.class.isAssignableFrom(parentFieldType)) {
       // do maps
     }
     else {
-      Object childEntity = metaComposite.getOwnerField().getValue(parentEntity);
-      updateEntity(session, metaComposite, parentEntity, childEntity);
+      Object childEntity = ownerField.getValue(parentEntity);
+      updateEntity(session, metaAssociation, parentEntity, childEntity);
     }
   }
 
@@ -75,15 +77,15 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void updateCollection(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, Collection collection) {
+  private void updateCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Collection collection) {
     if (collection instanceof ManagedCollection) {
-      updateManagedCollection(session, metaComposite, parentEntity, (ManagedCollection) collection);
+      updateManagedCollection(session, metaAssociation, parentEntity, (ManagedCollection) collection);
       return;
     }
     // TODO delete and update all
   }
 
-  private void updateManagedCollection(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
+  private void updateManagedCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
 
     for (Object addedEntity : managedCollection.getAddedEntities()) {
       session.save(addedEntity);
@@ -94,24 +96,24 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
     }
 
     for (Object entity : managedCollection.getCollection()) {
-      updateEntity(session, metaComposite, parentEntity, entity);
+      updateEntity(session, metaAssociation, parentEntity, entity);
     }
 
   }
 
-  private void updateEntity(AtreusSessionExt session, AtreusMetaComposite metaComposite, AtreusManagedEntity parentEntity, Object entity) {
+  private void updateEntity(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Object entity) {
     AtreusManagedEntity childEntity = session.manageEntity(entity);
     if (!childEntity.isUpdated()) {
       return;
     }
-    AtreusMetaSimpleField parentKeyField = metaComposite.getAssociatedEntityParentKeyField();
+    AtreusMetaSimpleField parentKeyField = (AtreusMetaSimpleField) metaAssociation.getOwner().getAssociationKeyField();
     Serializable childParentKeyValue = (Serializable) childEntity.getFieldValue(parentKeyField);
     Serializable parentPrimaryKey = parentEntity.getPrimaryKey();
     if (!parentPrimaryKey.equals(childParentKeyValue)) {
       childEntity.setFieldValue(parentKeyField, parentPrimaryKey);
     }
     session.manageEntity(childEntity);
-    parentEntity.setFieldValue(metaComposite.getOwnerField(), childEntity);
+    parentEntity.setFieldValue(metaAssociation.getOwner().getAssociationField(), childEntity);
     session.save(childEntity);
   }
 
