@@ -96,10 +96,10 @@ public class MetaEntityImpl implements AtreusMetaEntity {
 
     // Broadcast entity
     for (AtreusEntityListener listener : listeners) {
-      LOG.info("AtreusEntityListener: {}", listener.getClass().getCanonicalName());
       if (!listenerClass.isAssignableFrom(listener.getClass())) {
         continue;
       }
+      LOG.trace("AtreusEntityListener: {}", listener.getClass().getCanonicalName());
       listener.acceptEntity(session, managedEntity);
 
       for (AtreusMetaAssociation metaAssociation : associations) {

@@ -34,7 +34,7 @@ import org.atreus.core.ext.meta.AtreusAssociationType;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.entities.collections.ManagedCollection;
+import org.atreus.impl.entities.ManagedCollection;
 import org.atreus.impl.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Update Composite Parent Association Entity fetch listener.
+ * Fetch Composite Association Parent listener.
  *
  * @author Martin Crawford
  */
@@ -63,12 +63,16 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
   @Override
   public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation) {
 
+    // Fetch the associations to this owner
     List<AtreusManagedEntity> associatedEntities = fetchAssociations(session, ownerEntity, metaAssociation, true);
 
+    // Handle populating owner's collection
     if (Collection.class.isAssignableFrom(metaAssociation.getOwner().getAssociationField().getType())) {
       setCollection(ownerEntity, associatedEntities, metaAssociation);
       return;
     }
+
+    // Handle populating owner's individual entity
     setEntity(ownerEntity, associatedEntities, metaAssociation);
   }
 
@@ -76,32 +80,15 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  @SuppressWarnings("unchecked")
-  public void setCollection(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {
-    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
-    ManagedCollection managedCollection = (ManagedCollection) managedEntity.getFieldValue(associationField);
-    managedCollection.getCollection().addAll(associatedEntities);
-    managedCollection.snapshot();
-  }
-
-  public void setEntity(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {
-    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
-    if (associatedEntities.size() < 1) {
-      return;
-    }
-    if (associatedEntities.size() > 1) {
-      throw new RuntimeException("More entites than expected for this association " + associationField);
-    }
-    managedEntity.setFieldValue(associationField, associatedEntities.get(0));
-  }
-
   public List<AtreusManagedEntity> fetchAssociations(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation, boolean outbound) {
 
+    // Execute select against the outbound association table
     AtreusMetaEntity metaAssociationEntity = metaAssociation.getAssociation().getMetaEntity();
-
     BoundStatement boundStatement = session.prepareQuery(QueryHelper.selectAssociatedEntities(metaAssociation));
     metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, ownerEntity.getPrimaryKey());
     ResultSet resultSet = session.execute(boundStatement);
+
+    // Iterate the results and create managed entities
     List<AtreusManagedEntity> associations = new ArrayList<>(resultSet.all().size());
     for (Row row : resultSet.all()) {
 
@@ -121,6 +108,31 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
       associations.add(associatedEntity);
     }
     return associations;
+  }
+
+  @SuppressWarnings("unchecked")
+  public void setCollection(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {
+    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
+    ManagedCollection managedCollection = (ManagedCollection) managedEntity.getFieldValue(associationField);
+    managedCollection.getUpdatedEntities().addAll(associatedEntities);
+    managedCollection.snapshot();
+  }
+
+  public void setEntity(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {
+    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
+
+    // No entities to set
+    if (associatedEntities.size() < 1) {
+      return;
+    }
+
+    // Expect only one entity so this is a data bind exception
+    if (associatedEntities.size() > 1) {
+      throw new RuntimeException("More entities than expected for this association " + associationField);
+    }
+
+    // Set the first list item as the value
+    managedEntity.setFieldValue(associationField, associatedEntities.get(0));
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

@@ -31,16 +31,15 @@ import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.entities.collections.ManagedCollection;
+import org.atreus.impl.entities.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
 
 /**
- * Update Composite Parent Association Entity listener.
+ * Update Composite Association Parent listener.
  *
  * @author Martin Crawford
  */
@@ -64,9 +63,6 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
       Collection collection = (Collection) ownerField.getValue(parentEntity);
       updateCollection(session, metaAssociation, parentEntity, collection);
     }
-    else if (Map.class.isAssignableFrom(parentFieldType)) {
-      // do maps
-    }
     else {
       Object childEntity = ownerField.getValue(parentEntity);
       updateEntity(session, metaAssociation, parentEntity, childEntity);
@@ -83,24 +79,24 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
       updateManagedCollection(session, metaAssociation, parentEntity, (ManagedCollection) collection);
       return;
     }
-    // TODO delete all and better collection handling
-    for(Object entity : collection) {
-      updateEntity(session, metaAssociation, parentEntity, entity);
-    }
+    // TODO handle case where collection isn't a Managed Collection (edge case but possible)
   }
 
   private void updateManagedCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
 
     for (Object addedEntity : managedCollection.getAddedEntities()) {
+      LOG.debug("addedEntity {}", addedEntity);
       updateEntity(session, metaAssociation, parentEntity, addedEntity);
     }
 
     for (Object removedEntity : managedCollection.getRemovedEntities()) {
-      // TODO do delete
+      LOG.debug("removedEntity {}", removedEntity);
+      session.delete(removedEntity);
     }
 
-    for (Object entity : managedCollection.getCollection()) {
-      updateEntity(session, metaAssociation, parentEntity, entity);
+    for (Object updatedEntity : managedCollection.getUpdatedEntities()) {
+      LOG.debug("updatedEntity {}", updatedEntity);
+      updateEntity(session, metaAssociation, parentEntity, updatedEntity);
     }
 
   }

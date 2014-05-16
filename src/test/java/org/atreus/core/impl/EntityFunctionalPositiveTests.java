@@ -24,12 +24,10 @@
 package org.atreus.core.impl;
 
 import org.atreus.core.AtreusDataBindingException;
-import org.atreus.core.AtreusInitialisationException;
 import org.atreus.core.BaseAtreusCassandraTests;
 import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.core.tests.entities.errors.*;
 import org.atreus.core.tests.entities.functional.*;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
@@ -44,15 +42,15 @@ import java.net.InetAddress;
 import java.util.*;
 
 /**
- * Functional Tests for various entity mappings.
+ * Positive functional tests for various entity mappings without associations.
  *
  * @author Martin Crawford
  */
-public class EntityFunctionalTests extends BaseAtreusCassandraTests {
+public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityFunctionalTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityFunctionalPositiveTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -121,7 +119,7 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
         "aUuid uuid, " +
         "PRIMARY KEY(id))");
 
-
+    // Save entity
     CQLPrimitiveTypesTestEntity testEntity = new CQLPrimitiveTypesTestEntity();
     testEntity.setaBigDecimal(new BigDecimal("1.23"));
     testEntity.setaBigInteger(new BigInteger("123"));
@@ -154,6 +152,14 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertEquals(4321, otherEntity.getaLong());
     Assert.assertEquals("value", otherEntity.getaString());
     Assert.assertEquals(UUID.fromString("4f7a8b70-d002-11e3-9c1a-0800200c9a66"), otherEntity.getaUuid());
+
+    // Delete Entity
+    getSession().delete(otherEntity);
+    getSession().flush();
+
+    otherEntity = getSession().findOne(CQLPrimitiveTypesTestEntity.class, primaryKey);
+    Assert.assertNull("Expect not a value", otherEntity);
+
   }
 
 
@@ -276,85 +282,13 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
     Assert.assertNotNull("Expect value for 'value1'", otherEntity.getMapField2().get("value1"));
     Assert.assertNotNull("Expect value for 'value2'", otherEntity.getMapField2().get("value2"));
 
+    getSession().delete(otherEntity);
+    getSession().flush();
+
+    otherEntity = getSession().findOne(CollectionTestEntity.class, primaryKey);
+    Assert.assertNull("Expect not a value", otherEntity);
+
     executeCQL("DROP TABLE default.CollectionTestEntity");
-  }
-
-  @Test
-  public void testSimpleCompositeEntityAssociation() throws Exception {
-    LOG.info("Running testSimpleCompositeEntityAssociation");
-    addEntity(ParentCompositeTestEntity.class);
-    addEntity(ChildCompositeTestEntity.class);
-    initEnvironment();
-
-    executeCQL("CREATE TABLE default.ParentCompositeTestEntity (" +
-        "id text, " +
-        "PRIMARY KEY(id))");
-
-    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
-        "ParentCompositeTestEntity_id text, " +
-        "id text, " +
-        "PRIMARY KEY(ParentCompositeTestEntity_id, id))");
-
-    ParentCompositeTestEntity parentEntity = new ParentCompositeTestEntity();
-    ChildCompositeTestEntity childEntity = new ChildCompositeTestEntity();
-    parentEntity.setChildEntity(childEntity);
-    getSession().save(parentEntity);
-    getSession().flush();
-
-    ParentCompositeTestEntity otherEntity = getSession().findOne(ParentCompositeTestEntity.class, parentEntity.getId());
-
-    Assert.assertNotNull("child entity should not be null", otherEntity.getChildEntity());
-    Assert.assertEquals(childEntity.getId(), otherEntity.getChildEntity().getId());
-
-    executeCQL("DROP TABLE default.ParentCompositeTestEntity");
-    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
-  }
-
-  @Test
-  public void testSetCompositeEntityAssociation() throws Exception {
-    LOG.info("Running testSetCompositeEntityAssociation");
-    addEntity(ParentCompositeSetTestEntity.class);
-    addEntity(ChildCompositeTestEntity.class);
-    initEnvironment();
-
-    executeCQL("CREATE TABLE default.ParentCompositeSetTestEntity (" +
-        "id text, " +
-        "PRIMARY KEY(id))");
-
-    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
-        "ParentCompositeSetTestEntity_id text, " +
-        "id text, " +
-        "PRIMARY KEY(ParentCompositeSetTestEntity_id, id))");
-
-    ParentCompositeSetTestEntity parentEntity = new ParentCompositeSetTestEntity();
-    ChildCompositeTestEntity childEntity1 = new ChildCompositeTestEntity();
-    ChildCompositeTestEntity childEntity2 = new ChildCompositeTestEntity();
-    parentEntity.getChildEntities().add(childEntity1);
-    parentEntity.getChildEntities().add(childEntity2);
-    getSession().save(parentEntity);
-    getSession().flush();
-
-    ParentCompositeSetTestEntity otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, parentEntity.getId());
-
-    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
-
-
-    ChildCompositeTestEntity childEntity3 = new ChildCompositeTestEntity();
-    otherEntity.getChildEntities().add(childEntity3);
-    getSession().save(parentEntity);
-    getSession().flush();
-
-    otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, parentEntity.getId());
-
-    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity3));
-
-    executeCQL("DROP TABLE default.ParentCompositeSetTestEntity");
-    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
   }
 
   @Test
@@ -374,97 +308,6 @@ public class EntityFunctionalTests extends BaseAtreusCassandraTests {
 
     Assert.assertEquals("columnName", ((AtreusMetaSimpleField) metaEntity.getFieldByName("field1")).getColumn());
 
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testCollectionValueNotResolvable() {
-    LOG.info("Running testCollectionValueNotResolvable");
-    try {
-      addEntity(CollectionValueNotResolvableTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testMapValueNotResolvable() {
-    LOG.info("Running testMapValueNotResolvable");
-    try {
-      addEntity(MapValueNotResolvableTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_VALUE_TYPE_NOT_RESOLVABLE, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testMapKeyNotResolvable() {
-    LOG.info("Running testMapKeyNotResolvable");
-    try {
-      addEntity(MapKeyNotResolvableTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MAP_KEY_TYPE_NOT_RESOLVABLE, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testInvalidCollectionStrategy() {
-    LOG.info("Running testInvalidCollectionStrategy");
-    try {
-      addEntity(InvalidCollectionStrategyTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_COLLECTION_TYPE_STRATEGY_INVALID, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testInvalidMapStrategy() {
-    LOG.info("Running testInvalidMapStrategy");
-    try {
-      addEntity(InvalidMapStrategyTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MAP_TYPE_STRATEGY_INVALID, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testMultiplePrimaryKeys() {
-    LOG.info("Running testMultiplePrimaryKeys");
-    try {
-      addEntity(MultiplePrimaryKeyTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_MULTIPLE, e.getErrorCode());
-      throw e;
-    }
-  }
-
-  @Test(expected = AtreusInitialisationException.class)
-  public void testPrimaryKeysNotSerializable() {
-    LOG.info("Running testPrimaryKeysNotSerializable");
-    try {
-      addEntity(PrimaryKeyNotSerializableTestEntity.class);
-      initEnvironment();
-    }
-    catch (AtreusInitialisationException e) {
-      Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_PRIMARY_KEY_NOT_SERIALIZABLE, e.getErrorCode());
-      throw e;
-    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -28,8 +28,8 @@ import javassist.util.proxy.ProxyFactory;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.impl.entities.ManagedCollection;
 import org.atreus.impl.entities.ManagedEntityImpl;
-import org.atreus.impl.entities.collections.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,9 +123,6 @@ public class ProxyManager {
     }
     if (Set.class.isAssignableFrom(collectionType)) {
       return HashSet.class;
-    }
-    if (Queue.class.isAssignableFrom(collectionType)) {
-      return LinkedList.class;
     }
     if (List.class.isAssignableFrom(collectionType)) {
       return ArrayList.class;

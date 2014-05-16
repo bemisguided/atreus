@@ -37,6 +37,7 @@ import org.atreus.impl.entities.meta.associations.MetaAssociationImpl;
 import org.atreus.impl.entities.meta.associations.composite.CompositeChildPrimaryKeyMetaFieldImpl;
 import org.atreus.impl.entities.meta.fields.MetaAssociationFieldImpl;
 import org.atreus.impl.listeners.CompositeChildUpdateListener;
+import org.atreus.impl.listeners.CompositeParentDeleteListener;
 import org.atreus.impl.listeners.CompositeParentFetchListener;
 import org.atreus.impl.listeners.CompositeParentUpdateListener;
 import org.atreus.impl.util.ReflectionUtils;
@@ -56,6 +57,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
 
   private static final AtreusEntityListener COMPOSITE_PARENT_UPDATE_LISTENER = new CompositeParentUpdateListener();
   private static final AtreusEntityListener COMPOSITE_PARENT_FETCH_LISTENER = new CompositeParentFetchListener();
+  private static final AtreusEntityListener COMPOSITE_PARENT_DELETE_LISTENER = new CompositeParentDeleteListener();
   private static final AtreusEntityListener COMPOSITE_CHILD_UPDATE_LISTENER = new CompositeChildUpdateListener();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
@@ -95,6 +97,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
     // Add the appropriate listeners
     parentMetaEntity.addListener(COMPOSITE_PARENT_UPDATE_LISTENER);
     parentMetaEntity.addListener(COMPOSITE_PARENT_FETCH_LISTENER);
+    parentMetaEntity.addListener(COMPOSITE_PARENT_DELETE_LISTENER);
     childMetaEntity.addListener(COMPOSITE_CHILD_UPDATE_LISTENER);
     return true;
   }

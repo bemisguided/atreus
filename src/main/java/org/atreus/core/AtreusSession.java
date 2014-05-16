@@ -49,6 +49,8 @@ public interface AtreusSession {
 
   public void close();
 
+  public <T> void delete(T entity);
+
   public ResultSet execute(Statement statement);
 
   public ResultSet execute(String cql);

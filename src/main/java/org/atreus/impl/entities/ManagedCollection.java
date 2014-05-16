@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.entities.collections;
+package org.atreus.impl.entities;
 
 import java.util.Collection;
 
@@ -34,7 +34,7 @@ public interface ManagedCollection {
 
   public Collection getAddedEntities();
 
-  public Collection getCollection();
+  public Collection getUpdatedEntities();
 
   public Collection getRemovedEntities();
 

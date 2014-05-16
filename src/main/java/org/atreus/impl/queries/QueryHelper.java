@@ -138,20 +138,21 @@ public class QueryHelper {
     return delete;
   }
 
-//  public static RegularStatement deleteAllChildCompositeEntities(AtreusMetaComposite metaComposite) {
-//    AtreusMetaEntity parentEntity = metaComposite.getOwnerEntity();
-//    AtreusMetaEntity childEntity = metaComposite.getAssociatedEntity();
-//    Delete delete = QueryBuilder.delete().from(childEntity.getKeySpace(), childEntity.getTable());
-//    Delete.Where where = null;
-//    for (String columnName : listPrimaryKeyColumnNames(parentEntity)) {
-//      if (where == null) {
-//        where = delete.where(eq(columnName, bindMarker(columnName)));
-//        continue;
-//      }
-//      where.and(eq(columnName, bindMarker(columnName)));
-//    }
-//    return delete;
-//  }
+  public static RegularStatement deleteAllAssociatedEntities(AtreusMetaAssociation metaAssociation) {
+    AtreusMetaTable table = metaAssociation.getOutboundTable();
+    AtreusMetaEntity ownerEntity = metaAssociation.getOwner().getMetaEntity();
+    AtreusMetaField ownerKeyField = metaAssociation.getOwner().getAssociationKeyField();
+    Delete delete = delete().from(table.getKeySpace(), table.getName());
+    Delete.Where where = null;
+    for (String columnName : listColumnNames(ownerKeyField, null)) {
+      if (where == null) {
+        where = delete.where(eq(columnName, bindMarker(columnName)));
+        continue;
+      }
+      where.and(eq(columnName, bindMarker(columnName)));
+    }
+    return delete;
+  }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 

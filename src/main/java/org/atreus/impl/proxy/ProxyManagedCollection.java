@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.proxy;
 
-import org.atreus.impl.entities.collections.ManagedCollection;
+import org.atreus.impl.entities.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class ProxyManagedCollection implements ManagedCollection {
   @SuppressWarnings("unchecked")
   public Collection getAddedEntities() {
     Collection result = new ArrayList();
-    for(Object entity: collection) {
+    for (Object entity : collection) {
       if (!memento.contains(entity)) {
         result.add(entity);
       }
@@ -67,15 +67,22 @@ public class ProxyManagedCollection implements ManagedCollection {
   }
 
   @Override
-  public Collection getCollection() {
-    return collection;
+  @SuppressWarnings("unchecked")
+  public Collection getUpdatedEntities() {
+    Collection result = new ArrayList();
+    for (Object entity : collection) {
+      if (memento.contains(entity)) {
+        result.add(entity);
+      }
+    }
+    return result;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public Collection getRemovedEntities() {
     Collection result = new ArrayList();
-    for(Object entity: memento) {
+    for (Object entity : memento) {
       if (!collection.contains(entity)) {
         result.add(entity);
       }

@@ -24,7 +24,7 @@
 package org.atreus.impl.proxy;
 
 import javassist.util.proxy.MethodHandler;
-import org.atreus.impl.entities.collections.ManagedCollection;
+import org.atreus.impl.entities.ManagedCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

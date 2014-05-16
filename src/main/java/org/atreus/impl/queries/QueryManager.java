@@ -63,7 +63,6 @@ public class QueryManager {
   }
 
   public BoundStatement generate(String cql) {
-    LOG.debug("CQL Statement: {}", cql);
     PreparedStatement preparedStatement = preparedStatementMap.get(cql);
 
     if (preparedStatement == null) {

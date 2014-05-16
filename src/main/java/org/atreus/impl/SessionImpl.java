@@ -27,6 +27,7 @@ import com.datastax.driver.core.*;
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
 import org.atreus.core.ext.listeners.AtreusOnFetchListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
@@ -86,6 +87,24 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+
+  @Override
+  public <T> void delete(T entity) {
+    assertSessionNotClosed();
+
+    // Assert input params
+    AssertUtils.notNull(entity, "entity is a required parameter");
+
+    // Retrieve managed entity
+    AtreusManagedEntity managedEntity = manageEntity(entity);
+
+    // Broadcast to the on delete listeners
+    managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnDeleteListener.class);
+
+    // Remove the managed entity from the cache
+    uncacheEntry(managedEntity);
+  }
 
   @Override
   public AtreusManagedEntity entityInstance(AtreusMetaEntity metaEntity, Serializable primaryKey) {
@@ -255,7 +274,7 @@ public class SessionImpl implements AtreusSessionExt {
   public BoundStatement prepareQuery(String cql) {
     assertSessionNotClosed();
 
-    LOG.info("CQL: {}", cql);
+    LOG.debug("CQL: {}", cql);
     return getQueryManager().generate(cql);
   }
 
@@ -263,7 +282,7 @@ public class SessionImpl implements AtreusSessionExt {
   public BoundStatement prepareQuery(RegularStatement regularStatement) {
     assertSessionNotClosed();
 
-    LOG.info("CQL: {}", regularStatement.getQueryString());
+    LOG.debug("CQL: {}", regularStatement.getQueryString());
     return getQueryManager().generate(regularStatement);
   }
 
@@ -274,9 +293,15 @@ public class SessionImpl implements AtreusSessionExt {
 
     // Assert input params
     AssertUtils.notNull(entity, "entity is a required parameter");
+
+    // Retrieve managed entity
     AtreusManagedEntity managedEntity = manageEntity(entity);
+
+    // Broadcast to the on save listeners
     managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnSaveListener.class);
-    manageEntity(managedEntity);
+
+    // Cache the managed entity
+    cacheEntity(managedEntity);
     return (T) managedEntity;
   }
 
