@@ -23,10 +23,12 @@
  */
 package org.atreus.impl.entities.builder;
 
+import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.Environment;
 import org.atreus.impl.entities.meta.MetaEntityImpl;
 import org.atreus.impl.entities.meta.MetaTableImpl;
+import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,15 +39,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Meta Entity Builder.
+ * Meta Builder.
  *
  * @author Martin Crawford
  */
-public class MetaEntityBuilder {
+public class MetaBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(MetaEntityBuilder.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(MetaBuilder.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -56,7 +58,7 @@ public class MetaEntityBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public MetaEntityBuilder(Environment environment) {
+  public MetaBuilder(Environment environment) {
     this.environment = environment;
     init();
   }
@@ -88,6 +90,24 @@ public class MetaEntityBuilder {
     fieldPropertyBuilders.add(new CollectionFieldComponentBuilder(environment));
     fieldPropertyBuilders.add(new MapFieldComponentBuilder(environment));
     fieldPropertyBuilders.add(new SimpleFieldComponentBuilder(environment));
+  }
+
+  public void scanPaths(String[] paths) {
+    for (String path : paths) {
+      scanPath(path);
+    }
+  }
+
+  public void scanPath(String path) {
+    LOG.trace("Scanning classpath path={}", path);
+
+    // Resolve all candidate entity classes using the configured entity strategies
+    Set<Class<?>> entityTypes = ReflectionUtils.findClassesWithAnnotation(path, AtreusEntity.class);
+
+    // Iterate and process each found entity class
+    for (Class<?> entityType : entityTypes) {
+      addEntityType(entityType);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -143,13 +163,13 @@ public class MetaEntityBuilder {
     environment.getProxyManager().defineEntityProxy(entityType);
 
     LOG.debug("Registered Entity name={} {}", metaEntity.getName(), metaEntity.getEntityType());
-    environment.getEntityManager().addManagedEntity(metaEntity);
+    environment.getMetaManager().addMetaEntity(metaEntity);
   }
 
   public void buildMetaFields() {
 
     // Iterate and process fields for each manged entity
-    for (AtreusMetaEntity metaEntity : environment.getEntityManager().getMetaEntities()) {
+    for (AtreusMetaEntity metaEntity : environment.getMetaManager().getEntities()) {
       Class<?> entityType = metaEntity.getEntityType();
 
       // Build the fields

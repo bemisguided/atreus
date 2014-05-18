@@ -26,9 +26,10 @@ package org.atreus.core.impl.entities;
 import org.atreus.core.BaseAtreusTests;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaManager;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.tests.entities.common.TestEntity;
-import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.entities.builder.MetaBuilder;
 import org.atreus.impl.types.cql.IntegerTypeStrategy;
 import org.atreus.impl.types.cql.LongTypeStrategy;
 import org.atreus.impl.types.cql.StringTypeStrategy;
@@ -42,11 +43,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
+public class AtreusAnnotationMetaBuilderTests extends BaseAtreusTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusAnnotationEntityStrategyTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusAnnotationMetaBuilderTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -57,14 +58,16 @@ public class AtreusAnnotationEntityStrategyTests extends BaseAtreusTests {
   @Test
   public void testScanPath() {
     LOG.info("Running testScanPath");
-    EntityManager entityManager = getEnvironment().getEntityManager();
-    entityManager.scanPath(DEFAULT_SCAN_PATH);
-    entityManager.init();
+    MetaBuilder metaBuilder = getEnvironment().getMetaBuilder();
+    metaBuilder.scanPath(DEFAULT_SCAN_PATH);
+    metaBuilder.build();
+
+    AtreusMetaManager metaManager = getEnvironment().getMetaManager();
 
     // Assert TestEntity registry
-    AtreusMetaEntity managedEntity = entityManager.getMetaEntity(TestEntity.class);
+    AtreusMetaEntity managedEntity = metaManager.getEntity(TestEntity.class);
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
-    managedEntity = entityManager.getMetaEntity("TestEntity");
+    managedEntity = metaManager.getEntity("TestEntity");
     Assert.assertNotNull("Expected not null ManagedEntity", managedEntity);
 
     // Assert TestEntity entity

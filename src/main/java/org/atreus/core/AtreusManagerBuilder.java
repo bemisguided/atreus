@@ -23,7 +23,7 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.SessionFactoryImpl;
+import org.atreus.impl.ManagerImpl;
 import org.atreus.impl.util.StringUtils;
 
 /**
@@ -31,7 +31,7 @@ import org.atreus.impl.util.StringUtils;
  *
  * @author Martin Crawford
  */
-public class AtreusSessionFactoryBuilder {
+public class AtreusManagerBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -39,7 +39,7 @@ public class AtreusSessionFactoryBuilder {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  private AtreusSessionFactoryBuilder() {
+  private AtreusManagerBuilder() {
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -50,8 +50,8 @@ public class AtreusSessionFactoryBuilder {
    * @param configuration an Atreus Configuration object
    * @return a connected Atreus Session Factory
    */
-  public static AtreusSessionFactory buildFactory(AtreusConfiguration configuration) {
-    SessionFactoryImpl factory = new SessionFactoryImpl(configuration);
+  public static AtreusManager buildFactory(AtreusConfiguration configuration) {
+    ManagerImpl factory = new ManagerImpl(configuration);
 
     // Validate the Cassandra configuration
     if (configuration.getHosts() == null || configuration.getHosts().length < 1) {
@@ -82,7 +82,7 @@ public class AtreusSessionFactoryBuilder {
    * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */
-  public static AtreusSessionFactory buildFactory(String host, int port, String keySpace, String... scanPaths) {
+  public static AtreusManager buildFactory(String host, int port, String keySpace, String... scanPaths) {
     AtreusConfiguration configuration = new AtreusConfiguration(host, port, keySpace, scanPaths);
     return buildFactory(configuration);
   }
@@ -96,7 +96,7 @@ public class AtreusSessionFactoryBuilder {
    * @param scanPaths the package path to scan for configuration of entities
    * @return a connected Atreus Session Factory
    */
-  public static AtreusSessionFactory buildFactory(String hosts[], int port, String keySpace, String... scanPaths) {
+  public static AtreusManager buildFactory(String hosts[], int port, String keySpace, String... scanPaths) {
     AtreusConfiguration configuration = new AtreusConfiguration(hosts, port, keySpace, scanPaths);
     return buildFactory(configuration);
   }

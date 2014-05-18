@@ -23,18 +23,22 @@
  */
 package org.atreus.core;
 
+import org.atreus.core.ext.meta.AtreusMetaManager;
+
 /**
- * Interface for an Atreus Session Factory.
+ * Interface for an Atreus Manger.
  *
  * @author Martin Crawford
  */
-public interface AtreusSessionFactory {
+public interface AtreusManager {
 
   public void disconnect();
 
   public String[] getHosts();
 
   public String getKeySpace();
+
+  public AtreusMetaManager getMetaManager();
 
   public int getPort();
 

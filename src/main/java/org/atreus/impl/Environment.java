@@ -28,7 +28,8 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
 import org.atreus.core.AtreusClusterConnectivityException;
 import org.atreus.core.AtreusConfiguration;
-import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.entities.MetaManagerImpl;
+import org.atreus.impl.entities.builder.MetaBuilder;
 import org.atreus.impl.proxy.ProxyManager;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
@@ -51,7 +52,8 @@ public class Environment {
   private Cluster cassandraCluster;
   private Session cassandraSession;
   private final AtreusConfiguration configuration;
-  private final EntityManager entityManager;
+  private final MetaManagerImpl metaManager;
+  private final MetaBuilder metaBuilder;
   private final QueryManager queryManager;
   private final ProxyManager proxyManager;
   private final TypeManager typeManager;
@@ -60,9 +62,10 @@ public class Environment {
 
   public Environment(AtreusConfiguration configuration) {
     this.configuration = configuration;
-    this.entityManager = new EntityManager(this);
+    this.metaManager = new MetaManagerImpl(this);
     this.queryManager = new QueryManager(this);
     this.typeManager = new TypeManager(this);
+    this.metaBuilder = new MetaBuilder(this);
     this.proxyManager = new ProxyManager();
   }
 
@@ -93,8 +96,8 @@ public class Environment {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   private void initEntityManager() {
-    getEntityManager().scanPaths(getConfiguration().getScanPaths());
-    getEntityManager().init();
+    metaBuilder.scanPaths(configuration.getScanPaths());
+    metaBuilder.build();
   }
 
   private void initTypeManager() {
@@ -123,8 +126,12 @@ public class Environment {
     return configuration;
   }
 
-  public EntityManager getEntityManager() {
-    return entityManager;
+  public MetaManagerImpl getMetaManager() {
+    return metaManager;
+  }
+
+  public MetaBuilder getMetaBuilder() {
+    return metaBuilder;
   }
 
   public QueryManager getQueryManager() {

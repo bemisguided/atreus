@@ -24,14 +24,26 @@
 package org.atreus.core.ext.meta;
 
 /**
- * Atreus meta property interface defining column table.
+ * Atreus Meta Manager.
  *
  * @author Martin Crawford
  */
-public interface AtreusMetaTable {
+public interface AtreusMetaManager {
 
-  public String getKeySpace();
+  public AtreusMetaComponent[] getComponents();
 
-  public String getName();
+  public AtreusMetaComponent getComponent(String name);
+
+  public AtreusMetaComponent getComponent(Class<?> componentType);
+
+  public AtreusMetaComponent getComponent(Object entity);
+
+  public AtreusMetaEntity[] getEntities();
+
+  public AtreusMetaEntity getEntity(String name);
+
+  public AtreusMetaEntity getEntity(Class<?> entityType);
+
+  public AtreusMetaEntity getEntity(Object entity);
 
 }

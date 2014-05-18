@@ -23,85 +23,102 @@
  */
 package org.atreus.impl.entities;
 
-import org.atreus.core.annotations.AtreusEntity;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaAssociationField;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.*;
 import org.atreus.impl.Environment;
-import org.atreus.impl.entities.builder.MetaEntityBuilder;
-import org.atreus.impl.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Registry of managed entities.
+ * Registry of meta model.
  *
  * @author Martin Crawford
  */
-public class EntityManager {
+public class MetaManagerImpl implements AtreusMetaManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(MetaManagerImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final MetaEntityBuilder metaEntityBuilder;
   private final Environment environment;
+  private Map<Class<?>, AtreusMetaComponent> metaComponentByClass = new HashMap<>();
+  private Map<String, AtreusMetaComponent> metaComponentByName = new HashMap<>();
   private Map<Class<?>, AtreusMetaEntity> metaEntityByClass = new HashMap<>();
   private Map<String, AtreusMetaEntity> metaEntityByName = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public EntityManager(Environment environment) {
+  public MetaManagerImpl(Environment environment) {
     this.environment = environment;
-    this.metaEntityBuilder = new MetaEntityBuilder(environment);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void addEntityType(Class<?> entityType) {
-    metaEntityBuilder.addEntityType(entityType);
+  public void addMetaComponent(AtreusMetaComponent metaComponent) {
+    metaComponentByClass.put(metaComponent.getComponentType(), metaComponent);
+    metaComponentByName.put(metaComponent.getName(), metaComponent);
   }
 
-  public void addManagedEntity(AtreusMetaEntity metaEntity) {
+  public void addMetaEntity(AtreusMetaEntity metaEntity) {
     metaEntityByClass.put(metaEntity.getEntityType(), metaEntity);
     metaEntityByName.put(metaEntity.getName(), metaEntity);
   }
 
-  public AtreusMetaEntity getMetaEntity(String name) {
+  @Override
+  public AtreusMetaComponent[] getComponents() {
+    AtreusMetaComponent[] result = new AtreusMetaComponent[metaComponentByName.size()];
+    return metaComponentByName.values().toArray(result);
+  }
+
+  @Override
+  public AtreusMetaComponent getComponent(String name) {
+    return metaComponentByName.get(name);
+  }
+
+  @Override
+  public AtreusMetaComponent getComponent(Class<?> componentType) {
+    return metaComponentByClass.get(componentType);
+  }
+
+  @Override
+  public AtreusMetaComponent getComponent(Object entity) {
+    return getComponent(entity.getClass());
+  }
+
+  @Override
+  public AtreusMetaEntity getEntity(String name) {
     return metaEntityByName.get(name);
   }
 
-  public AtreusMetaEntity getMetaEntity(Object entity) {
+  @Override
+  public AtreusMetaEntity getEntity(Object entity) {
     if (entity instanceof AtreusManagedEntity) {
       return ((AtreusManagedEntity) entity).getMetaEntity();
     }
-    return getMetaEntity(entity.getClass());
+    return getEntity(entity.getClass());
   }
 
-  public AtreusMetaEntity getMetaEntity(Class<?> entityType) {
+  @Override
+  public AtreusMetaEntity getEntity(Class<?> entityType) {
     return metaEntityByClass.get(entityType);
   }
 
-  public Collection<AtreusMetaEntity> getMetaEntities() {
-    return metaEntityByName.values();
-  }
-
-  public void init() {
-    metaEntityBuilder.build();
+  @Override
+  public AtreusMetaEntity[] getEntities() {
+    AtreusMetaEntity[] result = new AtreusMetaEntity[metaEntityByName.size()];
+    return metaEntityByName.values().toArray(result);
   }
 
   @SuppressWarnings("unchecked")
   public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
-    AtreusMetaEntity metaEntity = getMetaEntity(entity);
+    AtreusMetaEntity metaEntity = getEntity(entity);
     AtreusManagedEntity managedEntity = environment.getProxyManager().createManagedEntity(session, metaEntity, entity);
     for(AtreusMetaField metaField : metaEntity.getFields()){
       if (!(metaField instanceof AtreusMetaAssociationField)) {
@@ -118,24 +135,6 @@ public class EntityManager {
       managedEntity.setFieldValue(metaField, managedCollection);
     }
     return managedEntity;
-  }
-
-  public void scanPaths(String[] paths) {
-    for (String path : paths) {
-      scanPath(path);
-    }
-  }
-
-  public void scanPath(String path) {
-    LOG.trace("Scanning classpath path={}", path);
-
-    // Resolve all candidate entity classes using the configured entity strategies
-    Set<Class<?>> entityTypes = ReflectionUtils.findClassesWithAnnotation(path, AtreusEntity.class);
-
-    // Iterate and process each found entity class
-    for (Class<?> entityType : entityTypes) {
-      addEntityType(entityType);
-    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

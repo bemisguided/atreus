@@ -24,8 +24,9 @@
 package org.atreus.impl;
 
 import org.atreus.core.AtreusConfiguration;
+import org.atreus.core.AtreusManager;
 import org.atreus.core.AtreusSession;
-import org.atreus.core.AtreusSessionFactory;
+import org.atreus.core.ext.meta.AtreusMetaManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +35,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-public class SessionFactoryImpl implements AtreusSessionFactory {
+public class ManagerImpl implements AtreusManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(SessionFactoryImpl.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagerImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -46,11 +47,11 @@ public class SessionFactoryImpl implements AtreusSessionFactory {
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SessionFactoryImpl(Environment environment) {
+  public ManagerImpl(Environment environment) {
     this.environment = environment;
   }
 
-  public SessionFactoryImpl(AtreusConfiguration configuration) {
+  public ManagerImpl(AtreusConfiguration configuration) {
     this.environment = new Environment(configuration);
   }
 
@@ -74,6 +75,11 @@ public class SessionFactoryImpl implements AtreusSessionFactory {
   @Override
   public String getKeySpace() {
     return environment.getConfiguration().getKeySpace();
+  }
+
+  @Override
+  public AtreusMetaManager getMetaManager() {
+    return environment.getMetaManager();
   }
 
   @Override

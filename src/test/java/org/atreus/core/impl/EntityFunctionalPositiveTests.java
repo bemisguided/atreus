@@ -297,7 +297,7 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     addEntity(NameOverrideTestEntity.class);
     initEnvironment();
 
-    AtreusMetaEntity metaEntity = getEnvironment().getEntityManager().getMetaEntity(NameOverrideTestEntity.class);
+    AtreusMetaEntity metaEntity = getEnvironment().getMetaManager().getEntity(NameOverrideTestEntity.class);
     Assert.assertNotNull("Expect an entity", metaEntity);
     Assert.assertEquals("EntityName", metaEntity.getName());
     Assert.assertEquals("KeySpaceName", metaEntity.getTable().getKeySpace());

@@ -81,7 +81,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
 
     // Resolve the child entity type
     Class<?> childEntityType = resolveEntityType(field, compositeAnnotation.type());
-    MetaEntityImpl childMetaEntity = (MetaEntityImpl) getEnvironment().getEntityManager().getMetaEntity(childEntityType);
+    MetaEntityImpl childMetaEntity = (MetaEntityImpl) getEnvironment().getMetaManager().getEntity(childEntityType);
 
     // Create a meta composite
     MetaAssociationImpl metaAssociation = createMetaAssociation(parentMetaEntity, childMetaEntity);
@@ -110,7 +110,7 @@ class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponentBuilde
     Class<?> childEntityType = resolveEntityType(field, compositeAnnotation.type());
 
     // Resolve the child meta entity
-    AtreusMetaEntity childMetaEntity = getEnvironment().getEntityManager().getMetaEntity(childEntityType);
+    AtreusMetaEntity childMetaEntity = getEnvironment().getMetaManager().getEntity(childEntityType);
     if (childMetaEntity == null) {
       throw new RuntimeException("Child entity type not managed " + childEntityType);
     }

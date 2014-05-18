@@ -32,7 +32,7 @@ import org.atreus.core.ext.listeners.AtreusOnFetchListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.entities.EntityManager;
+import org.atreus.impl.entities.MetaManagerImpl;
 import org.atreus.impl.queries.QueryHelper;
 import org.atreus.impl.queries.QueryManager;
 import org.atreus.impl.util.AssertUtils;
@@ -322,8 +322,8 @@ public class SessionImpl implements AtreusSessionExt {
     return getEnvironment().getConfiguration();
   }
 
-  protected EntityManager getEntityManager() {
-    return getEnvironment().getEntityManager();
+  protected MetaManagerImpl getEntityManager() {
+    return getEnvironment().getMetaManager();
   }
 
   protected Environment getEnvironment() {
@@ -342,7 +342,7 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   private AtreusMetaEntity assertGetMetaEntity(Class<?> entityType) {
-    AtreusMetaEntity metaEntity = getEntityManager().getMetaEntity(entityType);
+    AtreusMetaEntity metaEntity = getEntityManager().getEntity(entityType);
     if (metaEntity == null) {
       throw new RuntimeException(entityType.getCanonicalName() + " is not managed by Atreus");
     }
