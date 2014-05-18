@@ -47,7 +47,7 @@ public class FloatTypeStrategy extends BaseSimpleTypeStrategy<Float> {
 
   @Override
   public AtreusCQLDataType getDataType() {
-    return AtreusCQLDataType.CQL_INET;
+    return AtreusCQLDataType.CQL_FLOAT;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -72,7 +72,9 @@ public class SessionImpl implements AtreusSessionExt {
 
   private ConsistencyLevel writeConsistencyLevel;
 
-  private BatchStatement batchStatement;
+  private BatchStatement currentBatchStatement;
+
+  private int nestedBatchCount;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -98,8 +100,14 @@ public class SessionImpl implements AtreusSessionExt {
     // Retrieve managed entity
     AtreusManagedEntity managedEntity = manageEntity(entity);
 
+    // Open a batch if necessary
+    batchOpen();
+
     // Broadcast to the on delete listeners
     managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnDeleteListener.class);
+
+    // Finish the batch if necessary
+    batchFinish();
 
     // Remove the managed entity from the cache
     uncacheEntry(managedEntity);
@@ -137,11 +145,18 @@ public class SessionImpl implements AtreusSessionExt {
   public void executeOrBatch(Statement statement) {
     assertSessionNotClosed();
 
+    // Write batch enabled
     if (isWriteBatch()) {
-      if (batchStatement == null) {
-        batchStatement = new BatchStatement();
+
+      // No existing batch so open one
+      if (!isBatchOpen()) {
+        batchOpen();
       }
-      batchStatement.add(statement);
+    }
+
+    // Batch is currently open so add this statement to it
+    if (isBatchOpen()) {
+      currentBatchStatement.add(statement);
       return;
     }
     getCassandraSession().execute(statement);
@@ -193,22 +208,24 @@ public class SessionImpl implements AtreusSessionExt {
   public void flush() {
     assertSessionNotClosed();
 
-    if (batchStatement == null) {
+    if (currentBatchStatement == null) {
       return;
     }
-    executeWrite(batchStatement, isWriteAsync());
-    batchStatement = null;
+    executeWrite(currentBatchStatement, isWriteAsync());
+    currentBatchStatement = null;
+    nestedBatchCount = 0;
   }
 
   @Override
   public void flush(boolean async) {
     assertSessionNotClosed();
 
-    if (batchStatement == null) {
+    if (currentBatchStatement == null) {
       return;
     }
-    executeWrite(batchStatement, async);
-    batchStatement = null;
+    executeWrite(currentBatchStatement, async);
+    currentBatchStatement = null;
+    nestedBatchCount = 0;
   }
 
   @Override
@@ -296,8 +313,14 @@ public class SessionImpl implements AtreusSessionExt {
     // Retrieve managed entity
     AtreusManagedEntity managedEntity = manageEntity(entity);
 
+    // Open a batch if necessary
+    batchOpen();
+
     // Broadcast to the on save listeners
     managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnSaveListener.class);
+
+    // Finish the batch if necessary
+    batchFinish();
 
     // Cache the managed entity
     cacheEntity(managedEntity);
@@ -420,6 +443,23 @@ public class SessionImpl implements AtreusSessionExt {
     return managedEntity;
   }
 
+  private void batchOpen() {
+    nestedBatchCount++;
+    if (isBatchOpen()) {
+      return;
+    }
+    LOG.trace("Batch Opened");
+    currentBatchStatement = new BatchStatement();
+  }
+
+  private void batchFinish() {
+    nestedBatchCount--;
+    if (nestedBatchCount < 1) {
+      LOG.trace("Batch Finished");
+      flush();
+    }
+  }
+
   private void uncacheEntry(AtreusManagedEntity managedEntity) {
     if (!sessionCache) {
       // Cache is not enabled for this session
@@ -458,12 +498,19 @@ public class SessionImpl implements AtreusSessionExt {
 
   @Override
   public void setWriteAsync(boolean writeAsync) {
+    if (isBatchOpen()) {
+      throw new RuntimeException("Cannot change write batch mode while a batch is currently open");
+    }
     this.writeAsync = writeAsync;
   }
 
   @Override
   public boolean isWriteBatch() {
     return writeBatch;
+  }
+
+  public boolean isBatchOpen() {
+    return currentBatchStatement != null;
   }
 
   @Override

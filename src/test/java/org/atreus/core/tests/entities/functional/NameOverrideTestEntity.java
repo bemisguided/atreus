@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martin Crawford
  */
-@AtreusEntity(value = "EntityName", keySpace = "KeySpaceName", table = "TableName")
+@AtreusEntity(value = "EntityName", keySpace = "NonDefault", table = "TableName")
 public class NameOverrideTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants

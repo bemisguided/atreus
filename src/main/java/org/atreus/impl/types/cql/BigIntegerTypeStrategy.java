@@ -49,7 +49,7 @@ public class BigIntegerTypeStrategy extends BaseSimpleTypeStrategy<BigInteger> {
 
   @Override
   public AtreusCQLDataType getDataType() {
-    return AtreusCQLDataType.CQL_BIGINT;
+    return AtreusCQLDataType.CQL_VARINT;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

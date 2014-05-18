@@ -57,15 +57,6 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     addEntity(ChildCompositeTestEntity.class);
     initEnvironment();
 
-    executeCQL("CREATE TABLE default.ParentCompositeTestEntity (" +
-        "id text, " +
-        "PRIMARY KEY(id))");
-
-    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
-        "ParentCompositeTestEntity_id text, " +
-        "id text, " +
-        "PRIMARY KEY(ParentCompositeTestEntity_id, id))");
-
     ParentCompositeTestEntity parentEntity = new ParentCompositeTestEntity();
     ChildCompositeTestEntity childEntity = new ChildCompositeTestEntity();
     parentEntity.setChildEntity(childEntity);
@@ -77,8 +68,6 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     Assert.assertNotNull("child entity should not be null", otherEntity.getChildEntity());
     Assert.assertEquals(childEntity.getId(), otherEntity.getChildEntity().getId());
 
-    executeCQL("DROP TABLE default.ParentCompositeTestEntity");
-    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
   }
 
   @Test
@@ -87,15 +76,6 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     addEntity(ParentCompositeSetTestEntity.class);
     addEntity(ChildCompositeTestEntity.class);
     initEnvironment();
-
-    executeCQL("CREATE TABLE default.ParentCompositeSetTestEntity (" +
-        "id text, " +
-        "PRIMARY KEY(id))");
-
-    executeCQL("CREATE TABLE default.ChildCompositeTestEntity (" +
-        "ParentCompositeSetTestEntity_id text, " +
-        "id text, " +
-        "PRIMARY KEY(ParentCompositeSetTestEntity_id, id))");
 
     // Save parent entity
     LOG.debug("Save parent entity");
@@ -140,8 +120,6 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     ResultSet resultSet = getSession().execute("SELECT * FROM default.ChildCompositeTestEntity");
     Assert.assertTrue(resultSet.isExhausted());
 
-    executeCQL("DROP TABLE default.ParentCompositeSetTestEntity");
-    executeCQL("DROP TABLE default.ChildCompositeTestEntity");
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

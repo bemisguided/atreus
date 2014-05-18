@@ -21,27 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.schema.model;
+package org.atreus.core.tests.entities.common;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.atreus.core.annotations.AtreusEntity;
+import org.atreus.core.annotations.AtreusPrimaryKey;
 
 /**
- * CQL Column Table model.
+ * SimpleTestEntity
  *
  * @author Martin Crawford
  */
-public class ColumnTable {
+@AtreusEntity
+public class SimpleTestEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private String keySpace;
-  private String name;
-  private List<Column> columns = new ArrayList<>();
-  private List<Column> partitionKeys = new ArrayList<>();
-  private List<Column> clusterKeys = new ArrayList<>();
+  @AtreusPrimaryKey
+  private String id;
+
+  private String field1;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -53,32 +53,20 @@ public class ColumnTable {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public String getKeySpace() {
-    return keySpace;
+  public String getId() {
+    return id;
   }
 
-  public void setKeySpace(String keySpace) {
-    this.keySpace = keySpace;
+  public void setId(String id) {
+    this.id = id;
   }
 
-  public String getName() {
-    return name;
+  public String getField1() {
+    return field1;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public List<Column> getColumns() {
-    return columns;
-  }
-
-  public List<Column> getPartitionKeys() {
-    return partitionKeys;
-  }
-
-  public List<Column> getClusterKeys() {
-    return clusterKeys;
+  public void setField1(String field1) {
+    this.field1 = field1;
   }
 
 } // end of class

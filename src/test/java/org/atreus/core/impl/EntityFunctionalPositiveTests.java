@@ -28,6 +28,7 @@ import org.atreus.core.BaseAtreusCassandraTests;
 import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.core.tests.entities.common.SimpleTestEntity;
 import org.atreus.core.tests.entities.functional.*;
 import org.atreus.impl.types.generators.StringPrimaryKeyStrategy;
 import org.junit.Assert;
@@ -59,16 +60,37 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Test
+  public void testDisabledWriteBatch() throws Exception {
+    LOG.info("Running testDisabledWriteBatch");
+    addEntity(SimpleTestEntity.class);
+    initEnvironment();
+
+    SimpleTestEntity testEntity = new SimpleTestEntity();
+    testEntity.setField1("field1");
+
+    getSession().setWriteBatch(false);
+    getSession().save(testEntity);
+    String primaryKey = testEntity.getId();
+
+    SimpleTestEntity otherEntity = getSession().findOne(SimpleTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertEquals(primaryKey, otherEntity.getId());
+    Assert.assertEquals("field1", otherEntity.getField1());
+
+    getSession().delete(otherEntity);
+
+    otherEntity = getSession().findOne(SimpleTestEntity.class, primaryKey);
+
+    Assert.assertNull("Expect a null value", otherEntity);
+
+  }
+
+  @Test
   public void testAtreusTypes() throws Exception {
     LOG.info("Running testAtreusTypes");
     addEntity(AtreusTypesTestEntity.class);
     initEnvironment();
-
-    executeCQL("CREATE TABLE default.AtreusTypesTestEntity (" +
-        "id text, " +
-        "aShort int, " +
-        "anEnum text, " +
-        "PRIMARY KEY(id))");
 
     AtreusTypesTestEntity testEntity = new AtreusTypesTestEntity();
     testEntity.setaShort((short) 1234);
@@ -103,21 +125,6 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     LOG.info("Running testCQLPrimitiveTypes");
     addEntity(CQLPrimitiveTypesTestEntity.class);
     initEnvironment();
-
-    executeCQL("CREATE TABLE default.CQLPrimitiveTypesTestEntity (" +
-        "id text, " +
-        "aBigDecimal decimal, " +
-        "aBigInteger varint, " +
-        "aBoolean boolean, " +
-        "aDate timestamp, " +
-        "aDouble double, " +
-        "aFloat float, " +
-        "anInetAddress inet, " +
-        "aInteger int, " +
-        "aLong bigint, " +
-        "aString text, " +
-        "aUuid uuid, " +
-        "PRIMARY KEY(id))");
 
     // Save entity
     CQLPrimitiveTypesTestEntity testEntity = new CQLPrimitiveTypesTestEntity();
@@ -169,46 +176,38 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     addEntity(TtlTestEntity.class);
     initEnvironment();
 
-    try {
-      executeCQL("CREATE TABLE default.TtlTestEntity (" +
-          "id text, " +
-          "value text, " +
-          "PRIMARY KEY(id))");
 
-      // Test with a time-to-live bindValue
-      TtlTestEntity testEntity = new TtlTestEntity();
-      testEntity.setValue("I am a text value");
-      testEntity.setTtl(2); // 2 seconds
+    // Test with a time-to-live bindValue
+    TtlTestEntity testEntity = new TtlTestEntity();
+    testEntity.setValue("I am a text value");
+    testEntity.setTtl(2); // 2 seconds
 
-      getSession().save(testEntity);
-      getSession().flush();
-      String primaryKey = testEntity.getId();
+    getSession().save(testEntity);
+    getSession().flush();
+    String primaryKey = testEntity.getId();
 
-      TtlTestEntity otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
-      Assert.assertNotNull("Expect to be not null", otherEntity);
-      Assert.assertEquals(primaryKey, otherEntity.getId());
-      Assert.assertEquals("I am a text value", otherEntity.getValue());
+    TtlTestEntity otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+    Assert.assertNotNull("Expect to be not null", otherEntity);
+    Assert.assertEquals(primaryKey, otherEntity.getId());
+    Assert.assertEquals("I am a text value", otherEntity.getValue());
 
-      // Wait until expired
-      sleepSeconds(3); // Sleep for 3 secs
+    // Wait until expired
+    sleepSeconds(3); // Sleep for 3 secs
 
-      otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
-      Assert.assertNull("Expect to be null", otherEntity);
+    otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+    Assert.assertNull("Expect to be null", otherEntity);
 
-      // Test w/o a time-to-live bindValue
-      testEntity = new TtlTestEntity();
-      testEntity.setValue("I am another text value");
+    // Test w/o a time-to-live bindValue
+    testEntity = new TtlTestEntity();
+    testEntity.setValue("I am another text value");
 
-      getSession().save(testEntity);
-      getSession().flush();
-      primaryKey = testEntity.getId();
+    getSession().save(testEntity);
+    getSession().flush();
+    primaryKey = testEntity.getId();
 
-      otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
-      Assert.assertNotNull("Expect to be not null", otherEntity);
-    }
-    finally {
-      executeCQL("DROP TABLE default.TtlTestEntity");
-    }
+    otherEntity = getSession().findOne(TtlTestEntity.class, primaryKey);
+    Assert.assertNotNull("Expect to be not null", otherEntity);
+
   }
 
   @Test(expected = AtreusDataBindingException.class)
@@ -217,23 +216,13 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     addEntity(TtlTestEntity.class);
     initEnvironment();
 
-    try {
-      executeCQL("CREATE TABLE default.TtlTestEntity (" +
-          "id text, " +
-          "value text, " +
-          "PRIMARY KEY(id))");
+    // Test with a time-to-live bindValue
+    TtlTestEntity testEntity = new TtlTestEntity();
+    testEntity.setValue("I am a text value");
+    testEntity.setTtl(0);
 
+    getSession().save(testEntity);
 
-      // Test with a time-to-live bindValue
-      TtlTestEntity testEntity = new TtlTestEntity();
-      testEntity.setValue("I am a text value");
-      testEntity.setTtl(0);
-
-      getSession().save(testEntity);
-    }
-    finally {
-      executeCQL("DROP TABLE default.TtlTestEntity");
-    }
   }
 
   @Test
@@ -241,14 +230,6 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     LOG.info("Running testCollectionsEntity");
     addEntity(CollectionTestEntity.class);
     initEnvironment();
-
-    executeCQL("CREATE TABLE default.CollectionTestEntity (" +
-        "id text, " +
-        "setField set<bigint>, " +
-        "listField list<text>, " +
-        "mapField1 map<text,bigint>, " +
-        "mapField2 map<text,bigint>, " +
-        "PRIMARY KEY(id))");
 
     CollectionTestEntity testEntity = new CollectionTestEntity();
 
@@ -288,19 +269,19 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     otherEntity = getSession().findOne(CollectionTestEntity.class, primaryKey);
     Assert.assertNull("Expect not a value", otherEntity);
 
-    executeCQL("DROP TABLE default.CollectionTestEntity");
   }
 
   @Test
   public void testNameOverrideEntity() throws Exception {
     LOG.info("Running testNameOverrideEntity");
+    executeCQL("CREATE KEYSPACE NonDefault WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
     addEntity(NameOverrideTestEntity.class);
     initEnvironment();
 
     AtreusMetaEntity metaEntity = getEnvironment().getMetaManager().getEntity(NameOverrideTestEntity.class);
     Assert.assertNotNull("Expect an entity", metaEntity);
     Assert.assertEquals("EntityName", metaEntity.getName());
-    Assert.assertEquals("KeySpaceName", metaEntity.getTable().getKeySpace());
+    Assert.assertEquals("NonDefault", metaEntity.getTable().getKeySpace());
     Assert.assertEquals("TableName", metaEntity.getTable().getName());
 
     Assert.assertEquals("primaryKey", ((AtreusMetaSimpleField) metaEntity.getPrimaryKeyField()).getColumn());

@@ -1,6 +1,33 @@
+/**
+ * The MIT License
+ *
+ * Copyright (c) 2014 Martin Crawford and contributors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.atreus.impl.schema;
 
+import org.atreus.core.ext.AtreusCQLDataType;
 import org.atreus.core.ext.meta.*;
+import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
+import org.atreus.core.ext.strategies.AtreusMapTypeStrategy;
+import org.atreus.core.ext.strategies.AtreusTypeStrategy;
 import org.atreus.impl.schema.model.Column;
 import org.atreus.impl.schema.model.ColumnTable;
 import org.slf4j.Logger;
@@ -30,7 +57,7 @@ public class ColumnTableBuilder {
 
   public Map<String, ColumnTable> build(AtreusMetaManager metaManager) {
     Map<String, ColumnTable> results = new HashMap<>();
-    for(AtreusMetaEntity metaEntity : metaManager.getEntities()) {
+    for (AtreusMetaEntity metaEntity : metaManager.getEntities()) {
       buildColumnTables(metaEntity, results);
     }
     return results;
@@ -46,26 +73,36 @@ public class ColumnTableBuilder {
     columnTable.setName(metaEntity.getTable().getName());
     results.put(columnTable.getName(), columnTable);
     for (AtreusMetaSimpleField metaField : expandMetaFields(metaEntity.getPrimaryKeyField())) {
-      Column column = new Column();
-      column.setName(metaField.getColumn());
-      column.setDataType(metaField.getTypeStrategy().getDataType());
-      // TODO param types Set, List & Map
-      // TODO better control of the partition key vs the cluster key
-      if ( columnTable.getPartionKeys().isEmpty()) {
-        columnTable.getPartionKeys().add(column);
-      } else {
+      Column column = buildColumn(metaField);
+      if (columnTable.getPartitionKeys().isEmpty()) {
+        columnTable.getPartitionKeys().add(column);
+      }
+      else {
         columnTable.getClusterKeys().add(column);
       }
       columnTable.getColumns().add(column);
     }
 
-    for(AtreusMetaSimpleField metaField : expandMetaFields(metaEntity.getFields())) {
-      Column column = new Column();
-      column.setName(metaField.getColumn());
-      column.setDataType(metaField.getTypeStrategy().getDataType());
-      // TODO param types Set, List & Map
+    for (AtreusMetaSimpleField metaField : expandMetaFields(metaEntity.getFields())) {
+      Column column = buildColumn(metaField);
       columnTable.getColumns().add(column);
     }
+  }
+
+  private Column buildColumn(AtreusMetaSimpleField metaSimpleField) {
+    Column column = new Column();
+    column.setName(metaSimpleField.getColumn());
+    AtreusTypeStrategy typeStrategy = metaSimpleField.getTypeStrategy();
+    column.setDataType(typeStrategy.getDataType());
+    if (typeStrategy instanceof AtreusCollectionTypeStrategy) {
+      AtreusCollectionTypeStrategy collectionTypeStrategy = (AtreusCollectionTypeStrategy) typeStrategy;
+      column.setDataTypeParams(new AtreusCQLDataType[]{collectionTypeStrategy.getValueDataType()});
+    }
+    if (typeStrategy instanceof AtreusMapTypeStrategy) {
+      AtreusMapTypeStrategy mapTypeStrategy = (AtreusMapTypeStrategy) typeStrategy;
+      column.setDataTypeParams(new AtreusCQLDataType[]{mapTypeStrategy.getKeyDataType(), mapTypeStrategy.getValueDataType()});
+    }
+    return column;
   }
 
   private List<AtreusMetaSimpleField> expandMetaFields(AtreusMetaField... metaFields) {

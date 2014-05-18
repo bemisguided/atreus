@@ -81,6 +81,7 @@ public class AtreusManagerBuilder {
     Environment environment = new Environment(configuration);
     ManagerImpl manager = new ManagerImpl(environment);
     environment.setManager(manager);
+    environment.connect();
     environment.init();
     return manager;
   }

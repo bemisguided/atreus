@@ -61,22 +61,21 @@ public class DefaultEntityComponentBuilder extends BaseEntityMetaComponentBuilde
   public boolean handleEntity(MetaEntityImpl metaEntity, Class<?> entityType) {
 
     AtreusEntity entityAnnotation = entityType.getAnnotation(AtreusEntity.class);
-    if (entityAnnotation == null) {
-      return false;
-    }
+    if (entityAnnotation != null) {
 
-    String name = entityAnnotation.value();
-    String keySpace = entityAnnotation.keySpace();
-    String table = entityAnnotation.table();
+      String name = entityAnnotation.value();
+      String keySpace = entityAnnotation.keySpace();
+      String table = entityAnnotation.table();
 
-    if (StringUtils.isNotNullOrEmpty(name)) {
-      metaEntity.setName(name);
-    }
-    if (StringUtils.isNotNullOrEmpty(keySpace)) {
-      ((MetaTableImpl) metaEntity.getTable()).setKeySpace(keySpace);
-    }
-    if (StringUtils.isNotNullOrEmpty(table)) {
-      ((MetaTableImpl) metaEntity.getTable()).setName(table);
+      if (StringUtils.isNotNullOrEmpty(name)) {
+        metaEntity.setName(name);
+      }
+      if (StringUtils.isNotNullOrEmpty(keySpace)) {
+        ((MetaTableImpl) metaEntity.getTable()).setKeySpace(keySpace);
+      }
+      if (StringUtils.isNotNullOrEmpty(table)) {
+        ((MetaTableImpl) metaEntity.getTable()).setName(table);
+      }
     }
 
     metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);

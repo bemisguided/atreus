@@ -21,64 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.schema.model;
+package org.atreus.impl.schema;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.atreus.impl.schema.model.ColumnTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * CQL Column Table model.
+ * Generates a set of CQL DROP TABLE scripts.
  *
  * @author Martin Crawford
  */
-public class ColumnTable {
+public class DropQueryWriter {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
+  private static final transient Logger LOG = LoggerFactory.getLogger(DropQueryWriter.class);
 
-  private String keySpace;
-  private String name;
-  private List<Column> columns = new ArrayList<>();
-  private List<Column> partitionKeys = new ArrayList<>();
-  private List<Column> clusterKeys = new ArrayList<>();
+  // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
+  public Set<String> generate(Collection<ColumnTable> columnTables) {
+    Set<String> results = new HashSet<>();
+    for (ColumnTable columnTable : columnTables) {
+      results.add(generateQuery(columnTable));
+    }
+    return results;
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
+  private String generateQuery(ColumnTable columnTable) {
+    StringBuilder query = new StringBuilder("DROP TABLE ");
+    query.append(columnTable.getKeySpace());
+    query.append('.');
+    query.append(columnTable.getName());
+    query.append(";");
+    return query.toString();
+  }
+
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
-
-  public String getKeySpace() {
-    return keySpace;
-  }
-
-  public void setKeySpace(String keySpace) {
-    this.keySpace = keySpace;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public List<Column> getColumns() {
-    return columns;
-  }
-
-  public List<Column> getPartitionKeys() {
-    return partitionKeys;
-  }
-
-  public List<Column> getClusterKeys() {
-    return clusterKeys;
-  }
 
 } // end of class

@@ -46,6 +46,7 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   private AtreusSession session;
+  private SchemaGeneratorPlugin schemaGeneratorPlugin;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -57,10 +58,11 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
     configuration.setHosts(CLUSTER_HOST_NAME);
     configuration.setPort(CLUSTER_PORT);
     configuration.setKeySpace(DEFAULT_KEY_SPACE);
+    schemaGeneratorPlugin = new SchemaGeneratorPlugin();
     setEnvironment(new Environment(configuration));
     getEnvironment().setCassandraCluster(getCassandraCluster());
     getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    getEnvironment().addPlugin(new SchemaGeneratorPlugin());
+    getEnvironment().addPlugin(schemaGeneratorPlugin);
     getEnvironment().setManager(new ManagerImpl(getEnvironment()));
     session = new SessionImpl(getEnvironment());
   }
@@ -68,6 +70,7 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
   @After
   public void after() throws Exception {
     session.close();
+    schemaGeneratorPlugin.dropSchema(getEnvironment().getManager());
     session = null;
     setEnvironment(null);
   }
