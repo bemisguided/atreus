@@ -29,6 +29,8 @@ import java.io.Serializable;
 
 public interface AtreusSession {
 
+  public boolean isBatchOpen();
+
   public boolean isClosed();
 
   public boolean isWriteAsync();

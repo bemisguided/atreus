@@ -37,4 +37,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface AtreusCompositeChild {
 
+  /**
+   * Sets the fetch mode for the children of this composite association.
+   *
+   * @return
+   */
+  public AtreusFetch fetch() default AtreusFetch.LAZY;
+
 }

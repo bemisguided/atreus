@@ -44,4 +44,11 @@ public @interface AtreusCompositeParent {
    */
   public Class<?> type() default NullType.class;
 
+  /**
+   * Sets the fetch mode for the children of this composite association.
+   *
+   * @return
+   */
+  public AtreusFetch fetch() default AtreusFetch.EAGER;
+
 }

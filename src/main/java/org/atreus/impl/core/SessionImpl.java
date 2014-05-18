@@ -380,6 +380,23 @@ public class SessionImpl implements AtreusSessionExt {
     }
   }
 
+  private void batchFinish() {
+    nestedBatchCount--;
+    if (nestedBatchCount < 1) {
+      LOG.trace("Batch Finished");
+      flush();
+    }
+  }
+
+  private void batchOpen() {
+    nestedBatchCount++;
+    if (isBatchOpen()) {
+      return;
+    }
+    LOG.trace("Batch Opened");
+    currentBatchStatement = new BatchStatement();
+  }
+
   private void cacheClear() {
     if (!sessionCache) {
       // Cache is not enabled for this session
@@ -443,23 +460,6 @@ public class SessionImpl implements AtreusSessionExt {
     return managedEntity;
   }
 
-  private void batchOpen() {
-    nestedBatchCount++;
-    if (isBatchOpen()) {
-      return;
-    }
-    LOG.trace("Batch Opened");
-    currentBatchStatement = new BatchStatement();
-  }
-
-  private void batchFinish() {
-    nestedBatchCount--;
-    if (nestedBatchCount < 1) {
-      LOG.trace("Batch Finished");
-      flush();
-    }
-  }
-
   private void uncacheEntry(AtreusManagedEntity managedEntity) {
     if (!sessionCache) {
       // Cache is not enabled for this session
@@ -475,6 +475,11 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public boolean isBatchOpen() {
+    return currentBatchStatement != null;
+  }
 
   @Override
   public boolean isClosed() {
@@ -507,10 +512,6 @@ public class SessionImpl implements AtreusSessionExt {
   @Override
   public boolean isWriteBatch() {
     return writeBatch;
-  }
-
-  public boolean isBatchOpen() {
-    return currentBatchStatement != null;
   }
 
   @Override
