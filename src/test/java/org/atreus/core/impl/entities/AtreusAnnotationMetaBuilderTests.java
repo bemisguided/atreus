@@ -29,7 +29,7 @@ import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaManager;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.tests.entities.common.TestEntity;
-import org.atreus.impl.entities.builder.MetaBuilder;
+import org.atreus.impl.core.mappings.MappingBuilder;
 import org.atreus.impl.types.cql.IntegerTypeStrategy;
 import org.atreus.impl.types.cql.LongTypeStrategy;
 import org.atreus.impl.types.cql.StringTypeStrategy;
@@ -58,9 +58,9 @@ public class AtreusAnnotationMetaBuilderTests extends BaseAtreusTests {
   @Test
   public void testScanPath() {
     LOG.info("Running testScanPath");
-    MetaBuilder metaBuilder = getEnvironment().getMetaBuilder();
-    metaBuilder.scanPath(DEFAULT_SCAN_PATH);
-    metaBuilder.build();
+    MappingBuilder mappingBuilder = getEnvironment().getMappingBuilder();
+    mappingBuilder.scanPath(DEFAULT_SCAN_PATH);
+    mappingBuilder.build();
 
     AtreusMetaManager metaManager = getEnvironment().getMetaManager();
 

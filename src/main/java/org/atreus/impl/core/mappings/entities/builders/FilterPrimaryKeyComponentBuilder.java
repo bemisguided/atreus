@@ -21,68 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.entities.builders;
 
+import org.atreus.core.annotations.AtreusPrimaryKey;
 import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.impl.core.mappings.BaseFieldEntityMetaComponentBuilder;
+import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
+
+import java.lang.reflect.Field;
 
 /**
- * Base class for Atreus without Cassandra unit tests.
+ * Filter out the primary key meta field builder.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+public class FilterPrimaryKeyComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
-  protected static final String DEFAULT_SCAN_PATH = "org.atreus.core.tests.entities.common";
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private Environment environment;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public FilterPrimaryKeyComponentBuilder(Environment environment) {
+    super(environment);
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    environment = new Environment(configuration);
-    environment.setManager(new ManagerImpl(environment));
+  @Override
+  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
+    return field.getAnnotation(AtreusPrimaryKey.class) != null;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static void sleepSeconds(int seconds) {
-    try {
-      LOG.debug("Sleeping for {} second(s)", seconds);
-      Thread.sleep(seconds * 1000);
-    }
-    catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected Environment getEnvironment() {
-    return environment;
-  }
-
-  protected void setEnvironment(Environment environment) {
-    this.environment = environment;
-  }
-}
+} // end of class

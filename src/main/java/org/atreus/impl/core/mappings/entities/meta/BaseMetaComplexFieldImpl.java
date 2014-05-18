@@ -21,68 +21,83 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.entities.meta;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.junit.Before;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import org.atreus.core.ext.meta.AtreusMetaComplexField;
+import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
- * Base class for Atreus without Cassandra unit tests.
+ * Base meta complex field.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+public abstract class BaseMetaComplexFieldImpl implements AtreusMetaComplexField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
-  protected static final String DEFAULT_SCAN_PATH = "org.atreus.core.tests.entities.common";
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseMetaComplexFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Environment environment;
+  private final AtreusMetaObject ownerObject;
+  private Map<String, AtreusMetaSimpleField> fields = new LinkedHashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  protected BaseMetaComplexFieldImpl(AtreusMetaObject ownerObject) {
+    this.ownerObject = ownerObject;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    environment = new Environment(configuration);
-    environment.setManager(new ManagerImpl(environment));
+  public void addField(AtreusMetaSimpleField metaSimpleField) {
+    fields.put(metaSimpleField.getName(), metaSimpleField);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static void sleepSeconds(int seconds) {
-    try {
-      LOG.debug("Sleeping for {} second(s)", seconds);
-      Thread.sleep(seconds * 1000);
-    }
-    catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected Environment getEnvironment() {
-    return environment;
+  @Override
+  public final AtreusMetaSimpleField[] getFields() {
+    AtreusMetaSimpleField[] result = new AtreusMetaSimpleField[fields.size()];
+    return fields.values().toArray(result);
   }
 
-  protected void setEnvironment(Environment environment) {
-    this.environment = environment;
+  @Override
+  public final void bindEntity(BoundStatement boundStatement, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindEntity(boundStatement, entity);
+    }
   }
-}
+
+  @Override
+  public final void bindValue(BoundStatement boundStatement, Object value) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.bindValue(boundStatement, value);
+    }
+  }
+
+  @Override
+  public final AtreusMetaObject getOwnerObject() {
+    return ownerObject;
+  }
+
+  @Override
+  public final void unbindEntity(Row row, Object entity) {
+    for (AtreusMetaSimpleField metaSimpleField : fields.values()) {
+      metaSimpleField.unbindEntity(row, entity);
+    }
+  }
+
+} // end of class

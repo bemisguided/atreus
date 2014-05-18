@@ -21,68 +21,73 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.associations.composite.meta;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.Serializable;
 
 /**
- * Base class for Atreus without Cassandra unit tests.
+ * Composite Child Primary Key object.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+public class CompositeChildPrimaryKey implements Serializable {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
-  protected static final String DEFAULT_SCAN_PATH = "org.atreus.core.tests.entities.common";
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Environment environment;
+  private final Serializable parentKey;
+  private final Serializable childKey;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public CompositeChildPrimaryKey(Serializable parentKey, Serializable childKey) {
+    this.parentKey = parentKey;
+    this.childKey = childKey;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    environment = new Environment(configuration);
-    environment.setManager(new ManagerImpl(environment));
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    CompositeChildPrimaryKey that = (CompositeChildPrimaryKey) o;
+
+    if (childKey != null ? !childKey.equals(that.childKey) : that.childKey != null) {
+      return false;
+    }
+    if (parentKey != null ? !parentKey.equals(that.parentKey) : that.parentKey != null) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = parentKey != null ? parentKey.hashCode() : 0;
+    result = 31 * result + (childKey != null ? childKey.hashCode() : 0);
+    return result;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static void sleepSeconds(int seconds) {
-    try {
-      LOG.debug("Sleeping for {} second(s)", seconds);
-      Thread.sleep(seconds * 1000);
-    }
-    catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected Environment getEnvironment() {
-    return environment;
+  public Serializable getParentKey() {
+    return parentKey;
   }
 
-  protected void setEnvironment(Environment environment) {
-    this.environment = environment;
+  public Serializable getChildKey() {
+    return childKey;
   }
-}
+
+} // end of class

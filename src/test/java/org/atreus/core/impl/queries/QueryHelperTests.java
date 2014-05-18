@@ -24,10 +24,10 @@
 package org.atreus.core.impl.queries;
 
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.entities.meta.MetaEntityImpl;
-import org.atreus.impl.entities.meta.MetaTableImpl;
-import org.atreus.impl.entities.meta.fields.DynamicMetaSimpleFieldImpl;
-import org.atreus.impl.queries.QueryHelper;
+import org.atreus.impl.core.mappings.entities.meta.DynamicMetaSimpleFieldImpl;
+import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
+import org.atreus.impl.core.mappings.entities.meta.MetaTableImpl;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;

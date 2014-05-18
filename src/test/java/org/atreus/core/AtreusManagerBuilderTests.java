@@ -50,7 +50,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   @Test
   public void testBuildFactory() {
     LOG.info("Running testBuildFactory");
-    AtreusManager manager = AtreusManagerBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
+    AtreusManager manager = AtreusManagerBuilder.newInstance(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName()).build();
     Assert.assertEquals(CLUSTER_HOST_NAME, manager.getHosts()[0]);
     Assert.assertEquals(CLUSTER_PORT, manager.getPort());
     Assert.assertEquals(DEFAULT_KEY_SPACE, manager.getKeySpace());
@@ -61,7 +61,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   public void testBuildFactoryWithMultipleHosts() {
     LOG.info("Running testBuildFactoryWithMultipleHosts");
     String[] hosts = new String[]{CLUSTER_HOST_NAME, "127.0.0.1"};
-    AtreusManager manager = AtreusManagerBuilder.buildFactory(hosts, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
+    AtreusManager manager = AtreusManagerBuilder.newInstance(hosts, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName()).build();
     Assert.assertEquals(hosts, manager.getHosts());
     Assert.assertEquals(CLUSTER_PORT, manager.getPort());
     Assert.assertEquals(DEFAULT_KEY_SPACE, manager.getKeySpace());
@@ -71,11 +71,15 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   @Test
   public void testBuildFactoryWithConfiguration() {
     LOG.info("Running testBuildFactoryWithConfiguration");
-    AtreusConfiguration configuration = new AtreusConfiguration(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE, TestEntity.class.getPackage().getName());
+    AtreusConfiguration configuration = new AtreusConfiguration();
+    configuration.setHosts(CLUSTER_HOST_NAME);
+    configuration.setPort(CLUSTER_PORT);
+    configuration.setKeySpace( DEFAULT_KEY_SPACE);
+    configuration.setScanPaths(TestEntity.class.getPackage().getName());
     configuration.setDefaultWriteBatch(false);
     configuration.setDefaultReadConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
     configuration.setDefaultWriteConsistencyLevel(ConsistencyLevel.QUORUM);
-    AtreusManager manager = AtreusManagerBuilder.buildFactory(configuration);
+    AtreusManager manager = AtreusManagerBuilder.newInstance(configuration).build();
     Assert.assertEquals(CLUSTER_HOST_NAME, manager.getHosts()[0]);
     Assert.assertEquals(CLUSTER_PORT, manager.getPort());
     Assert.assertEquals(DEFAULT_KEY_SPACE, manager.getKeySpace());
@@ -86,7 +90,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   public void testMisconfigurationHost() {
     LOG.info("Running testMisconfigurationHost");
     try {
-      AtreusManagerBuilder.buildFactory(new String[0], 0, null, DEFAULT_SCAN_PATH);
+      AtreusManagerBuilder.newInstance(new String[0], 0, null, DEFAULT_SCAN_PATH).build();
     }
     catch (AtreusInitialisationException e) {
       org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_HOST_REQUIRED, e.getErrorCode());
@@ -98,7 +102,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   public void testMisconfigurationPort() {
     LOG.info("Running testMisconfigurationPort");
     try {
-      AtreusManagerBuilder.buildFactory(CLUSTER_HOST_NAME, 0, null, DEFAULT_SCAN_PATH);
+      AtreusManagerBuilder.newInstance(CLUSTER_HOST_NAME, 0, null, DEFAULT_SCAN_PATH).build();
     }
     catch (AtreusInitialisationException e) {
       org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED, e.getErrorCode());
@@ -110,7 +114,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   public void testMisconfigurationKeySpace() {
     LOG.info("Running testMisconfigurationKeySpace");
     try {
-      AtreusManagerBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, null, DEFAULT_SCAN_PATH);
+      AtreusManagerBuilder.newInstance(CLUSTER_HOST_NAME, CLUSTER_PORT, null, DEFAULT_SCAN_PATH).build();
     }
     catch (AtreusInitialisationException e) {
       org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED, e.getErrorCode());
@@ -122,7 +126,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   public void testMisconfigurationScanPath() {
     LOG.info("Running testMisconfigurationScanPath");
     try {
-      AtreusManagerBuilder.buildFactory(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE);
+      AtreusManagerBuilder.newInstance(CLUSTER_HOST_NAME, CLUSTER_PORT, DEFAULT_KEY_SPACE).build();
     }
     catch (AtreusInitialisationException e) {
       org.junit.Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED, e.getErrorCode());
@@ -133,7 +137,7 @@ public class AtreusManagerBuilderTests extends BaseCassandraTests {
   @Test(expected = AtreusClusterConnectivityException.class)
   public void testConnectFailure() {
     LOG.info("Running testConnectFailure");
-    AtreusManagerBuilder.buildFactory(CLUSTER_HOST_NAME, 1234, DEFAULT_KEY_SPACE, DEFAULT_SCAN_PATH);
+    AtreusManagerBuilder.newInstance(CLUSTER_HOST_NAME, 1234, DEFAULT_KEY_SPACE, DEFAULT_SCAN_PATH).build();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

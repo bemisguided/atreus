@@ -21,68 +21,72 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.entities.meta;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.junit.Before;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.meta.AtreusMetaObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Atreus without Cassandra unit tests.
+ * Implements a meta field instance for dynamically defined fields.
  *
  * @author Martin Crawford
  */
-public abstract class BaseAtreusTests {
+public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusTests.class);
-  protected static final String CLUSTER_HOST_NAME = "localhost";
-  protected static final int CLUSTER_PORT = 9142;
-  protected static final String DEFAULT_KEY_SPACE = "default";
-  protected static final String DEFAULT_SCAN_PATH = "org.atreus.core.tests.entities.common";
+  private static final transient Logger LOG = LoggerFactory.getLogger(DynamicMetaSimpleFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private Environment environment;
+  private final String name;
+
+  private final Class<?> type;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
+  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+    super(ownerObject);
+    this.name = name;
+    this.type = type;
+  }
+
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    environment = new Environment(configuration);
-    environment.setManager(new ManagerImpl(environment));
-  }
-
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected static void sleepSeconds(int seconds) {
-    try {
-      LOG.debug("Sleeping for {} second(s)", seconds);
-      Thread.sleep(seconds * 1000);
-    }
-    catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  protected Environment getEnvironment() {
-    return environment;
+  @Override
+  public String getName() {
+    return name;
   }
 
-  protected void setEnvironment(Environment environment) {
-    this.environment = environment;
+  @Override
+  public Object getValue(Object entity) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+
+    Object value = ((AtreusManagedEntity) entity).getDynamicFields().get(name);
+    return value;
   }
-}
+
+  @Override
+  public void setValue(Object entity, Object value) {
+    if (!(entity instanceof AtreusManagedEntity)) {
+      throw new RuntimeException("Cannot retrieve a dynamic field from a non-managed entity");
+    }
+    ((AtreusManagedEntity) entity).getDynamicFields().put(name, value);
+  }
+
+  @Override
+  public Class<?> getType() {
+    return type;
+  }
+
+} // end of class

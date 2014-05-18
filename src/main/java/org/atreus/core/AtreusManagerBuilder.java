@@ -23,8 +23,13 @@
  */
 package org.atreus.core;
 
-import org.atreus.impl.ManagerImpl;
+import org.atreus.core.ext.plugins.AtreusPlugin;
+import org.atreus.impl.core.Environment;
+import org.atreus.impl.core.ManagerImpl;
 import org.atreus.impl.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Atreus Session Factory Builder.
@@ -37,21 +42,23 @@ public class AtreusManagerBuilder {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private AtreusConfiguration configuration;
+  private List<AtreusPlugin> plugins = new ArrayList<>();
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  private AtreusManagerBuilder() {
+  private AtreusManagerBuilder(AtreusConfiguration configuration) {
+    this.configuration = configuration;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   /**
-   * Builds a new Atreus Session Factory.
+   * Builds the new Atreus Manager with the built configuration.
    *
-   * @param configuration an Atreus Configuration object
-   * @return a connected Atreus Session Factory
+   * @return a new Atreus Manager instance
    */
-  public static AtreusManager buildFactory(AtreusConfiguration configuration) {
-    ManagerImpl factory = new ManagerImpl(configuration);
+  public AtreusManager build() {
 
     // Validate the Cassandra configuration
     if (configuration.getHosts() == null || configuration.getHosts().length < 1) {
@@ -65,40 +72,87 @@ public class AtreusManagerBuilder {
     if (StringUtils.isNullOrEmpty(configuration.getKeySpace())) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
     }
+
+    // Validate Atreus configuration
     if (configuration.getScanPaths() == null || configuration.getScanPaths().length < 1) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_AT_LEAST_ONE_SCAN_PATH_REQUIRED);
     }
 
-    factory.init();
-    return factory;
+    Environment environment = new Environment(configuration);
+    ManagerImpl manager = new ManagerImpl(environment);
+    environment.setManager(manager);
+    environment.init();
+    return manager;
   }
 
   /**
-   * Builds a new Atreus Session Factory.
+   * Creates a new instance of the Atreus Manager Builder.
+   *
+   * @return a new Atreus Manager Builder
+   */
+  public static AtreusManagerBuilder newInstance() {
+    return new AtreusManagerBuilder(new AtreusConfiguration());
+  }
+
+  /**
+   * Creates a new instance of the Atreus Manager Builder.
+   *
+   * @param configuration an Atreus Configuration object
+   * @return a new Atreus Manager Builder
+   */
+  public static AtreusManagerBuilder newInstance(AtreusConfiguration configuration) {
+    return new AtreusManagerBuilder(configuration);
+  }
+
+  /**
+   * Creates a new instance of the Atreus Manager Builder.
    *
    * @param host      a node host name in the Cassandra cluster
    * @param port      port of the CQL protocol for the Cassandra cluster
    * @param keySpace  the common key space in the Cassandra cluster
    * @param scanPaths the package path to scan for configuration of entities
-   * @return a connected Atreus Session Factory
+   * @return a new Atreus Manager Builder
    */
-  public static AtreusManager buildFactory(String host, int port, String keySpace, String... scanPaths) {
-    AtreusConfiguration configuration = new AtreusConfiguration(host, port, keySpace, scanPaths);
-    return buildFactory(configuration);
+  public static AtreusManagerBuilder newInstance(String host, int port, String keySpace, String... scanPaths) {
+    return newInstance().hosts(host).post(port).keySpace(keySpace).scanPaths(scanPaths);
   }
 
   /**
-   * Builds a new Atreus Session Factory.
+   * Creates a new instance of the Atreus Manager Builder.
    *
    * @param hosts     an array of node host names in the Cassandra cluster
    * @param port      port of the CQL protocol for the Cassandra cluster
    * @param keySpace  the common key space in the Cassandra cluster
    * @param scanPaths the package path to scan for configuration of entities
-   * @return a connected Atreus Session Factory
+   * @return a new Atreus Manager Builder
    */
-  public static AtreusManager buildFactory(String hosts[], int port, String keySpace, String... scanPaths) {
-    AtreusConfiguration configuration = new AtreusConfiguration(hosts, port, keySpace, scanPaths);
-    return buildFactory(configuration);
+  public static AtreusManagerBuilder newInstance(String[] hosts, int port, String keySpace, String... scanPaths) {
+    return newInstance().hosts(hosts).post(port).keySpace(keySpace).scanPaths(scanPaths);
+  }
+
+  public AtreusManagerBuilder hosts(String... hosts) {
+    configuration.setHosts(hosts);
+    return this;
+  }
+
+  public AtreusManagerBuilder post(int port) {
+    configuration.setPort(port);
+    return this;
+  }
+
+  public AtreusManagerBuilder keySpace(String keySpace) {
+    configuration.setKeySpace(keySpace);
+    return this;
+  }
+
+  public AtreusManagerBuilder scanPaths(String... scanPaths) {
+    configuration.setScanPaths(scanPaths);
+    return this;
+  }
+
+  public AtreusManagerBuilder withPlugin(AtreusPlugin plugin) {
+    plugins.add(plugin);
+    return this;
   }
 
 }

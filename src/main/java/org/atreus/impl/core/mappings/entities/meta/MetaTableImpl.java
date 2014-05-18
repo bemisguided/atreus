@@ -21,34 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.entities.meta;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atreus.core.ext.meta.AtreusMetaTable;
 
 /**
- * Atreus Configuration.
+ * Meta Table bean.
  *
  * @author Martin Crawford
  */
-public class AtreusConfiguration {
+public class MetaTableImpl implements AtreusMetaTable {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusConfiguration.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private ConsistencyLevel defaultReadConsistencyLevel = ConsistencyLevel.ONE;
-  private boolean defaultWriteAsync = false;
-  private boolean defaultWriteBatch = true;
-  private ConsistencyLevel defaultWriteConsistencyLevel = ConsistencyLevel.ONE;
-  private String[] hosts;
   private String keySpace;
-  private int port;
-  private String[] scanPaths;
-  private boolean sessionCache = true;
+  private String name;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -60,46 +49,7 @@ public class AtreusConfiguration {
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
-  public ConsistencyLevel getDefaultReadConsistencyLevel() {
-    return defaultReadConsistencyLevel;
-  }
-
-  public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
-    this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
-  }
-
-  public boolean isDefaultWriteAsync() {
-    return defaultWriteAsync;
-  }
-
-  public void setDefaultWriteAsync(boolean defaultWriteAsync) {
-    this.defaultWriteAsync = defaultWriteAsync;
-  }
-
-  public boolean isDefaultWriteBatch() {
-    return defaultWriteBatch;
-  }
-
-  public void setDefaultWriteBatch(boolean defaultWriteBatch) {
-    this.defaultWriteBatch = defaultWriteBatch;
-  }
-
-  public ConsistencyLevel getDefaultWriteConsistencyLevel() {
-    return defaultWriteConsistencyLevel;
-  }
-
-  public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
-    this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
-  }
-
-  public String[] getHosts() {
-    return hosts;
-  }
-
-  public void setHosts(String... hosts) {
-    this.hosts = hosts;
-  }
-
+  @Override
   public String getKeySpace() {
     return keySpace;
   }
@@ -108,28 +58,13 @@ public class AtreusConfiguration {
     this.keySpace = keySpace;
   }
 
-  public int getPort() {
-    return port;
+  @Override
+  public String getName() {
+    return name;
   }
 
-  public void setPort(int port) {
-    this.port = port;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public String[] getScanPaths() {
-    return scanPaths;
-  }
-
-  public void setScanPaths(String... scanPaths) {
-    this.scanPaths = scanPaths;
-  }
-
-  public boolean isSessionCache() {
-    return sessionCache;
-  }
-
-  public void setSessionCache(boolean sessionCache) {
-    this.sessionCache = sessionCache;
-  }
-
-}
+} // end of class

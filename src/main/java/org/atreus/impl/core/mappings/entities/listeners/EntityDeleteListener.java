@@ -21,74 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.entities.listeners;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.atreus.impl.core.SessionImpl;
-import org.atreus.impl.schema.SchemaGeneratorPlugin;
-import org.junit.After;
-import org.junit.Before;
+import com.datastax.driver.core.BoundStatement;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Atreus with Cassandra required unit tests.
+ * Delete Entity listener.
  *
  * @author Martin Crawford
  */
-public class BaseAtreusCassandraTests extends BaseCassandraTests {
+public class EntityDeleteListener extends AtreusAbstractEntityListener implements AtreusOnDeleteListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusCassandraTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private AtreusSession session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    setEnvironment(new Environment(configuration));
-    getEnvironment().setCassandraCluster(getCassandraCluster());
-    getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    getEnvironment().addPlugin(new SchemaGeneratorPlugin());
-    getEnvironment().setManager(new ManagerImpl(getEnvironment()));
-    session = new SessionImpl(getEnvironment());
-  }
-
-  @After
-  public void after() throws Exception {
-    session.close();
-    session = null;
-    setEnvironment(null);
+  @Override
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
+    BoundStatement boundStatement = session.prepareQuery(QueryHelper.deleteEntity(metaEntity));
+    primaryKeyMetaField.bindEntity(boundStatement, managedEntity);
+    session.executeOrBatch(boundStatement);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected void addEntity(Class<?> entityType) {
-    getEnvironment().getMappingBuilder().addEntityType(entityType);
-  }
-
-  protected AtreusSession getSession() {
-    return session;
-  }
-
-  protected void setScanPaths(String... scanPaths) {
-    getEnvironment().getConfiguration().setScanPaths(scanPaths);
-  }
-
-  protected void initEnvironment() {
-    getEnvironment().init();
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

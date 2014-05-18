@@ -28,7 +28,7 @@ import org.atreus.core.ext.strategies.AtreusPrimaryKeyStrategy;
 import org.atreus.core.ext.strategies.AtreusTtlStrategy;
 import org.atreus.core.ext.strategies.AtreusType;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
-import org.atreus.impl.Environment;
+import org.atreus.impl.core.Environment;
 import org.atreus.impl.util.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -119,6 +119,10 @@ public class TypeManager {
   }
 
   public void scanPaths(String[] paths) {
+    if (paths == null) {
+      return;
+    }
+
     for (String path : paths) {
       scanPath(path);
     }

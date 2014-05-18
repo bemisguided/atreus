@@ -21,74 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.mappings.associations.composite.listeners;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.atreus.impl.core.SessionImpl;
-import org.atreus.impl.schema.SchemaGeneratorPlugin;
-import org.junit.After;
-import org.junit.Before;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Atreus with Cassandra required unit tests.
+ * Update Composite Child Association Entity listener.
  *
  * @author Martin Crawford
  */
-public class BaseAtreusCassandraTests extends BaseCassandraTests {
+public class CompositeChildUpdateListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener, AtreusOnUpdateListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusCassandraTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(CompositeChildUpdateListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private AtreusSession session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    setEnvironment(new Environment(configuration));
-    getEnvironment().setCassandraCluster(getCassandraCluster());
-    getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    getEnvironment().addPlugin(new SchemaGeneratorPlugin());
-    getEnvironment().setManager(new ManagerImpl(getEnvironment()));
-    session = new SessionImpl(getEnvironment());
-  }
+  @Override
+  public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity managedEntity, AtreusMetaAssociation metaAssociation) {
 
-  @After
-  public void after() throws Exception {
-    session.close();
-    session = null;
-    setEnvironment(null);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected void addEntity(Class<?> entityType) {
-    getEnvironment().getMappingBuilder().addEntityType(entityType);
-  }
-
-  protected AtreusSession getSession() {
-    return session;
-  }
-
-  protected void setScanPaths(String... scanPaths) {
-    getEnvironment().getConfiguration().setScanPaths(scanPaths);
-  }
-
-  protected void initEnvironment() {
-    getEnvironment().init();
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

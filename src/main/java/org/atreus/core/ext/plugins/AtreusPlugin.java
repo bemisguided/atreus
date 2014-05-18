@@ -2,8 +2,6 @@ package org.atreus.core.ext.plugins;
 
 import org.atreus.core.AtreusManager;
 
-import java.util.Map;
-
 /**
  * Atreus Plugin Interface.
  *
@@ -11,7 +9,7 @@ import java.util.Map;
  */
 public interface AtreusPlugin {
 
-  public void init(Map<String, Object> configuration);
+  public void init();
 
   public void preMapping(AtreusManager manager);
 

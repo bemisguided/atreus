@@ -21,74 +21,94 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.impl.core.entities;
 
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.atreus.impl.core.SessionImpl;
-import org.atreus.impl.schema.SchemaGeneratorPlugin;
-import org.junit.After;
-import org.junit.Before;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Base class for Atreus with Cassandra required unit tests.
+ * Implements a managed entity.
  *
  * @author Martin Crawford
  */
-public class BaseAtreusCassandraTests extends BaseCassandraTests {
+public class ManagedEntityImpl implements AtreusManagedEntity {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusCassandraTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(ManagedEntityImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private AtreusSession session;
+  private final Map<String, Object> dynamicFields = new HashMap<>();
+  private final Object entity;
+  private boolean fetched;
+  private final AtreusMetaEntity metaEntity;
+  private final AtreusSessionExt session;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  // Public Methods ------------------------------------------------------------------------------------ Public Methods
-
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    setEnvironment(new Environment(configuration));
-    getEnvironment().setCassandraCluster(getCassandraCluster());
-    getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    getEnvironment().addPlugin(new SchemaGeneratorPlugin());
-    getEnvironment().setManager(new ManagerImpl(getEnvironment()));
-    session = new SessionImpl(getEnvironment());
+  public ManagedEntityImpl(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
+    this.session = session;
+    this.entity = entity;
+    this.metaEntity = metaEntity;
   }
 
-  @After
-  public void after() throws Exception {
-    session.close();
-    session = null;
-    setEnvironment(null);
+  // Public Methods ------------------------------------------------------------------------------------ Public Methods
+
+  @Override
+  public boolean isFetched() {
+    return fetched;
+  }
+
+  @Override
+  public void setFetched(boolean fetched) {
+    this.fetched = fetched;
+  }
+
+  @Override
+  public Map<String, Object> getDynamicFields() {
+    return dynamicFields;
+  }
+
+  @Override
+  public Object getEntity() {
+    return entity;
+  }
+
+  @Override
+  public Object getFieldValue(AtreusMetaField metaField) {
+    return metaField.getValue(this);
+  }
+
+  @Override
+  public void setFieldValue(AtreusMetaField metaField, Object value) {
+    metaField.setValue(this, value);
+  }
+
+  @Override
+  public AtreusMetaEntity getMetaEntity() {
+    return metaEntity;
+  }
+
+  @Override
+  public Serializable getPrimaryKey() {
+    return (Serializable) getMetaEntity().getPrimaryKeyField().getValue(entity);
+  }
+
+  @Override
+  public boolean isUpdated() {
+    return true;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected void addEntity(Class<?> entityType) {
-    getEnvironment().getMappingBuilder().addEntityType(entityType);
-  }
-
-  protected AtreusSession getSession() {
-    return session;
-  }
-
-  protected void setScanPaths(String... scanPaths) {
-    getEnvironment().getConfiguration().setScanPaths(scanPaths);
-  }
-
-  protected void initEnvironment() {
-    getEnvironment().init();
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
