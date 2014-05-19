@@ -168,7 +168,7 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
 
     Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
     Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
-    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
+    Assert.assertFalse(otherEntity.getChildEntities().contains(childEntity2));
 
   }
 
