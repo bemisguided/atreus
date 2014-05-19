@@ -21,58 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.builders;
+package org.atreus.impl.core.mappings.entities.listeners;
 
-import org.atreus.core.annotations.AtreusField;
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.mappings.BaseFieldEntityMetaComponentBuilder;
-import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
-import org.atreus.impl.core.mappings.entities.meta.StaticMetaSimpleFieldImpl;
-import org.atreus.impl.util.ObjectUtils;
+import com.datastax.driver.core.RegularStatement;
+import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.impl.core.queries.QueryHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
- * Simple field meta field builder.
+ * Save Entity visitor.
  *
  * @author Martin Crawford
  */
-public class SimpleFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilder {
+public class EntitySaveListener extends BaseEntityListener implements AtreusOnSaveListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
+
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntitySaveListener.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public SimpleFieldComponentBuilder(Environment environment) {
-    super(environment);
-  }
-
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean handleField(MetaEntityImpl metaEntity, Field field) {
-    // Assumption is this is the last field builder to be called and therefore a simple field
-
-    // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
-
-    // Check for a field annotation
-    AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
-    if (fieldAnnotation != null) {
-      String fieldColumn = fieldAnnotation.value();
-      if (ObjectUtils.isNotNullOrEmpty(fieldColumn)) {
-        metaField.setColumn(fieldColumn);
-      }
-    }
-
-    // Resolve the type strategy
-    resolveTypeStrategy(metaEntity, metaField, field);
-
-    // Add the field to the meta entity
-    metaEntity.addField(metaField);
-    return true;
+  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    // TODO enable lightweight transaction as configuration option to ensure entity does not already exists
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    boolean hasTtl = hasTtl(managedEntity);
+    RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
+    bindAndExecute(session, managedEntity, regularStatement, iterateMetaSimpleFields(metaEntity.getFields()));
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

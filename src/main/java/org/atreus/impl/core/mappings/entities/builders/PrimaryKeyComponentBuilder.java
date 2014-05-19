@@ -32,7 +32,7 @@ import org.atreus.impl.core.mappings.BaseFieldEntityMetaComponentBuilder;
 import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.atreus.impl.core.mappings.entities.meta.StaticMetaSimpleFieldImpl;
 import org.atreus.impl.types.TypeManager;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.impl.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,7 @@ public class PrimaryKeyComponentBuilder extends BaseFieldEntityMetaComponentBuil
     // Create the Primary Key meta field
     StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaSimpleField(metaEntity, field);
     String primaryKeyColumn = primaryKeyAnnotation.value();
-    if (StringUtils.isNotNullOrEmpty(primaryKeyColumn)) {
+    if (ObjectUtils.isNotNullOrEmpty(primaryKeyColumn)) {
       primaryKeyMetaField.setColumn(primaryKeyColumn);
     }
 

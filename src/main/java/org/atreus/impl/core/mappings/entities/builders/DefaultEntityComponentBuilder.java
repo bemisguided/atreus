@@ -28,11 +28,12 @@ import org.atreus.core.ext.listeners.AtreusEntityListener;
 import org.atreus.impl.core.Environment;
 import org.atreus.impl.core.mappings.BaseEntityMetaComponentBuilder;
 import org.atreus.impl.core.mappings.entities.listeners.EntityDeleteListener;
+import org.atreus.impl.core.mappings.entities.listeners.EntitySaveListener;
 import org.atreus.impl.core.mappings.entities.listeners.EntityUpdateListener;
 import org.atreus.impl.core.mappings.entities.listeners.PrimaryKeyGeneratorListener;
 import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.atreus.impl.core.mappings.entities.meta.MetaTableImpl;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.impl.util.ObjectUtils;
 
 /**
  * Default meta entity property builder.
@@ -44,6 +45,7 @@ public class DefaultEntityComponentBuilder extends BaseEntityMetaComponentBuilde
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final AtreusEntityListener PRIMARY_KEY_GENERATOR_LISTENER = new PrimaryKeyGeneratorListener();
+  private static final AtreusEntityListener ENTITY_SAVE_LISTENER = new EntitySaveListener();
   private static final AtreusEntityListener ENTITY_UPDATE_LISTENER = new EntityUpdateListener();
   private static final AtreusEntityListener ENTITY_DELETE_LISTENER = new EntityDeleteListener();
 
@@ -67,18 +69,19 @@ public class DefaultEntityComponentBuilder extends BaseEntityMetaComponentBuilde
       String keySpace = entityAnnotation.keySpace();
       String table = entityAnnotation.table();
 
-      if (StringUtils.isNotNullOrEmpty(name)) {
+      if (ObjectUtils.isNotNullOrEmpty(name)) {
         metaEntity.setName(name);
       }
-      if (StringUtils.isNotNullOrEmpty(keySpace)) {
+      if (ObjectUtils.isNotNullOrEmpty(keySpace)) {
         ((MetaTableImpl) metaEntity.getTable()).setKeySpace(keySpace);
       }
-      if (StringUtils.isNotNullOrEmpty(table)) {
+      if (ObjectUtils.isNotNullOrEmpty(table)) {
         ((MetaTableImpl) metaEntity.getTable()).setName(table);
       }
     }
 
     metaEntity.addListener(PRIMARY_KEY_GENERATOR_LISTENER);
+    metaEntity.addListener(ENTITY_SAVE_LISTENER);
     metaEntity.addListener(ENTITY_UPDATE_LISTENER);
     metaEntity.addListener(ENTITY_DELETE_LISTENER);
     return false;

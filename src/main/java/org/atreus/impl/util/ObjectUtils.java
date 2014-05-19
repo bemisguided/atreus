@@ -23,7 +23,14 @@
  */
 package org.atreus.impl.util;
 
-public class StringUtils {
+public class ObjectUtils {
+
+  public static boolean nullSafeEquals(Object o1, Object o2) {
+    if (o1 == null) {
+      return o2 == null;
+    }
+    return o1.equals(o2);
+  }
 
   public static String getValue(String value, String defaultValue) {
     if (isNullOrEmpty(value)) {

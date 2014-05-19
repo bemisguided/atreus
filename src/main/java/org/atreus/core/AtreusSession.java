@@ -73,4 +73,6 @@ public interface AtreusSession {
 
   public BoundStatement prepareQuery(RegularStatement regularStatement);
 
+  public <T> T update(T entity);
+
 }

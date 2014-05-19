@@ -65,7 +65,7 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
     }
     else {
       Object childEntity = ownerField.getValue(parentEntity);
-      updateEntity(session, metaAssociation, parentEntity, childEntity);
+      updateEntity(session, metaAssociation, parentEntity, childEntity, true);
       parentEntity.setFieldValue(metaAssociation.getOwner().getAssociationField(), childEntity);
     }
   }
@@ -86,7 +86,7 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
 
     for (Object addedEntity : managedCollection.getAddedEntities()) {
       LOG.debug("addedEntity {}", addedEntity);
-      updateEntity(session, metaAssociation, parentEntity, addedEntity);
+      updateEntity(session, metaAssociation, parentEntity, addedEntity, true);
     }
 
     for (Object removedEntity : managedCollection.getRemovedEntities()) {
@@ -96,14 +96,15 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
 
     for (Object updatedEntity : managedCollection.getUpdatedEntities()) {
       LOG.debug("updatedEntity {}", updatedEntity);
-      updateEntity(session, metaAssociation, parentEntity, updatedEntity);
+      updateEntity(session, metaAssociation, parentEntity, updatedEntity, false);
     }
 
   }
 
-  private AtreusManagedEntity updateEntity(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Object entity) {
+  private AtreusManagedEntity updateEntity(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Object entity, boolean forceUpdate) {
     AtreusManagedEntity childEntity = session.manageEntity(entity);
-    if (!childEntity.isUpdated()) {
+    Collection<AtreusMetaSimpleField> updatedFields = childEntity.getUpdatedFields();
+    if (updatedFields.isEmpty() && !forceUpdate) {
       return childEntity;
     }
     AtreusMetaSimpleField parentKeyField = (AtreusMetaSimpleField) metaAssociation.getOwner().getAssociationKeyField();

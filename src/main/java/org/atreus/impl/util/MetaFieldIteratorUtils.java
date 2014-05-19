@@ -55,7 +55,7 @@ public class MetaFieldIteratorUtils {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static Iterable<AtreusMetaSimpleField> iterateMetaSimpleFields(Collection<? extends AtreusMetaField> metaFields) {
+  public static Collection<AtreusMetaSimpleField> iterateMetaSimpleFields(Collection<? extends AtreusMetaField> metaFields) {
     List<AtreusMetaSimpleField> results = new ArrayList<>();
     for (AtreusMetaField metaField : metaFields) {
       addMetaSimpleFields(metaField, results);
@@ -63,7 +63,7 @@ public class MetaFieldIteratorUtils {
     return results;
   }
 
-  public static Iterable<AtreusMetaSimpleField> iterateMetaSimpleFields(AtreusMetaField... metaFields) {
+  public static Collection<AtreusMetaSimpleField> iterateMetaSimpleFields(AtreusMetaField... metaFields) {
     List<AtreusMetaSimpleField> results = new ArrayList<>();
     for (AtreusMetaField metaField : metaFields) {
       addMetaSimpleFields(metaField, results);
@@ -71,7 +71,7 @@ public class MetaFieldIteratorUtils {
     return results;
   }
 
-  public static Iterable<AtreusMetaField> iterateMetaFields(Collection<? extends AtreusMetaField> metaFields) {
+  public static Collection<AtreusMetaField> iterateMetaFields(Collection<? extends AtreusMetaField> metaFields) {
     List<AtreusMetaField> results = new ArrayList<>();
     for (AtreusMetaField metaField : metaFields) {
       addMetaFields(metaField, results);
@@ -79,7 +79,7 @@ public class MetaFieldIteratorUtils {
     return results;
   }
 
-  public static Iterable<AtreusMetaField> iterateMetaFields(AtreusMetaField... metaFields) {
+  public static Collection<AtreusMetaField> iterateMetaFields(AtreusMetaField... metaFields) {
     List<AtreusMetaField> results = new ArrayList<>();
     for (AtreusMetaField metaField : metaFields) {
       addMetaFields(metaField, results);

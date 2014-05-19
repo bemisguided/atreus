@@ -66,7 +66,6 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     AtreusMetaField field1Field = metaEntity.getFieldByName("field1");
 
     // Initial state should be un-fetched
-    Assert.assertFalse("Primary Key should be unfetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertFalse("Field1 should be unfetched", managedEntity.isFetched(field1Field));
 
     // Now set some values
@@ -74,7 +73,6 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     managedEntity.setFieldValue(field1Field, "field1");
 
     // Both fields should now be initialized
-    Assert.assertTrue("Primary Key should be fetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertTrue("Field1 Key should be fetched", managedEntity.isFetched(field1Field));
 
   }
@@ -94,17 +92,14 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     getSession().flush();
 
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    AtreusMetaField primaryKeyField = metaEntity.getPrimaryKeyField();
     AtreusMetaField field1Field = metaEntity.getFieldByName("field1");
 
     // Both fields should now be initialized
-    Assert.assertTrue("Primary Key should be fetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertTrue("Field1 Key should be fetched", managedEntity.isFetched(field1Field));
 
     managedEntity = (AtreusManagedEntity) getSession().findOne(SimpleTestEntity.class, managedEntity.getPrimaryKey());
 
     // Both fields should be initialized immediately
-    Assert.assertTrue("Primary Key should be fetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertTrue("Field1 Key should be fetched", managedEntity.isFetched(field1Field));
 
   }
@@ -124,17 +119,14 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     getSession().flush();
 
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    AtreusMetaField primaryKeyField = metaEntity.getPrimaryKeyField();
     AtreusMetaField field1Field = metaEntity.getFieldByName("field1");
 
     // Both fields should now be initialized
-    Assert.assertTrue("Primary Key should be fetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertTrue("Field1 Key should be fetched", managedEntity.isFetched(field1Field));
 
     managedEntity = (AtreusManagedEntity) getSession().findOne(SimpleTestEntity.class, managedEntity.getPrimaryKey());
 
     // Both fields should be initialized immediately
-    Assert.assertTrue("Primary Key should be fetched", managedEntity.isFetched(primaryKeyField));
     Assert.assertTrue("Field1 Key should be fetched", managedEntity.isFetched(field1Field));
 
   }

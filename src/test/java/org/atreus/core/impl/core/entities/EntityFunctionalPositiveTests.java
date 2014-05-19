@@ -60,6 +60,50 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Test
+  public void testSimpleSaveUpdateAndDelete() throws Exception {
+    LOG.info("Running testSimpleSaveUpdateAndDelete");
+    addEntity(SimpleTestEntity.class);
+    initEnvironment();
+
+    // Save new entity
+    SimpleTestEntity testEntity = new SimpleTestEntity();
+    testEntity.setField1("field1");
+    testEntity.setField2("field2");
+
+    getSession().save(testEntity);
+    getSession().flush();
+    String primaryKey = testEntity.getId();
+
+    SimpleTestEntity otherEntity = getSession().findOne(SimpleTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertEquals(primaryKey, otherEntity.getId());
+    Assert.assertEquals("field1", otherEntity.getField1());
+    Assert.assertEquals("field2", otherEntity.getField2());
+
+    // Update a field of the entity
+    otherEntity.setField2("changed");
+    getSession().update(otherEntity);
+    getSession().flush();
+
+    otherEntity = getSession().findOne(SimpleTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("Expect a value", otherEntity);
+    Assert.assertEquals(primaryKey, otherEntity.getId());
+    Assert.assertEquals("field1", otherEntity.getField1());
+    Assert.assertEquals("changed", otherEntity.getField2());
+
+    // Delete the entity
+    getSession().delete(otherEntity);
+    getSession().flush();
+
+    otherEntity = getSession().findOne(SimpleTestEntity.class, primaryKey);
+
+    Assert.assertNull("Expect a null value", otherEntity);
+
+  }
+
+  @Test
   public void testDisabledWriteBatch() throws Exception {
     LOG.info("Running testDisabledWriteBatch");
     addEntity(SimpleTestEntity.class);
@@ -231,6 +275,7 @@ public class EntityFunctionalPositiveTests extends BaseAtreusCassandraTests {
     addEntity(CollectionTestEntity.class);
     initEnvironment();
 
+    // TODO test selective updates to set, list and maps
     CollectionTestEntity testEntity = new CollectionTestEntity();
 
     Set<Long> setValue = new HashSet<>();

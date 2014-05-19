@@ -30,6 +30,7 @@ import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
 import org.atreus.core.ext.listeners.AtreusOnFetchListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
+import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.impl.core.queries.QueryHelper;
@@ -320,6 +321,31 @@ public class SessionImpl implements AtreusSessionExt {
 
     // Broadcast to the on save listeners
     managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnSaveListener.class);
+
+    // Finish the batch if necessary
+    batchFinish();
+
+    // Cache the managed entity
+    cacheEntity(managedEntity);
+    return (T) managedEntity;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T update(T entity) {
+    assertSessionNotClosed();
+
+    // Assert input params
+    AssertUtils.notNull(entity, "entity is a required parameter");
+
+    // Retrieve managed entity
+    AtreusManagedEntity managedEntity = manageEntity(entity);
+
+    // Open a batch if necessary
+    batchOpen();
+
+    // Broadcast to the on save listeners
+    managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnUpdateListener.class);
 
     // Finish the batch if necessary
     batchFinish();

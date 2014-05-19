@@ -26,7 +26,7 @@ package org.atreus.core;
 import org.atreus.core.ext.plugins.AtreusPlugin;
 import org.atreus.impl.core.Environment;
 import org.atreus.impl.core.ManagerImpl;
-import org.atreus.impl.util.StringUtils;
+import org.atreus.impl.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +69,7 @@ public class AtreusManagerBuilder {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_PORT_REQUIRED);
     }
 
-    if (StringUtils.isNullOrEmpty(configuration.getKeySpace())) {
+    if (ObjectUtils.isNullOrEmpty(configuration.getKeySpace())) {
       throw new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_MISCONFIGURATION_KEY_SPACE_REQUIRED);
     }
 

@@ -33,8 +33,8 @@ import org.atreus.impl.core.Environment;
 import org.atreus.impl.core.mappings.BaseFieldEntityMetaComponentBuilder;
 import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.atreus.impl.core.mappings.entities.meta.StaticMetaSimpleFieldImpl;
+import org.atreus.impl.util.ObjectUtils;
 import org.atreus.impl.util.ReflectionUtils;
-import org.atreus.impl.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -73,7 +73,7 @@ public class CollectionFieldComponentBuilder extends BaseFieldEntityMetaComponen
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);
     if (fieldAnnotation != null) {
       String fieldColumn = fieldAnnotation.value();
-      if (StringUtils.isNotNullOrEmpty(fieldColumn)) {
+      if (ObjectUtils.isNotNullOrEmpty(fieldColumn)) {
         collectionMetaField.setColumn(fieldColumn);
       }
     }

@@ -28,14 +28,15 @@ import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaAssociationField;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.core.mappings.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.util.MetaFieldIteratorUtils;
+import org.atreus.impl.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implements a managed entity.
@@ -52,7 +53,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   private final Map<String, Object> dynamicFields = new HashMap<>();
   private final Object entity;
-  private boolean fetched;
   private final AtreusMetaEntity metaEntity;
   private final AtreusSessionExt session;
   private final Map<AtreusMetaField, FieldMemento> mementoByField = new HashMap<>();
@@ -70,7 +70,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   @Override
   public void baseline() {
-    for(AtreusMetaField metaField : mementoByField.keySet()) {
+    for (AtreusMetaField metaField : mementoByField.keySet()) {
       FieldMemento fieldMemento = mementoByField.get(metaField);
       fieldMemento.baseline(getFieldValue(metaField));
     }
@@ -79,7 +79,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public void fetchField(AtreusMetaField metaField) {
     if (metaField instanceof AtreusMetaAssociationField) {
-      // TODO something else
+      // TODO implement fetching of association
       return;
     }
     session.fetch(this);
@@ -88,6 +88,9 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public boolean isFetched(AtreusMetaField metaField) {
     FieldMemento fieldMemento = mementoByField.get(metaField);
+    if (fieldMemento == null) {
+      return true;
+    }
     return FieldFetchState.INITIALIZED.equals(fieldMemento.getFetchState());
   }
 
@@ -113,8 +116,22 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   @Override
-  public boolean isUpdated() {
-    return true;
+  public Collection<AtreusMetaSimpleField> getUpdatedFields() {
+    List<AtreusMetaSimpleField> results = new ArrayList<>();
+    for (AtreusMetaField metaField : mementoByField.keySet()) {
+      if (!(metaField instanceof AtreusMetaSimpleField)) {
+        continue;
+      }
+      FieldMemento fieldMemento = mementoByField.get(metaField);
+      Object currentValue = getFieldValue(metaField);
+      // TODO handle comparison of map and collections for updating
+      if (FieldFetchState.INITIALIZED.equals(fieldMemento.getFetchState()) &&
+          ObjectUtils.nullSafeEquals(fieldMemento.getBaselineValue(), currentValue)) {
+        continue;
+      }
+      results.add((AtreusMetaSimpleField) metaField);
+    }
+    return results;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -122,9 +139,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   private void init() {
-    for (AtreusMetaField metaField : MetaFieldIteratorUtils.iterateMetaFields(metaEntity.getPrimaryKeyField())) {
-      createFieldMemento(metaField);
-    }
     for (AtreusMetaField metaField : MetaFieldIteratorUtils.iterateMetaFields(metaEntity.getFields())) {
       createFieldMemento(metaField);
     }

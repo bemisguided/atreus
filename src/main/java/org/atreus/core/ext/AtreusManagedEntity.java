@@ -25,8 +25,10 @@ package org.atreus.core.ext;
 
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -54,6 +56,6 @@ public interface AtreusManagedEntity {
 
   public Serializable getPrimaryKey();
 
-  public boolean isUpdated();
+  public Collection<AtreusMetaSimpleField> getUpdatedFields();
 
 }
