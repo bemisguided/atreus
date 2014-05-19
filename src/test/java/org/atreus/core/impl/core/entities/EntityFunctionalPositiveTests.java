@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl;
+package org.atreus.core.impl.core.entities;
 
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.BaseAtreusCassandraTests;

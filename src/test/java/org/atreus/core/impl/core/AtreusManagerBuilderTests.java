@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.core.impl.core;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import junit.framework.Assert;
+import org.atreus.core.*;
 import org.atreus.core.tests.entities.common.TestEntity;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -27,8 +27,13 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -66,7 +71,7 @@ public class ReflectionUtils {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public static Set<Class<?>> findClassesWithAnnotation(String packagePath, Class<? extends  Annotation> annotationClass) {
+  public static Set<Class<?>> findClassesWithAnnotation(String packagePath, Class<? extends Annotation> annotationClass) {
     Reflections reflections = new Reflections(packagePath);
     return reflections.getTypesAnnotatedWith(annotationClass);
   }
@@ -113,6 +118,35 @@ public class ReflectionUtils {
     }
     ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
     return parameterizedType.getActualTypeArguments();
+  }
+
+  public static Method findGetterMethod(Class<?> clazz, String field) {
+    try {
+      PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field, clazz);
+      return propertyDescriptor.getReadMethod();
+    }
+    catch (IntrospectionException e) {
+      return null;
+    }
+  }
+
+  public static Method findSetterMethod(Class<?> clazz, String field) {
+    BeanInfo beanInfo = getBeanInfo(clazz);
+    for (PropertyDescriptor propertyDescriptor :beanInfo.getPropertyDescriptors()) {
+      if (propertyDescriptor.getName().equals(field)) {
+        return propertyDescriptor.getWriteMethod();
+      }
+    }
+    return null;
+  }
+
+  public static BeanInfo getBeanInfo(Class<?> clazz) {
+    try {
+      return Introspector.getBeanInfo(clazz);
+    }
+    catch (IntrospectionException e) {
+      return null;
+    }
   }
 
   public static Class<?> toPrimitiveWrapper(Class<?> clazz) {

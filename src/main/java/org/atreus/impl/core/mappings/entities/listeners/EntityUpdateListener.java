@@ -75,6 +75,7 @@ public class EntityUpdateListener extends AtreusAbstractEntityListener implement
 
     bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
     session.executeOrBatch(boundStatement);
+    managedEntity.baseline();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -103,7 +103,6 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
         for (AtreusMetaField metaField : metaAssociationEntity.getFields()) {
           metaField.unbindEntity(row, associatedEntity);
         }
-        associatedEntity.setFetched(true);
       }
       associations.add(associatedEntity);
     }

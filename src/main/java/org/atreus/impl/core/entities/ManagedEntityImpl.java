@@ -25,8 +25,11 @@ package org.atreus.impl.core.entities;
 
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.meta.AtreusMetaAssociationField;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.core.mappings.entities.meta.DynamicMetaSimpleFieldImpl;
+import org.atreus.impl.util.MetaFieldIteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   private boolean fetched;
   private final AtreusMetaEntity metaEntity;
   private final AtreusSessionExt session;
+  private final Map<AtreusMetaField, FieldMemento> mementoByField = new HashMap<>();
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -59,19 +63,79 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     this.session = session;
     this.entity = entity;
     this.metaEntity = metaEntity;
+    init();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public boolean isFetched() {
-    return fetched;
+  public void baseline() {
+    for(AtreusMetaField metaField : mementoByField.keySet()) {
+      FieldMemento fieldMemento = mementoByField.get(metaField);
+      fieldMemento.baseline(getFieldValue(metaField));
+    }
   }
 
   @Override
-  public void setFetched(boolean fetched) {
-    this.fetched = fetched;
+  public void fetchField(AtreusMetaField metaField) {
+    if (metaField instanceof AtreusMetaAssociationField) {
+      // TODO something else
+      return;
+    }
+    session.fetch(this);
   }
+
+  @Override
+  public boolean isFetched(AtreusMetaField metaField) {
+    FieldMemento fieldMemento = mementoByField.get(metaField);
+    return FieldFetchState.INITIALIZED.equals(fieldMemento.getFetchState());
+  }
+
+  @Override
+  public Object getFieldValue(AtreusMetaField metaField) {
+    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
+      return metaField.getValue(this);
+    }
+    return metaField.getValue(entity);
+  }
+
+  @Override
+  public void setFieldValue(AtreusMetaField metaField, Object value) {
+    FieldMemento fieldMemento = mementoByField.get(metaField);
+    if (fieldMemento != null) {
+      fieldMemento.baseline(value);
+    }
+    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
+      metaField.setValue(this, value);
+      return;
+    }
+    metaField.setValue(entity, value);
+  }
+
+  @Override
+  public boolean isUpdated() {
+    return true;
+  }
+
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void init() {
+    for (AtreusMetaField metaField : MetaFieldIteratorUtils.iterateMetaFields(metaEntity.getPrimaryKeyField())) {
+      createFieldMemento(metaField);
+    }
+    for (AtreusMetaField metaField : MetaFieldIteratorUtils.iterateMetaFields(metaEntity.getFields())) {
+      createFieldMemento(metaField);
+    }
+  }
+
+  private void createFieldMemento(AtreusMetaField metaField) {
+    FieldMemento fieldMemento = new FieldMemento(metaField);
+    mementoByField.put(metaField, fieldMemento);
+  }
+
+  // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
   @Override
   public Map<String, Object> getDynamicFields() {
@@ -84,16 +148,6 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   }
 
   @Override
-  public Object getFieldValue(AtreusMetaField metaField) {
-    return metaField.getValue(this);
-  }
-
-  @Override
-  public void setFieldValue(AtreusMetaField metaField, Object value) {
-    metaField.setValue(this, value);
-  }
-
-  @Override
   public AtreusMetaEntity getMetaEntity() {
     return metaEntity;
   }
@@ -102,16 +156,5 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   public Serializable getPrimaryKey() {
     return (Serializable) getMetaEntity().getPrimaryKeyField().getValue(entity);
   }
-
-  @Override
-  public boolean isUpdated() {
-    return true;
-  }
-
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
 } // end of class

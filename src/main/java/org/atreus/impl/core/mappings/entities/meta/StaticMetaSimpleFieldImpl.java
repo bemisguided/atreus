@@ -64,7 +64,7 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
   public Object getValue(Object entity) {
     // First check if the entity is a managed entity and if so get the underlining object entity
     if (entity instanceof AtreusManagedEntity) {
-      entity = ((AtreusManagedEntity) entity).getEntity();
+      return ((AtreusManagedEntity) entity).getFieldValue(this);
     }
     try {
       // Otherwise extract the value using java reflection directly
@@ -79,7 +79,8 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
   public void setValue(Object entity, Object value) {
     // First check if the entity is a managed entity and if so get the underlining object entity
     if (entity instanceof AtreusManagedEntity) {
-      entity = ((AtreusManagedEntity) entity).getEntity();
+      ((AtreusManagedEntity) entity).setFieldValue(this, value);
+      return;
     }
     try {
       // Otherwise bindValue the value using java reflection directly

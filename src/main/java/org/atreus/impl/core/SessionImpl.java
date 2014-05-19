@@ -43,6 +43,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
+
 /**
  * Implements an Atreus Session.
  *
@@ -453,10 +455,9 @@ public class SessionImpl implements AtreusSessionExt {
       managedEntity = entityInstance(metaEntity, primaryKey);
     }
 
-    for (AtreusMetaField metaField : metaEntity.getFields()) {
+    for (AtreusMetaField metaField : iterateMetaSimpleFields(metaEntity.getFields())) {
       metaField.unbindEntity(row, managedEntity);
     }
-    managedEntity.setFetched(true);
     return managedEntity;
   }
 

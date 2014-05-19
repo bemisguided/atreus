@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.meta;
+package org.atreus.impl.core.mappings.associations.composite.meta;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
@@ -29,6 +29,7 @@ import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaAssociationField;
 import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

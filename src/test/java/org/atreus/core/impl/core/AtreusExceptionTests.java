@@ -21,78 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core;
+package org.atreus.core.impl.core;
 
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.impl.core.Environment;
-import org.atreus.impl.core.ManagerImpl;
-import org.atreus.impl.core.SessionImpl;
-import org.atreus.impl.schema.SchemaGeneratorPlugin;
-import org.junit.After;
-import org.junit.Before;
+import org.atreus.core.AtreusException;
+import org.atreus.core.AtreusInitialisationException;
+import org.atreus.core.BaseAtreusTests;
+import org.atreus.impl.types.generators.UuidPrimaryKeyStrategy;
+import org.junit.Assert;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class for Atreus with Cassandra required unit tests.
+ * Unit and functional tests for Atreus Exceptions.
  *
  * @author Martin Crawford
  */
-public class BaseAtreusCassandraTests extends BaseCassandraTests {
+public class AtreusExceptionTests extends BaseAtreusTests {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseAtreusCassandraTests.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(AtreusExceptionTests.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
-
-  private AtreusSessionExt session;
-  private SchemaGeneratorPlugin schemaGeneratorPlugin;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Before
-  public void before() throws Exception {
-    AtreusConfiguration configuration = new AtreusConfiguration();
-    configuration.setHosts(CLUSTER_HOST_NAME);
-    configuration.setPort(CLUSTER_PORT);
-    configuration.setKeySpace(DEFAULT_KEY_SPACE);
-    schemaGeneratorPlugin = new SchemaGeneratorPlugin();
-    setEnvironment(new Environment(configuration));
-    getEnvironment().setCassandraCluster(getCassandraCluster());
-    getEnvironment().setCassandraSession(getCassandraCluster().newSession());
-    getEnvironment().addPlugin(schemaGeneratorPlugin);
-    getEnvironment().setManager(new ManagerImpl(getEnvironment()));
-    session = new SessionImpl(getEnvironment());
-  }
-
-  @After
-  public void after() throws Exception {
-    session.close();
-    schemaGeneratorPlugin.dropSchema(getEnvironment().getManager());
-    session = null;
-    setEnvironment(null);
+  @Test
+  public void testMessage() {
+    LOG.info("Running testMessage");
+    AtreusException e = new AtreusInitialisationException(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, UuidPrimaryKeyStrategy.class);
+    Assert.assertEquals(AtreusInitialisationException.ERROR_CODE_REGISTER_PRIMARY_KEY_STRATEGY, e.getErrorCode());
+    Assert.assertEquals("Unable to register primary key strategy [" + UuidPrimaryKeyStrategy.class + "]", e.getMessage());
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected void addEntity(Class<?> entityType) {
-    getEnvironment().getMappingBuilder().addEntityType(entityType);
-  }
-
-  protected AtreusSessionExt getSession() {
-    return session;
-  }
-
-  protected void setScanPaths(String... scanPaths) {
-    getEnvironment().getConfiguration().setScanPaths(scanPaths);
-  }
-
-  protected void initEnvironment() {
-    getEnvironment().init();
-  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

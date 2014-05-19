@@ -24,7 +24,9 @@
 package org.atreus.impl.schema;
 
 import org.atreus.core.ext.AtreusCQLDataType;
-import org.atreus.core.ext.meta.*;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaManager;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.core.ext.strategies.AtreusCollectionTypeStrategy;
 import org.atreus.core.ext.strategies.AtreusMapTypeStrategy;
 import org.atreus.core.ext.strategies.AtreusTypeStrategy;
@@ -33,10 +35,10 @@ import org.atreus.impl.schema.model.ColumnTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Builds the Column Table model from an Atreus Meta Manager.
@@ -72,7 +74,7 @@ public class ColumnTableBuilder {
     columnTable.setKeySpace(metaEntity.getTable().getKeySpace());
     columnTable.setName(metaEntity.getTable().getName());
     results.put(columnTable.getName(), columnTable);
-    for (AtreusMetaSimpleField metaField : expandMetaFields(metaEntity.getPrimaryKeyField())) {
+    for (AtreusMetaSimpleField metaField : iterateMetaSimpleFields(metaEntity.getPrimaryKeyField())) {
       Column column = buildColumn(metaField);
       if (columnTable.getPartitionKeys().isEmpty()) {
         columnTable.getPartitionKeys().add(column);
@@ -83,7 +85,7 @@ public class ColumnTableBuilder {
       columnTable.getColumns().add(column);
     }
 
-    for (AtreusMetaSimpleField metaField : expandMetaFields(metaEntity.getFields())) {
+    for (AtreusMetaSimpleField metaField : iterateMetaSimpleFields(metaEntity.getFields())) {
       Column column = buildColumn(metaField);
       columnTable.getColumns().add(column);
     }
@@ -103,21 +105,6 @@ public class ColumnTableBuilder {
       column.setDataTypeParams(new AtreusCQLDataType[]{mapTypeStrategy.getKeyDataType(), mapTypeStrategy.getValueDataType()});
     }
     return column;
-  }
-
-  private List<AtreusMetaSimpleField> expandMetaFields(AtreusMetaField... metaFields) {
-    List<AtreusMetaSimpleField> results = new ArrayList<>();
-    for (AtreusMetaField metaField : metaFields) {
-      if (metaField instanceof AtreusMetaComplexField) {
-        for (AtreusMetaSimpleField metaSimpleField : ((AtreusMetaComplexField) metaField).getFields()) {
-          results.add(metaSimpleField);
-        }
-      }
-      if (metaField instanceof AtreusMetaSimpleField) {
-        results.add((AtreusMetaSimpleField) metaField);
-      }
-    }
-    return results;
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

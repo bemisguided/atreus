@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.impl.queries;
+package org.atreus.core.impl.core.queries;
 
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
 import org.atreus.impl.core.mappings.entities.meta.DynamicMetaSimpleFieldImpl;

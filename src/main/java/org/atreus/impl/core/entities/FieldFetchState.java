@@ -21,39 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.core.ext;
-
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-
-import java.io.Serializable;
-import java.util.Map;
+package org.atreus.impl.core.entities;
 
 /**
- * Interface applied to entities once managed by Atreus.
+ * Field Fetch State enumeration.
  *
  * @author Martin Crawford
  */
-public interface AtreusManagedEntity {
+public enum FieldFetchState {
 
-  public void baseline();
-
-  public void fetchField(AtreusMetaField metaField);
-
-  public Map<String, Object> getDynamicFields();
-
-  public Object getEntity();
-
-  public boolean isFetched(AtreusMetaField metaField);
-
-  public Object getFieldValue(AtreusMetaField metaField);
-
-  public void setFieldValue(AtreusMetaField metaField, Object value);
-
-  public AtreusMetaEntity getMetaEntity();
-
-  public Serializable getPrimaryKey();
-
-  public boolean isUpdated();
+  UNITIALIZED,
+  INITIALIZED;
 
 }

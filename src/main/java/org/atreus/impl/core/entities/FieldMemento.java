@@ -21,70 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.proxies;
+package org.atreus.impl.core.entities;
 
-import javassist.util.proxy.MethodHandler;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.core.entities.ManagedEntityImpl;
-import org.atreus.impl.util.BeanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
- * Implements a Method Handler for a proxied managed entity.
+ * Field Memento bean.
  *
  * @author Martin Crawford
  */
-class EntityProxyHandler implements MethodHandler {
+public class FieldMemento {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyHandler.class);
-
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Object entity;
-  private final ManagedEntityImpl managedEntity;
+  private final AtreusMetaField metaField;
+  private FieldFetchState fetchState;
+  private Object baselineValue;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public EntityProxyHandler(ManagedEntityImpl managedEntity, Object entity) {
-    this.entity = entity;
-    this.managedEntity = managedEntity;
+  public FieldMemento(AtreusMetaField metaField) {
+    this.metaField = metaField;
+    this.fetchState = FieldFetchState.UNITIALIZED;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
-    try {
-      if (forwarder == null) {
-        return overridden.invoke(managedEntity, args);
-      }
-      fetchIfNecessary(overridden);
-      return overridden.invoke(entity, args);
-    }
-    catch (InvocationTargetException e) {
-      throw e.getTargetException();
-    }
+  public void baseline(Object value) {
+    fetchState = FieldFetchState.INITIALIZED;
+    baselineValue = value;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
-  private void fetchIfNecessary(Method method) {
-    String field = BeanUtils.getField(entity.getClass(), method);
-    if (field != null)  {
-      AtreusMetaField metaField = managedEntity.getMetaEntity().getFieldByName(field);
-      if (metaField != null && !managedEntity.isFetched(metaField)) {
-        managedEntity.fetchField(metaField);
-      }
-    }
-  }
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  public AtreusMetaField getMetaField() {
+    return metaField;
+  }
+
+  public FieldFetchState getFetchState() {
+    return fetchState;
+  }
+
+  public Object getBaselineValue() {
+    return baselineValue;
+  }
 
 } // end of class

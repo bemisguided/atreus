@@ -36,9 +36,9 @@ import org.atreus.impl.core.mappings.associations.composite.listeners.CompositeP
 import org.atreus.impl.core.mappings.associations.composite.listeners.CompositeParentFetchListener;
 import org.atreus.impl.core.mappings.associations.composite.listeners.CompositeParentUpdateListener;
 import org.atreus.impl.core.mappings.associations.composite.meta.CompositeChildPrimaryKeyMetaFieldImpl;
+import org.atreus.impl.core.mappings.associations.composite.meta.MetaAssociationFieldImpl;
 import org.atreus.impl.core.mappings.associations.meta.MetaAssociatedEntityImpl;
 import org.atreus.impl.core.mappings.associations.meta.MetaAssociationImpl;
-import org.atreus.impl.core.mappings.entities.meta.MetaAssociationFieldImpl;
 import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.atreus.impl.core.mappings.entities.meta.MetaTableImpl;
 import org.atreus.impl.util.ReflectionUtils;
