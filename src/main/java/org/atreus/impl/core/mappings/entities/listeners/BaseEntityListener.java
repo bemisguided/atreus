@@ -77,7 +77,7 @@ public abstract class BaseEntityListener extends AtreusAbstractEntityListener {
 
     bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
     session.executeOrBatch(boundStatement);
-    managedEntity.baseline();
+    managedEntity.snapshot();
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

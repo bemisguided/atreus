@@ -112,9 +112,14 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
   @SuppressWarnings("unchecked")
   public void setCollection(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {
     AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
-    ManagedCollection managedCollection = (ManagedCollection) managedEntity.getFieldValue(associationField);
-    managedCollection.getUpdatedEntities().addAll(associatedEntities);
-    managedCollection.snapshot();
+    Collection collection = (Collection) managedEntity.getFieldValue(associationField);
+    if (collection instanceof ManagedCollection) {
+      ManagedCollection managedCollection = (ManagedCollection) collection;
+      managedCollection.getUpdatedEntities().addAll(associatedEntities);
+      managedCollection.snapshot();
+      return;
+    }
+    collection.addAll(associatedEntities);
   }
 
   public void setEntity(AtreusManagedEntity managedEntity, List<AtreusManagedEntity> associatedEntities, AtreusMetaAssociation metaAssociation) {

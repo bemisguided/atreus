@@ -38,7 +38,7 @@ public class FieldMemento {
 
   private final AtreusMetaField metaField;
   private FieldFetchState fetchState;
-  private Object baselineValue;
+  private Object snapshot;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -49,9 +49,9 @@ public class FieldMemento {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void baseline(Object value) {
+  public void snapshot(Object value) {
     fetchState = FieldFetchState.INITIALIZED;
-    baselineValue = value;
+    snapshot = value;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
@@ -68,8 +68,8 @@ public class FieldMemento {
     return fetchState;
   }
 
-  public Object getBaselineValue() {
-    return baselineValue;
+  public Object getSnapshot() {
+    return snapshot;
   }
 
 } // end of class

@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+
 /**
  * Functional Tests for various composite association entity mappings.
  *
@@ -66,6 +68,7 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     ParentCompositeTestEntity otherEntity = getSession().findOne(ParentCompositeTestEntity.class, parentEntity.getId());
 
     Assert.assertNotNull("child entity should not be null", otherEntity.getChildEntity());
+    Assert.assertNotNull("child entity should have a primary key", childEntity.getId());
     Assert.assertEquals(childEntity.getId(), otherEntity.getChildEntity().getId());
 
   }
@@ -91,15 +94,20 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
     ParentCompositeSetTestEntity otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, primaryKey);
 
     Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
+    Assert.assertNotNull("child entity should have a primary key", childEntity1.getId());
+    Assert.assertNotNull("child entity should have a primary key", childEntity2.getId());
     Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
     Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
 
     // Add a new child to the collection and remove another
-    LOG.debug("Update parent entity with added child and removed child");
+    LOG.debug("Update parent entity with added child, edited existing and removed child");
     ChildCompositeTestEntity childEntity3 = new ChildCompositeTestEntity();
-    otherEntity.getChildEntities().add(childEntity3);
     otherEntity.getChildEntities().remove(childEntity2);
-    getSession().save(parentEntity);
+    for(ChildCompositeTestEntity childCompositeTestEntity : otherEntity.getChildEntities()) {
+      childCompositeTestEntity.setField1("field1");
+    }
+    otherEntity.getChildEntities().add(childEntity3);
+    getSession().update(parentEntity);
     getSession().flush();
 
     otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, primaryKey);
@@ -119,6 +127,48 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
 
     ResultSet resultSet = getSession().execute("SELECT * FROM default.ChildCompositeTestEntity");
     Assert.assertTrue(resultSet.isExhausted());
+
+  }
+
+  @Test
+  public void testCollectionSubstitutionCompositeEntityAssociation() throws Exception {
+    LOG.info("Running testCollectionSubstitutionCompositeEntityAssociation");
+    addEntity(ParentCompositeSetTestEntity.class);
+    addEntity(ChildCompositeTestEntity.class);
+    initEnvironment();
+
+    // Save parent entity
+    LOG.debug("Save parent entity");
+    ParentCompositeSetTestEntity parentEntity = new ParentCompositeSetTestEntity();
+    ChildCompositeTestEntity childEntity1 = new ChildCompositeTestEntity();
+    ChildCompositeTestEntity childEntity2 = new ChildCompositeTestEntity();
+    parentEntity.getChildEntities().add(childEntity1);
+    parentEntity.getChildEntities().add(childEntity2);
+    getSession().save(parentEntity);
+    getSession().flush();
+
+    String primaryKey = parentEntity.getId();
+    ParentCompositeSetTestEntity otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
+    Assert.assertNotNull("child entity should have a primary key", childEntity1.getId());
+    Assert.assertNotNull("child entity should have a primary key", childEntity2.getId());
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
+
+    // Substitute collection with same entities
+    LOG.debug("Updating parent collection with new instance and same entities");
+    parentEntity.setChildEntities(new ArrayList<ChildCompositeTestEntity>());
+    parentEntity.getChildEntities().add(childEntity1);
+    getSession().update(parentEntity);
+    getSession().flush();
+
+    // TODO this should fail but as the caching is too optimistic it passes.
+    otherEntity = getSession().findOne(ParentCompositeSetTestEntity.class, primaryKey);
+
+    Assert.assertNotNull("child entities should not be null", otherEntity.getChildEntities());
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity1));
+    Assert.assertTrue(otherEntity.getChildEntities().contains(childEntity2));
 
   }
 

@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public interface AtreusManagedEntity {
 
-  public void baseline();
+  public void snapshot();
 
   public void fetchField(AtreusMetaField metaField);
 

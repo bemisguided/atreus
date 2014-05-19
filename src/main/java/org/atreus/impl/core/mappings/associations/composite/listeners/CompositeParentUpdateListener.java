@@ -80,40 +80,50 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
       return;
     }
     // TODO handle case where collection isn't a Managed Collection (edge case but possible)
+
   }
 
   private void updateManagedCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
 
     for (Object addedEntity : managedCollection.getAddedEntities()) {
-      LOG.debug("addedEntity {}", addedEntity);
       updateEntity(session, metaAssociation, parentEntity, addedEntity, true);
     }
 
     for (Object removedEntity : managedCollection.getRemovedEntities()) {
-      LOG.debug("removedEntity {}", removedEntity);
       session.delete(removedEntity);
     }
 
     for (Object updatedEntity : managedCollection.getUpdatedEntities()) {
-      LOG.debug("updatedEntity {}", updatedEntity);
       updateEntity(session, metaAssociation, parentEntity, updatedEntity, false);
     }
 
   }
 
   private AtreusManagedEntity updateEntity(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Object entity, boolean forceUpdate) {
+    // Retrieve the managed entity for the child
     AtreusManagedEntity childEntity = session.manageEntity(entity);
+
+    // Review if any of the fields have been updated
     Collection<AtreusMetaSimpleField> updatedFields = childEntity.getUpdatedFields();
     if (updatedFields.isEmpty() && !forceUpdate) {
       return childEntity;
     }
+
+    // Set the parent key field (if not already set)
     AtreusMetaSimpleField parentKeyField = (AtreusMetaSimpleField) metaAssociation.getOwner().getAssociationKeyField();
     Serializable childParentKeyValue = (Serializable) childEntity.getFieldValue(parentKeyField);
     Serializable parentPrimaryKey = parentEntity.getPrimaryKey();
+
+    // Parent's Primary key does not match that of the child's parent key (or it's null)
     if (!parentPrimaryKey.equals(childParentKeyValue)) {
       childEntity.setFieldValue(parentKeyField, parentPrimaryKey);
+
+      // Consider this a save scenario (assumption a new child)
+      return session.save(childEntity);
     }
-    return session.save(childEntity);
+
+    // Otherwise update the child entity
+    return session.update(childEntity);
   }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters

@@ -69,10 +69,10 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  public void baseline() {
+  public void snapshot() {
     for (AtreusMetaField metaField : mementoByField.keySet()) {
       FieldMemento fieldMemento = mementoByField.get(metaField);
-      fieldMemento.baseline(getFieldValue(metaField));
+      fieldMemento.snapshot(getFieldValue(metaField));
     }
   }
 
@@ -106,7 +106,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   public void setFieldValue(AtreusMetaField metaField, Object value) {
     FieldMemento fieldMemento = mementoByField.get(metaField);
     if (fieldMemento != null) {
-      fieldMemento.baseline(value);
+      fieldMemento.snapshot(value);
     }
     if (metaField instanceof DynamicMetaSimpleFieldImpl) {
       metaField.setValue(this, value);
@@ -126,7 +126,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
       Object currentValue = getFieldValue(metaField);
       // TODO handle comparison of map and collections for updating
       if (FieldFetchState.INITIALIZED.equals(fieldMemento.getFetchState()) &&
-          ObjectUtils.nullSafeEquals(fieldMemento.getBaselineValue(), currentValue)) {
+          ObjectUtils.nullSafeEquals(fieldMemento.getSnapshot(), currentValue)) {
         continue;
       }
       results.add((AtreusMetaSimpleField) metaField);
