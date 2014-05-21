@@ -21,28 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.listeners;
+package org.atreus.impl.core.mappings.entities.handlers;
 
+import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.impl.core.mappings.entities.handlers.EntityDeleteHandler;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
+
 /**
- * Delete Entity listener.
+ * Handles the update of an entity.
  *
  * @author Martin Crawford
  */
-public class EntityDeleteListener extends AtreusAbstractEntityListener implements AtreusOnDeleteListener {
+public class EntityUpdateHandler extends BaseEntityHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteListener.class);
-
-  private static final EntityDeleteHandler ENTITY_DELETE_HANDLER = new EntityDeleteHandler();
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityUpdateHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -50,9 +53,26 @@ public class EntityDeleteListener extends AtreusAbstractEntityListener implement
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    ENTITY_DELETE_HANDLER.delete(session, managedEntity);
+  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    // TODO enable lightweight transaction as configuration option to ensure entity already exists
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    boolean hasTtl = hasTtl(managedEntity);
+
+    // Check if there are any fields to be updated
+    Collection<AtreusMetaSimpleField> updatedFields = managedEntity.getUpdatedFields();
+    if (updatedFields.isEmpty()) {
+
+      if (!hasTtl) {
+        // Skip out if there are not fields to update and the Ttl is not set
+        return;
+      }
+
+      // If ttl is set then all fields must be updated, including the primary key
+      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getPrimaryKeyField()));
+      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getFields()));
+    }
+    RegularStatement regularStatement = QueryHelper.updateEntity(metaEntity, updatedFields, hasTtl);
+    bindAndExecute(session, managedEntity, regularStatement, updatedFields);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

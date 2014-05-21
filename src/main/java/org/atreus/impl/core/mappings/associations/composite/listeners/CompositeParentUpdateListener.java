@@ -29,14 +29,9 @@ import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.core.entities.ManagedCollection;
+import org.atreus.impl.core.mappings.associations.composite.handlers.CompositeParentUpdateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.Collection;
 
 /**
  * Update Composite Association Parent listener.
@@ -49,6 +44,8 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
 
   private static final transient Logger LOG = LoggerFactory.getLogger(CompositeParentUpdateListener.class);
 
+  private static final CompositeParentUpdateHandler COMPOSITE_PARENT_UPDATE_HANDLER = new CompositeParentUpdateHandler();
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -57,74 +54,12 @@ public class CompositeParentUpdateListener extends AtreusAbstractEntityListener 
 
   @Override
   public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity parentEntity, AtreusMetaAssociation metaAssociation) {
-    AtreusMetaField ownerField = metaAssociation.getOwner().getAssociationField();
-    Class<?> parentFieldType = ownerField.getType();
-    if (Collection.class.isAssignableFrom(parentFieldType)) {
-      Collection collection = (Collection) ownerField.getValue(parentEntity);
-      updateCollection(session, metaAssociation, parentEntity, collection);
-    }
-    else {
-      Object childEntity = ownerField.getValue(parentEntity);
-      updateEntity(session, metaAssociation, parentEntity, childEntity, true);
-      parentEntity.setFieldValue(metaAssociation.getOwner().getAssociationField(), childEntity);
-    }
+    COMPOSITE_PARENT_UPDATE_HANDLER.update(session, metaAssociation, parentEntity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private void updateCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Collection collection) {
-    if (collection instanceof ManagedCollection) {
-      updateManagedCollection(session, metaAssociation, parentEntity, (ManagedCollection) collection);
-      return;
-    }
-    // TODO handle case where collection isn't a Managed Collection (edge case but possible)
-
-  }
-
-  private void updateManagedCollection(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, ManagedCollection managedCollection) {
-
-    for (Object addedEntity : managedCollection.getAddedEntities()) {
-      updateEntity(session, metaAssociation, parentEntity, addedEntity, true);
-    }
-
-    for (Object removedEntity : managedCollection.getRemovedEntities()) {
-      session.delete(removedEntity);
-    }
-
-    for (Object updatedEntity : managedCollection.getUpdatedEntities()) {
-      updateEntity(session, metaAssociation, parentEntity, updatedEntity, false);
-    }
-
-  }
-
-  private AtreusManagedEntity updateEntity(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity parentEntity, Object entity, boolean forceUpdate) {
-    // Retrieve the managed entity for the child
-    AtreusManagedEntity childEntity = session.manageEntity(entity);
-
-    // Review if any of the fields have been updated
-    Collection<AtreusMetaSimpleField> updatedFields = childEntity.getUpdatedFields();
-    if (updatedFields.isEmpty() && !forceUpdate) {
-      return childEntity;
-    }
-
-    // Set the parent key field (if not already set)
-    AtreusMetaSimpleField parentKeyField = (AtreusMetaSimpleField) metaAssociation.getOwner().getAssociationKeyField();
-    Serializable childParentKeyValue = (Serializable) childEntity.getFieldValue(parentKeyField);
-    Serializable parentPrimaryKey = parentEntity.getPrimaryKey();
-
-    // Parent's Primary key does not match that of the child's parent key (or it's null)
-    if (!parentPrimaryKey.equals(childParentKeyValue)) {
-      childEntity.setFieldValue(parentKeyField, parentPrimaryKey);
-
-      // Consider this a save scenario (assumption a new child)
-      return session.save(childEntity);
-    }
-
-    // Otherwise update the child entity
-    return session.update(childEntity);
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

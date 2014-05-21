@@ -21,33 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.listeners;
+package org.atreus.impl.core.mappings.entities.handlers;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
-import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Date;
-
 /**
- * Update Entity visitor.
+ * Handles the deletion of an entity.
  *
  * @author Martin Crawford
  */
-public abstract class BaseEntityListener extends AtreusAbstractEntityListener {
+public class EntityDeleteHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(BaseEntityListener.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -55,50 +49,17 @@ public abstract class BaseEntityListener extends AtreusAbstractEntityListener {
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
-
-  protected boolean hasTtl(AtreusManagedEntity managedEntity) {
-    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
-    if (ttlMetaField != null && managedEntity.getFieldValue(ttlMetaField) != null) {
-      return true;
-    }
-    return false;
-  }
-
-  protected void bindAndExecute(AtreusSessionExt session, AtreusManagedEntity managedEntity, RegularStatement regularStatement, Collection<AtreusMetaSimpleField> updatedFields) {
+  public void delete(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
-    BoundStatement boundStatement = session.prepareQuery(regularStatement);
+    BoundStatement boundStatement = session.prepareQuery(QueryHelper.deleteEntity(metaEntity));
     primaryKeyMetaField.bindEntity(boundStatement, managedEntity);
-    for (AtreusMetaField metaField : updatedFields) {
-      metaField.bindEntity(boundStatement, managedEntity);
-    }
-
-    bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
     session.executeOrBatch(boundStatement);
-    managedEntity.snapshot();
   }
+
+  // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  @SuppressWarnings("unchecked")
-  private void bindFromEntityTtl(AtreusMetaEntity metaEntity, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
-    AtreusMetaField ttlMetaField = metaEntity.getTtlField();
-    if (ttlMetaField == null) {
-      return;
-    }
-    Object value = managedEntity.getFieldValue(ttlMetaField);
-    if (value == null) {
-      return;
-    }
-
-    Integer ttlValue = metaEntity.getTtlStrategy().translate(new Date(), value);
-    if (ttlValue == null || ttlValue < 1) {
-      throw new AtreusDataBindingException(AtreusDataBindingException.ERROR_CODE_INVALID_TIME_TO_LIVE_VALUE, ttlMetaField, ttlValue);
-    }
-    ttlMetaField.bindValue(boundStatement, ttlValue);
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

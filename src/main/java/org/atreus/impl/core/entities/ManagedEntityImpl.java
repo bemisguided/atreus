@@ -79,7 +79,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
   @Override
   public void fetchField(AtreusMetaField metaField) {
     if (metaField instanceof AtreusMetaAssociationField) {
-      // TODO implement fetching of association
+      session.fetchAssociation(((AtreusMetaAssociationField) metaField).getAssociation(), this);
       return;
     }
     session.fetch(this);

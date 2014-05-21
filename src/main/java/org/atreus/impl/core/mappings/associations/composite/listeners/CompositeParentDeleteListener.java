@@ -23,18 +23,14 @@
  */
 package org.atreus.impl.core.mappings.associations.composite.listeners;
 
-import com.datastax.driver.core.BoundStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.core.queries.QueryHelper;
+import org.atreus.impl.core.mappings.associations.handlers.AssociationOwnerDeleteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Delete Composite Association Parent listener.
@@ -47,6 +43,8 @@ public class CompositeParentDeleteListener extends AtreusAbstractEntityListener 
 
   private static final transient Logger LOG = LoggerFactory.getLogger(CompositeParentDeleteListener.class);
 
+  private static final AssociationOwnerDeleteHandler ASSOCIATION_OWNER_DELETE_HANDLER = new AssociationOwnerDeleteHandler();
+
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
@@ -55,44 +53,12 @@ public class CompositeParentDeleteListener extends AtreusAbstractEntityListener 
 
   @Override
   public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation) {
-
-    // Delete all associations
-    deleteAssociations(session, ownerEntity, metaAssociation);
-
-    // Handle populating owner's collection
-    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
-    if (Collection.class.isAssignableFrom(associationField.getType())) {
-      Collection collection = (Collection) associationField.getValue(ownerEntity);
-      unmanageCollection(session, collection);
-      return;
-    }
-
-    // Handle populating owner's individual entity
-    Object entity = associationField.getValue(ownerEntity);
-    unmanageEntity(session, entity);
+    ASSOCIATION_OWNER_DELETE_HANDLER.delete(session, metaAssociation, ownerEntity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
-
-  private void deleteAssociations(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation) {
-    BoundStatement boundStatement = session.prepareQuery(QueryHelper.deleteAllAssociatedEntities(metaAssociation));
-    metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, ownerEntity.getPrimaryKey());
-    session.executeOrBatch(boundStatement);
-  }
-
-  private void unmanageCollection(AtreusSessionExt session, Collection collection) {
-    for (Object entity : collection) {
-      unmanageEntity(session, entity);
-    }
-  }
-
-  private void unmanageEntity(AtreusSessionExt session, Object entity) {
-    if (entity instanceof AtreusManagedEntity) {
-      session.unmanageEntity((AtreusManagedEntity) entity);
-    }
-  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

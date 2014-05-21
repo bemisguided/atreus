@@ -21,28 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.listeners;
+package org.atreus.impl.core.mappings.entities.handlers;
 
+import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.impl.core.mappings.entities.handlers.EntityDeleteHandler;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
+
 /**
- * Delete Entity listener.
+ * Handles the saving of an entity.
  *
  * @author Martin Crawford
  */
-public class EntityDeleteListener extends AtreusAbstractEntityListener implements AtreusOnDeleteListener {
+public class EntitySaveHandler extends BaseEntityHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteListener.class);
-
-  private static final EntityDeleteHandler ENTITY_DELETE_HANDLER = new EntityDeleteHandler();
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntitySaveHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -50,9 +50,12 @@ public class EntityDeleteListener extends AtreusAbstractEntityListener implement
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    ENTITY_DELETE_HANDLER.delete(session, managedEntity);
+  public void save(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
+    // TODO enable lightweight transaction as configuration option to ensure entity does not already exists
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    boolean hasTtl = hasTtl(managedEntity);
+    RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
+    bindAndExecute(session, managedEntity, regularStatement, iterateMetaSimpleFields(metaEntity.getFields()));
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

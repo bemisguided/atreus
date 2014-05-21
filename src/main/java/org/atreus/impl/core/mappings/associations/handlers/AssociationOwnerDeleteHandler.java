@@ -21,28 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.listeners;
+package org.atreus.impl.core.mappings.associations.handlers;
 
+import com.datastax.driver.core.BoundStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.impl.core.mappings.entities.handlers.EntityDeleteHandler;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+
 /**
- * Delete Entity listener.
+ * Handles the deletion of an association of the owner entity.
  *
  * @author Martin Crawford
  */
-public class EntityDeleteListener extends AtreusAbstractEntityListener implements AtreusOnDeleteListener {
+public class AssociationOwnerDeleteHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteListener.class);
-
-  private static final EntityDeleteHandler ENTITY_DELETE_HANDLER = new EntityDeleteHandler();
+  private static final transient Logger LOG = LoggerFactory.getLogger(AssociationOwnerDeleteHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -50,15 +51,45 @@ public class EntityDeleteListener extends AtreusAbstractEntityListener implement
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    ENTITY_DELETE_HANDLER.delete(session, managedEntity);
+  public void delete(AtreusSessionExt session, AtreusMetaAssociation metaAssociation, AtreusManagedEntity ownerEntity) {
+
+    // Delete all associations
+    deleteAssociations(session, ownerEntity, metaAssociation);
+
+    // Handle populating owner's collection
+    AtreusMetaField associationField = metaAssociation.getOwner().getAssociationField();
+    if (Collection.class.isAssignableFrom(associationField.getType())) {
+      Collection collection = (Collection) associationField.getValue(ownerEntity);
+      unmanageCollection(session, collection);
+      return;
+    }
+
+    // Handle populating owner's individual entity
+    Object entity = associationField.getValue(ownerEntity);
+    unmanageEntity(session, entity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
+  private void deleteAssociations(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation) {
+    BoundStatement boundStatement = session.prepareQuery(QueryHelper.deleteAllAssociatedEntities(metaAssociation));
+    metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, ownerEntity.getPrimaryKey());
+    session.executeOrBatch(boundStatement);
+  }
+
+  private void unmanageCollection(AtreusSessionExt session, Collection collection) {
+    for (Object entity : collection) {
+      unmanageEntity(session, entity);
+    }
+  }
+
+  private void unmanageEntity(AtreusSessionExt session, Object entity) {
+    if (entity instanceof AtreusManagedEntity) {
+      session.unmanageEntity((AtreusManagedEntity) entity);
+    }
+  }
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
 } // end of class

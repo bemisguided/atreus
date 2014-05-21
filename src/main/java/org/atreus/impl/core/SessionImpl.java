@@ -31,9 +31,10 @@ import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
 import org.atreus.core.ext.listeners.AtreusOnFetchListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
+import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaField;
-import org.atreus.impl.core.queries.QueryHelper;
+import org.atreus.impl.core.mappings.associations.handlers.AssociationFetchHandler;
+import org.atreus.impl.core.mappings.entities.handlers.EntityFetchHandler;
 import org.atreus.impl.core.queries.QueryManager;
 import org.atreus.impl.util.AssertUtils;
 import org.atreus.impl.util.CompositeMapKey;
@@ -43,8 +44,6 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Implements an Atreus Session.
@@ -56,6 +55,10 @@ public class SessionImpl implements AtreusSessionExt {
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
+
+  private static final AssociationFetchHandler ASSOCIATION_FETCH_HANDLER = new AssociationFetchHandler();
+
+  private static final EntityFetchHandler ENTITY_FETCH_HANDLER = new EntityFetchHandler();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -187,6 +190,17 @@ public class SessionImpl implements AtreusSessionExt {
       throw new RuntimeException("Managed entity could not be fetched as it does not exist " + primaryKey + " " + metaEntity.getEntityType());
     }
     managedEntity.getMetaEntity().broadcastListeners(this, managedEntity, AtreusOnFetchListener.class);
+  }
+
+  @Override
+  public void fetchAssociation(AtreusMetaAssociation metaAssociation, AtreusManagedEntity managedEntity) {
+    assertSessionNotClosed();
+
+    // Assert input params
+    AssertUtils.notNull(metaAssociation, "metaAssociation is a required parameter");
+    AssertUtils.notNull(managedEntity, "managedEntity is a required parameter");
+
+    ASSOCIATION_FETCH_HANDLER.fetch(this, metaAssociation, managedEntity);
   }
 
   @Override
@@ -468,23 +482,7 @@ public class SessionImpl implements AtreusSessionExt {
   }
 
   private AtreusManagedEntity fetchEntity(AtreusMetaEntity metaEntity, Serializable primaryKey, AtreusManagedEntity managedEntity) {
-    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
-    BoundStatement boundStatement = prepareQuery(regularStatement);
-    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
-    ResultSet resultSet = execute(boundStatement);
-    Row row = resultSet.one();
-    if (row == null) {
-      return null;
-    }
-
-    if (managedEntity == null) {
-      managedEntity = entityInstance(metaEntity, primaryKey);
-    }
-
-    for (AtreusMetaField metaField : iterateMetaSimpleFields(metaEntity.getFields())) {
-      metaField.unbindEntity(row, managedEntity);
-    }
-    return managedEntity;
+    return ENTITY_FETCH_HANDLER.fetch(this, metaEntity, primaryKey, managedEntity);
   }
 
   private void uncacheEntry(AtreusManagedEntity managedEntity) {

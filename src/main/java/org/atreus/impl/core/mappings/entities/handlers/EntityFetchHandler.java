@@ -21,28 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.listeners;
+package org.atreus.impl.core.mappings.entities.handlers;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
-import org.atreus.core.ext.listeners.AtreusOnDeleteListener;
-import org.atreus.impl.core.mappings.entities.handlers.EntityDeleteHandler;
+import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
+
 /**
- * Delete Entity listener.
+ * Handles the fetching of an entity.
  *
  * @author Martin Crawford
  */
-public class EntityDeleteListener extends AtreusAbstractEntityListener implements AtreusOnDeleteListener {
+public class EntityFetchHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityDeleteListener.class);
-
-  private static final EntityDeleteHandler ENTITY_DELETE_HANDLER = new EntityDeleteHandler();
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityFetchHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -50,9 +56,24 @@ public class EntityDeleteListener extends AtreusAbstractEntityListener implement
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  @Override
-  public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    ENTITY_DELETE_HANDLER.delete(session, managedEntity);
+  public AtreusManagedEntity fetch(AtreusSessionExt session, AtreusMetaEntity metaEntity, Serializable primaryKey, AtreusManagedEntity managedEntity) {
+    RegularStatement regularStatement = QueryHelper.selectEntity(metaEntity);
+    BoundStatement boundStatement = session.prepareQuery(regularStatement);
+    metaEntity.getPrimaryKeyField().bindValue(boundStatement, primaryKey);
+    ResultSet resultSet = session.execute(boundStatement);
+    Row row = resultSet.one();
+    if (row == null) {
+      return null;
+    }
+
+    if (managedEntity == null) {
+      managedEntity = session.entityInstance(metaEntity, primaryKey);
+    }
+
+    for (AtreusMetaField metaField : iterateMetaSimpleFields(metaEntity.getFields())) {
+      metaField.unbindEntity(row, managedEntity);
+    }
+    return managedEntity;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

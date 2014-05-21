@@ -23,27 +23,26 @@
  */
 package org.atreus.impl.core.mappings.entities.listeners;
 
-import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnSaveListener;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.impl.core.queries.QueryHelper;
+import org.atreus.impl.core.mappings.entities.handlers.EntitySaveHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Save Entity visitor.
  *
  * @author Martin Crawford
  */
-public class EntitySaveListener extends BaseEntityListener implements AtreusOnSaveListener {
+public class EntitySaveListener extends AtreusAbstractEntityListener implements AtreusOnSaveListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(EntitySaveListener.class);
+
+  private static final EntitySaveHandler ENTITY_SAVE_HANDLER = new EntitySaveHandler();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -53,11 +52,7 @@ public class EntitySaveListener extends BaseEntityListener implements AtreusOnSa
 
   @Override
   public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    // TODO enable lightweight transaction as configuration option to ensure entity does not already exists
-    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    boolean hasTtl = hasTtl(managedEntity);
-    RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
-    bindAndExecute(session, managedEntity, regularStatement, iterateMetaSimpleFields(metaEntity.getFields()));
+    ENTITY_SAVE_HANDLER.save(session, managedEntity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -23,30 +23,26 @@
  */
 package org.atreus.impl.core.mappings.entities.listeners;
 
-import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
+import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
 import org.atreus.core.ext.listeners.AtreusOnUpdateListener;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.core.queries.QueryHelper;
+import org.atreus.impl.core.mappings.entities.handlers.EntityUpdateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-
-import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Update Entity visitor.
  *
  * @author Martin Crawford
  */
-public class EntityUpdateListener extends BaseEntityListener implements AtreusOnUpdateListener {
+public class EntityUpdateListener extends AtreusAbstractEntityListener implements AtreusOnUpdateListener {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
   private static final transient Logger LOG = LoggerFactory.getLogger(EntityUpdateListener.class);
+
+  private static final EntityUpdateHandler ENTITY_UPDATE_HANDLER = new EntityUpdateHandler();
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -56,25 +52,7 @@ public class EntityUpdateListener extends BaseEntityListener implements AtreusOn
 
   @Override
   public void acceptEntity(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    // TODO enable lightweight transaction as configuration option to ensure entity already exists
-    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    boolean hasTtl = hasTtl(managedEntity);
-
-    // Check if there are any fields to be updated
-    Collection<AtreusMetaSimpleField> updatedFields = managedEntity.getUpdatedFields();
-    if (updatedFields.isEmpty()) {
-
-      if (!hasTtl) {
-        // Skip out if there are not fields to update and the Ttl is not set
-        return;
-      }
-
-      // If ttl is set then all fields must be updated, including the primary key
-      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getPrimaryKeyField()));
-      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getFields()));
-    }
-    RegularStatement regularStatement = QueryHelper.updateEntity(metaEntity, updatedFields, hasTtl);
-    bindAndExecute(session, managedEntity, regularStatement, updatedFields);
+    ENTITY_UPDATE_HANDLER.update(session, managedEntity);
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
