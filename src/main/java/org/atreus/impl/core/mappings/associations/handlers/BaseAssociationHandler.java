@@ -37,6 +37,7 @@ import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,12 +66,14 @@ public class BaseAssociationHandler {
     // Execute select against the outbound association table
     AtreusMetaEntity metaAssociationEntity = metaAssociation.getAssociation().getMetaEntity();
     BoundStatement boundStatement = session.prepareQuery(QueryHelper.selectAssociatedEntities(metaAssociation));
-    metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, ownerEntity.getPrimaryKey());
+    Serializable primaryKey = ownerEntity.getPrimaryKey();
+    metaAssociation.getOwner().getAssociationKeyField().bindValue(boundStatement, primaryKey);
     ResultSet resultSet = session.execute(boundStatement);
 
     // Iterate the results and create managed entities
-    List<AtreusManagedEntity> associations = new ArrayList<>(resultSet.all().size());
-    for (Row row : resultSet.all()) {
+    List<Row> rows = resultSet.all();
+    List<AtreusManagedEntity> associations = new ArrayList<>(rows.size());
+    for (Row row : rows) {
 
       // Create a new entity instance
       AtreusManagedEntity associatedEntity = session.entityInstance(metaAssociationEntity, null);
@@ -84,6 +87,8 @@ public class BaseAssociationHandler {
           metaField.unbindEntity(row, associatedEntity);
         }
       }
+
+      // TODO add fetch for aggregate associations here
       associations.add(associatedEntity);
     }
     return associations;
@@ -95,8 +100,8 @@ public class BaseAssociationHandler {
     Collection collection = (Collection) managedEntity.getFieldValue(associationField);
     if (collection instanceof ManagedCollection) {
       ManagedCollection managedCollection = (ManagedCollection) collection;
-      managedCollection.getUpdatedEntities().addAll(associatedEntities);
-      managedCollection.snapshot();
+      managedCollection.snapshot(associatedEntities);
+      managedEntity.setFieldValue(associationField, managedCollection);
       return;
     }
     collection.addAll(associatedEntities);

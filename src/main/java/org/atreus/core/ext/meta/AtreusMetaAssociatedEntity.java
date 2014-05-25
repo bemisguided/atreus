@@ -23,6 +23,8 @@
  */
 package org.atreus.core.ext.meta;
 
+import org.atreus.core.annotations.AtreusFetchMode;
+
 /**
  * Interface for a managed association entity.
  *
@@ -35,5 +37,7 @@ public interface AtreusMetaAssociatedEntity {
   public AtreusMetaField getAssociationField();
 
   public AtreusMetaField getAssociationKeyField();
+
+  public AtreusFetchMode getFetchMode();
 
 }

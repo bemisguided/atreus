@@ -43,19 +43,33 @@ public class DynamicMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   private final String name;
 
+  private final String parentName;
+
   private final Class<?> type;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type) {
+  public DynamicMetaSimpleFieldImpl(AtreusMetaObject ownerObject, String name, Class<?> type, String parentName) {
     super(ownerObject);
     this.name = name;
     this.type = type;
+    this.parentName = parentName;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  @Override
+  protected String getCanonicalName() {
+    StringBuilder stringBuilder = new StringBuilder();
+    if (parentName != null) {
+      stringBuilder.append(parentName);
+      stringBuilder.append('.');
+    }
+    stringBuilder.append(name);
+    return stringBuilder.toString();
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 

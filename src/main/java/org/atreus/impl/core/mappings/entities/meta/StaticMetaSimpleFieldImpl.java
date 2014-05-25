@@ -40,11 +40,14 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   private final Field javaField;
 
+  private final String parentName;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public StaticMetaSimpleFieldImpl(MetaEntityImpl ownerObject, Field javaField) {
+  public StaticMetaSimpleFieldImpl(MetaEntityImpl ownerObject, Field javaField, String parentName) {
     super(ownerObject);
     this.javaField = javaField;
+    this.parentName = parentName;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -52,6 +55,17 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  @Override
+  protected String getCanonicalName() {
+    StringBuilder stringBuilder = new StringBuilder();
+    if (parentName != null) {
+      stringBuilder.append(parentName);
+      stringBuilder.append('.');
+    }
+    stringBuilder.append(getName());
+    return stringBuilder.toString();
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

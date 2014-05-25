@@ -73,7 +73,7 @@ public class PrimaryKeyComponentBuilder extends BaseFieldEntityMetaComponentBuil
     AtreusPrimaryKey primaryKeyAnnotation = field.getAnnotation(AtreusPrimaryKey.class);
 
     // Create the Primary Key meta field
-    StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl primaryKeyMetaField = createStaticMetaSimpleField(metaEntity, field, null);
     String primaryKeyColumn = primaryKeyAnnotation.value();
     if (ObjectUtils.isNotNullOrEmpty(primaryKeyColumn)) {
       primaryKeyMetaField.setColumn(primaryKeyColumn);

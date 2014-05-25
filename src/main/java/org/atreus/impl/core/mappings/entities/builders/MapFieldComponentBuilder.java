@@ -68,7 +68,7 @@ public class MapFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilde
   public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
     // Create the static field
-    StaticMetaSimpleFieldImpl mapMetaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl mapMetaField = createStaticMetaSimpleField(metaEntity, field, null);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);

@@ -28,9 +28,10 @@ package org.atreus.core.annotations;
  *
  * @author Martin Crawford
  */
-public enum AtreusFetch {
+public enum AtreusFetchMode {
 
-  EAGER,
+  EAGER_COLLECTION,
+  EAGER_ENTITY,
   LAZY;
 
 }

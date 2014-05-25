@@ -63,7 +63,7 @@ public class TtlFieldComponentBuilder extends BaseFieldEntityMetaComponentBuilde
   public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
     // Create the time-to-live meta field
-    StaticMetaSimpleFieldImpl ttlMetaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl ttlMetaField = createStaticMetaSimpleField(metaEntity, field, null);
 
     // Resolve the type strategy
     resolveTypeStrategy(metaEntity, ttlMetaField, field);

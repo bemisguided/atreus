@@ -35,7 +35,7 @@ import org.atreus.impl.util.AssertUtils;
  *
  * @author Martin Crawford
  */
-public abstract class BaseMetaSimpleFieldImpl implements AtreusMetaSimpleField, Comparable<BaseMetaSimpleFieldImpl> {
+public abstract class BaseMetaSimpleFieldImpl extends BaseMetaFieldImpl implements AtreusMetaSimpleField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -43,14 +43,12 @@ public abstract class BaseMetaSimpleFieldImpl implements AtreusMetaSimpleField, 
 
   private String column;
 
-  private final AtreusMetaObject ownerObject;
-
   private AtreusTypeStrategy typeStrategy;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   protected BaseMetaSimpleFieldImpl(AtreusMetaObject ownerObject) {
-    this.ownerObject = ownerObject;
+    super(ownerObject);
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -68,48 +66,6 @@ public abstract class BaseMetaSimpleFieldImpl implements AtreusMetaSimpleField, 
   public void bindValue(BoundStatement boundStatement, Object value) {
     AssertUtils.notNull(getTypeStrategy(), "typeStrategy not set");
     getTypeStrategy().bindValue(boundStatement, column, value);
-  }
-
-  @Override
-  public int compareTo(BaseMetaSimpleFieldImpl o) {
-    if (column == null && o.column == null) {
-      return 0;
-    }
-    if (column == null) {
-      return -1;
-    }
-    if (o.column == null) {
-      return 1;
-    }
-    return column.compareTo(o.column);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    BaseMetaSimpleFieldImpl that = (BaseMetaSimpleFieldImpl) o;
-
-    if (column != null ? !column.equals(that.column) : that.column != null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return column != null ? column.hashCode() : 0;
-  }
-
-  @Override
-  public String toString() {
-    return ownerObject.getName() + "." + getName();
   }
 
   @Override
@@ -132,11 +88,6 @@ public abstract class BaseMetaSimpleFieldImpl implements AtreusMetaSimpleField, 
 
   public final void setColumn(String column) {
     this.column = column;
-  }
-
-  @Override
-  public final AtreusMetaObject getOwnerObject() {
-    return ownerObject;
   }
 
   @Override

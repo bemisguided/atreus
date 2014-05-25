@@ -143,7 +143,7 @@ public class CompositeParentComponentBuilder extends BaseFieldEntityMetaComponen
 
     // Create the primary key reference on the child entity
     String parentKeyName = parentMetaEntity.getTable().getName() + "_" + ((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getColumn();
-    AtreusMetaSimpleField parentKeyField = createDynamicMetaSimpleField(childMetaEntity, parentKeyName, parentMetaEntity.getPrimaryKeyField().getType());
+    AtreusMetaSimpleField parentKeyField = createDynamicMetaSimpleField(childMetaEntity, parentKeyName, parentMetaEntity.getPrimaryKeyField().getType(), null);
     parentKeyField.setTypeStrategy(((AtreusMetaSimpleField) parentMetaEntity.getPrimaryKeyField()).getTypeStrategy());
 
     // Update the meta composite

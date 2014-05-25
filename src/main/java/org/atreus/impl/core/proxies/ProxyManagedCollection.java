@@ -97,6 +97,14 @@ public class ProxyManagedCollection implements ManagedCollection {
     memento.addAll(collection);
   }
 
+  @Override
+  @SuppressWarnings("unchecked")
+  public void snapshot(Collection collection) {
+    this.collection.isEmpty();
+    this.collection.addAll(collection);
+    snapshot();
+  }
+
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

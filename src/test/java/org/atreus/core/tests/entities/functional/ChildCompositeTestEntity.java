@@ -54,13 +54,10 @@ public class ChildCompositeTestEntity {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
 
     ChildCompositeTestEntity that = (ChildCompositeTestEntity) o;
 
-    if (id != null ? !id.equals(that.id) : that.id != null) {
+    if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) {
       return false;
     }
 
@@ -69,7 +66,7 @@ public class ChildCompositeTestEntity {
 
   @Override
   public int hashCode() {
-    return id != null ? id.hashCode() : 0;
+    return getId() != null ? getId().hashCode() : 0;
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

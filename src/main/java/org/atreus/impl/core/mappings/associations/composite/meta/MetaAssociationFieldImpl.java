@@ -28,7 +28,7 @@ import com.datastax.driver.core.Row;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.meta.AtreusMetaAssociation;
 import org.atreus.core.ext.meta.AtreusMetaAssociationField;
-import org.atreus.core.ext.meta.AtreusMetaObject;
+import org.atreus.impl.core.mappings.entities.meta.BaseMetaFieldImpl;
 import org.atreus.impl.core.mappings.entities.meta.MetaEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ import java.lang.reflect.Field;
  *
  * @author Martin Crawford
  */
-public class MetaAssociationFieldImpl implements AtreusMetaAssociationField {
+public class MetaAssociationFieldImpl extends BaseMetaFieldImpl implements AtreusMetaAssociationField {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -48,14 +48,13 @@ public class MetaAssociationFieldImpl implements AtreusMetaAssociationField {
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final AtreusMetaObject ownerObject;
   private final Field javaField;
   private final AtreusMetaAssociation metaAssociation;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
   public MetaAssociationFieldImpl(MetaEntityImpl ownerObject, Field javaField, AtreusMetaAssociation metaAssociation) {
-    this.ownerObject = ownerObject;
+    super(ownerObject);
     this.javaField = javaField;
     this.metaAssociation = metaAssociation;
   }
@@ -68,6 +67,11 @@ public class MetaAssociationFieldImpl implements AtreusMetaAssociationField {
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
+
+  @Override
+  protected String getCanonicalName() {
+    return getName();
+  }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
@@ -116,11 +120,6 @@ public class MetaAssociationFieldImpl implements AtreusMetaAssociationField {
     catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public AtreusMetaObject getOwnerObject() {
-    return ownerObject;
   }
 
   @Override

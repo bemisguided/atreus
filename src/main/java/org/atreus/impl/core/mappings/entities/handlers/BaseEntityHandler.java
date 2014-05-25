@@ -24,10 +24,8 @@
 package org.atreus.impl.core.mappings.entities.handlers;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.AtreusDataBindingException;
 import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
@@ -36,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Date;
+
+import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Base Entity Handler.
@@ -65,24 +65,42 @@ public abstract class BaseEntityHandler {
     return false;
   }
 
-  protected void bindAndExecute(AtreusSessionExt session, AtreusManagedEntity managedEntity, RegularStatement regularStatement, Collection<AtreusMetaSimpleField> updatedFields) {
+  protected void bindColumnsAll(BoundStatement boundStatement, AtreusManagedEntity managedEntity) {
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
-    BoundStatement boundStatement = session.prepareQuery(regularStatement);
-    primaryKeyMetaField.bindEntity(boundStatement, managedEntity);
+    for (AtreusMetaField metaField : iterateMetaSimpleFields(metaEntity.getFields())) {
+      metaField.bindEntity(boundStatement, managedEntity);
+    }
+  }
+
+  protected void bindColumns(BoundStatement boundStatement, AtreusManagedEntity managedEntity, Collection<AtreusMetaSimpleField> updatedFields) {
     for (AtreusMetaField metaField : updatedFields) {
       metaField.bindEntity(boundStatement, managedEntity);
     }
-
-    bindFromEntityTtl(metaEntity, managedEntity, boundStatement);
-    session.executeOrBatch(boundStatement);
-    managedEntity.snapshot();
   }
 
-  // Private Methods ---------------------------------------------------------------------------------- Private Methods
+  protected void bindEntityAll(BoundStatement boundStatement, AtreusManagedEntity managedEntity) {
+    bindPrimaryKey(boundStatement, managedEntity);
+    bindColumnsAll(boundStatement, managedEntity);
+    bindTtl(managedEntity, boundStatement);
+  }
+
+  protected void bindEntityUpdates(BoundStatement boundStatement, AtreusManagedEntity managedEntity, Collection<AtreusMetaSimpleField> updatedFields) {
+    bindPrimaryKey(boundStatement, managedEntity);
+    bindColumns(boundStatement, managedEntity, updatedFields);
+    bindTtl(managedEntity, boundStatement);
+  }
+
+  protected void bindPrimaryKey(BoundStatement boundStatement, AtreusManagedEntity managedEntity) {
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
+    AtreusMetaField primaryKeyMetaField = metaEntity.getPrimaryKeyField();
+    for(AtreusMetaField metaField : iterateMetaSimpleFields(primaryKeyMetaField)) {
+      metaField.bindValue(boundStatement, metaField.getValue(managedEntity));
+    }
+  }
 
   @SuppressWarnings("unchecked")
-  private void bindFromEntityTtl(AtreusMetaEntity metaEntity, AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+  protected void bindTtl(AtreusManagedEntity managedEntity, BoundStatement boundStatement) {
+    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     AtreusMetaField ttlMetaField = metaEntity.getTtlField();
     if (ttlMetaField == null) {
       return;
@@ -98,6 +116,8 @@ public abstract class BaseEntityHandler {
     }
     ttlMetaField.bindValue(boundStatement, ttlValue);
   }
+
+  // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

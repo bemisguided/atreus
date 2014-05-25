@@ -56,15 +56,15 @@ public abstract class BaseFieldEntityMetaComponentBuilder extends BaseEntityMeta
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
-  protected DynamicMetaSimpleFieldImpl createDynamicMetaSimpleField(MetaEntityImpl metaEntity, String name, Class<?> type) {
-    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, name, type);
+  protected DynamicMetaSimpleFieldImpl createDynamicMetaSimpleField(MetaEntityImpl metaEntity, String name, Class<?> type, String parentName) {
+    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, name, type, parentName);
     metaField.setColumn(name);
     return metaField;
   }
 
 
-  protected StaticMetaSimpleFieldImpl createStaticMetaSimpleField(MetaEntityImpl metaEntity, Field field) {
-    StaticMetaSimpleFieldImpl metaField = new StaticMetaSimpleFieldImpl(metaEntity, field);
+  protected StaticMetaSimpleFieldImpl createStaticMetaSimpleField(MetaEntityImpl metaEntity, Field field, String parentName) {
+    StaticMetaSimpleFieldImpl metaField = new StaticMetaSimpleFieldImpl(metaEntity, field, parentName);
     metaField.setColumn(field.getName());
     return metaField;
   }

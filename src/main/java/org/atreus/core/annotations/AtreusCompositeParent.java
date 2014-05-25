@@ -49,6 +49,6 @@ public @interface AtreusCompositeParent {
    *
    * @return
    */
-  public AtreusFetch fetch() default AtreusFetch.EAGER;
+  public AtreusFetchMode fetch() default AtreusFetchMode.EAGER_ENTITY;
 
 }

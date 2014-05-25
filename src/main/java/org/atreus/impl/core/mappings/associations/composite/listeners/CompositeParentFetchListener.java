@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.core.mappings.associations.composite.listeners;
 
+import org.atreus.core.annotations.AtreusFetchMode;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.listeners.AtreusAbstractEntityListener;
@@ -53,8 +54,10 @@ public class CompositeParentFetchListener extends AtreusAbstractEntityListener i
 
   @Override
   public void acceptAssociation(AtreusSessionExt session, AtreusManagedEntity ownerEntity, AtreusMetaAssociation metaAssociation) {
-    // TODO check if fetch is eager
-    COMPOSITE_PARENT_FETCH_HANDLER.fetch(session, metaAssociation, ownerEntity);
+    AtreusFetchMode fetchMode = metaAssociation.getOwner().getFetchMode();
+    if (AtreusFetchMode.EAGER_COLLECTION.equals(fetchMode) || AtreusFetchMode.EAGER_ENTITY.equals(fetchMode)) {
+      COMPOSITE_PARENT_FETCH_HANDLER.fetch(session, metaAssociation, ownerEntity);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

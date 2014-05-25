@@ -21,69 +21,93 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.mappings.entities.handlers;
+package org.atreus.impl.core.mappings.entities.meta;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.RegularStatement;
-import org.atreus.core.ext.AtreusManagedEntity;
-import org.atreus.core.ext.AtreusSessionExt;
-import org.atreus.core.ext.meta.AtreusMetaEntity;
-import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.core.queries.QueryHelper;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.core.ext.meta.AtreusMetaObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-
-import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
-
 /**
- * Handles the update of an entity.
+ * Base meta field.
  *
  * @author Martin Crawford
  */
-public class EntityUpdateHandler extends BaseEntityHandler {
+public abstract class BaseMetaFieldImpl implements AtreusMetaField, Comparable<BaseMetaFieldImpl> {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(EntityUpdateHandler.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(BaseMetaFieldImpl.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
+  private final AtreusMetaObject ownerObject;
+
   // Constructors ---------------------------------------------------------------------------------------- Constructors
+
+  protected BaseMetaFieldImpl(AtreusMetaObject ownerObject) {
+    this.ownerObject = ownerObject;
+  }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
-  public void update(AtreusSessionExt session, AtreusManagedEntity managedEntity) {
-    // TODO enable lightweight transaction as configuration option to ensure entity already exists
-    AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
-    boolean hasTtl = hasTtl(managedEntity);
+  @Override
+  public int compareTo(BaseMetaFieldImpl o) {
+    if (getCanonicalName() == null && o.getCanonicalName() == null) {
+      return 0;
+    }
+    if (getCanonicalName() == null) {
+      return -1;
+    }
+    if (o.getCanonicalName() == null) {
+      return 1;
+    }
+    return getCanonicalName().compareTo(o.getCanonicalName());
+  }
 
-    // Check if there are any fields to be updated
-    Collection<AtreusMetaSimpleField> updatedFields = managedEntity.getUpdatedFields();
-    if (updatedFields.isEmpty()) {
-
-      if (!hasTtl) {
-        // Skip out if there are not fields to update and the Ttl is not set
-        return;
-      }
-
-      // If ttl is set then all fields must be updated, including the primary key
-      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getPrimaryKeyField()));
-      updatedFields.addAll(iterateMetaSimpleFields(metaEntity.getFields()));
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
 
-    RegularStatement regularStatement = QueryHelper.updateEntity(metaEntity, updatedFields, hasTtl);
-    BoundStatement boundStatement = session.prepareQuery(regularStatement);
-    bindEntityUpdates(boundStatement, managedEntity, updatedFields);
-    session.executeOrBatch(boundStatement);
-    managedEntity.snapshot();
+    BaseMetaFieldImpl that = (BaseMetaFieldImpl) o;
+
+    if (ownerObject != null ? !ownerObject.equals(that.ownerObject) : that.ownerObject != null) {
+      return false;
+    }
+
+    if (getCanonicalName() != null ? !getCanonicalName().equals(that.getCanonicalName()) : that.getCanonicalName() != null) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return getCanonicalName() != null ? getCanonicalName().hashCode() : 0;
+  }
+
+  @Override
+  public String toString() {
+    return ownerObject.getName() + "." + getCanonicalName();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
+  protected abstract String getCanonicalName();
+
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
+
+  @Override
+  public AtreusMetaObject getOwnerObject() {
+    return ownerObject;
+  }
 
 } // end of class

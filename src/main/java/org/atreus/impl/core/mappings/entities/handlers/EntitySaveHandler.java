@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.core.mappings.entities.handlers;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.RegularStatement;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
@@ -30,8 +31,6 @@ import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.impl.core.queries.QueryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.atreus.impl.util.MetaFieldIteratorUtils.iterateMetaSimpleFields;
 
 /**
  * Handles the saving of an entity.
@@ -55,7 +54,10 @@ public class EntitySaveHandler extends BaseEntityHandler {
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     boolean hasTtl = hasTtl(managedEntity);
     RegularStatement regularStatement = QueryHelper.insertEntity(metaEntity, hasTtl);
-    bindAndExecute(session, managedEntity, regularStatement, iterateMetaSimpleFields(metaEntity.getFields()));
+    BoundStatement boundStatement = session.prepareQuery(regularStatement);
+    bindEntityAll(boundStatement, managedEntity);
+    session.executeOrBatch(boundStatement);
+    managedEntity.snapshot();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

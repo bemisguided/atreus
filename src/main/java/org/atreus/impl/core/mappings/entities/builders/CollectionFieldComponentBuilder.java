@@ -67,7 +67,7 @@ public class CollectionFieldComponentBuilder extends BaseFieldEntityMetaComponen
   public boolean handleField(MetaEntityImpl metaEntity, Field field) {
 
     // Create the static field
-    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl collectionMetaField = createStaticMetaSimpleField(metaEntity, field, null);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);

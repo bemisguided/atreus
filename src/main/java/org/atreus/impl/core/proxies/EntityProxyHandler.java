@@ -60,6 +60,7 @@ class EntityProxyHandler implements MethodHandler {
 
   @Override
   public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
+    // TODO Handle of getClass and potential other Java special methods
     try {
       if (forwarder == null) {
         return overridden.invoke(managedEntity, args);
@@ -78,13 +79,14 @@ class EntityProxyHandler implements MethodHandler {
 
   private void fetchIfNecessary(Method method) {
     String field = BeanUtils.getField(entity.getClass(), method);
-    if (field != null)  {
+    if (field != null) {
       AtreusMetaField metaField = managedEntity.getMetaEntity().getFieldByName(field);
       if (metaField != null && !managedEntity.isFetched(metaField)) {
         managedEntity.fetchField(metaField);
       }
     }
   }
+
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 
 } // end of class

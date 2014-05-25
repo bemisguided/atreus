@@ -56,7 +56,7 @@ public class SimpleFieldComponentBuilder extends BaseFieldEntityMetaComponentBui
     // Assumption is this is the last field builder to be called and therefore a simple field
 
     // Create the static field
-    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field);
+    StaticMetaSimpleFieldImpl metaField = createStaticMetaSimpleField(metaEntity, field, null);
 
     // Check for a field annotation
     AtreusField fieldAnnotation = field.getAnnotation(AtreusField.class);

@@ -23,6 +23,7 @@
  */
 package org.atreus.impl.core.mappings.associations.meta;
 
+import org.atreus.core.annotations.AtreusFetchMode;
 import org.atreus.core.ext.meta.AtreusMetaAssociatedEntity;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
@@ -30,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * todo document me
+ * Meta Associated Entity bean.
  *
  * @author Martin Crawford
  */
@@ -45,6 +46,7 @@ public class MetaAssociatedEntityImpl implements AtreusMetaAssociatedEntity {
   private AtreusMetaEntity metaEntity;
   private AtreusMetaField associationField;
   private AtreusMetaField associationKeyField;
+  private AtreusFetchMode fetchMode;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
@@ -81,6 +83,14 @@ public class MetaAssociatedEntityImpl implements AtreusMetaAssociatedEntity {
 
   public void setAssociationKeyField(AtreusMetaField associationKeyField) {
     this.associationKeyField = associationKeyField;
+  }
+
+  public AtreusFetchMode getFetchMode() {
+    return fetchMode;
+  }
+
+  public void setFetchMode(AtreusFetchMode fetchMode) {
+    this.fetchMode = fetchMode;
   }
 
 } // end of class

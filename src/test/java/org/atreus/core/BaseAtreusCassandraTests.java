@@ -92,6 +92,7 @@ public class BaseAtreusCassandraTests extends BaseCassandraTests {
 
   protected void initEnvironment() {
     getEnvironment().init();
+    session = new SessionImpl(getEnvironment());
   }
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods

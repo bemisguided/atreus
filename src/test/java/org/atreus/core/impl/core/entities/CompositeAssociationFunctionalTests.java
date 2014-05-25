@@ -29,6 +29,7 @@ import org.atreus.core.tests.entities.functional.ChildCompositeTestEntity;
 import org.atreus.core.tests.entities.functional.ParentCompositeSetTestEntity;
 import org.atreus.core.tests.entities.functional.ParentCompositeTestEntity;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,8 +132,10 @@ public class CompositeAssociationFunctionalTests extends BaseAtreusCassandraTest
   }
 
   @Test
-  public void testCollectionSubstitutionCompositeEntityAssociation() throws Exception {
-    LOG.info("Running testCollectionSubstitutionCompositeEntityAssociation");
+  @Ignore
+  public void testSubstitutedCollectionCompositeEntityAssociation() throws Exception {
+    LOG.info("Running testSubstitutedCollectionCompositeEntityAssociation");
+    getEnvironment().getConfiguration().setSessionCache(false); // Disable caching for this test case
     addEntity(ParentCompositeSetTestEntity.class);
     addEntity(ChildCompositeTestEntity.class);
     initEnvironment();

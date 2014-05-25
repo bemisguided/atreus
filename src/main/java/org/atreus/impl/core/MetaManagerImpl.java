@@ -132,7 +132,7 @@ public class MetaManagerImpl implements AtreusMetaManager {
       if (collection != null) {
         ((Collection) managedCollection).addAll(collection);
       }
-      managedEntity.setFieldValue(metaField, managedCollection);
+      metaField.setValue(entity, managedCollection);
     }
     return managedEntity;
   }

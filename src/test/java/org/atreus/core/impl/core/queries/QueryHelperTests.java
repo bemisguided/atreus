@@ -139,7 +139,7 @@ public class QueryHelperTests {
   }
 
   private AtreusMetaSimpleField buildField(MetaEntityImpl metaEntity, String columnName) {
-    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, columnName, String.class);
+    DynamicMetaSimpleFieldImpl metaField = new DynamicMetaSimpleFieldImpl(metaEntity, columnName, String.class, null);
     metaField.setColumn(columnName);
     return metaField;
   }

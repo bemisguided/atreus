@@ -40,4 +40,6 @@ public interface ManagedCollection {
 
   public void snapshot();
 
+  public void snapshot(Collection collection);
+
 }
