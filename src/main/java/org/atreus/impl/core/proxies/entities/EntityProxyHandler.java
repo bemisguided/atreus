@@ -21,93 +21,71 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.proxies;
+package org.atreus.impl.core.proxies.entities;
 
-import org.atreus.impl.core.entities.ManagedCollection;
+import javassist.util.proxy.MethodHandler;
+import org.atreus.core.ext.meta.AtreusMetaField;
+import org.atreus.impl.core.entities.ManagedEntityImpl;
+import org.atreus.impl.util.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
- * Proxied Managed Collection.
+ * Implements a Method Handler for a proxied managed entity.
  *
  * @author Martin Crawford
  */
-public class ProxyManagedCollection implements ManagedCollection {
+class EntityProxyHandler implements MethodHandler {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManagedCollection.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyHandler.class);
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
-  private final Collection collection;
-  private Collection memento = new ArrayList();
+  private final Object entity;
+  private final ManagedEntityImpl managedEntity;
 
   // Constructors ---------------------------------------------------------------------------------------- Constructors
 
-  public ProxyManagedCollection(Collection collection) {
-    this.collection = collection;
+  public EntityProxyHandler(ManagedEntityImpl managedEntity, Object entity) {
+    this.entity = entity;
+    this.managedEntity = managedEntity;
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
 
   @Override
-  @SuppressWarnings("unchecked")
-  public Collection getAddedEntities() {
-    Collection result = new ArrayList();
-    for (Object entity : collection) {
-      if (!memento.contains(entity)) {
-        result.add(entity);
+  public Object invoke(Object self, Method overridden, Method forwarder, Object[] args) throws Throwable {
+    // TODO Handle of getClass and potential other Java special methods
+    try {
+      if (forwarder == null) {
+        return overridden.invoke(managedEntity, args);
       }
+      fetchIfNecessary(overridden);
+      return overridden.invoke(entity, args);
     }
-    return result;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Collection getUpdatedEntities() {
-    Collection result = new ArrayList();
-    for (Object entity : collection) {
-      if (memento.contains(entity)) {
-        result.add(entity);
-      }
+    catch (InvocationTargetException e) {
+      throw e.getTargetException();
     }
-    return result;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Collection getRemovedEntities() {
-    Collection result = new ArrayList();
-    for (Object entity : memento) {
-      if (!collection.contains(entity)) {
-        result.add(entity);
-      }
-    }
-    return result;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public void snapshot() {
-    memento.clear();
-    memento.addAll(collection);
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public void snapshot(Collection collection) {
-    this.collection.isEmpty();
-    this.collection.addAll(collection);
-    snapshot();
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods
 
   // Private Methods ---------------------------------------------------------------------------------- Private Methods
+
+  private void fetchIfNecessary(Method method) {
+    String field = BeanUtils.getField(entity.getClass(), method);
+    if (field != null) {
+      AtreusMetaField metaField = managedEntity.getMetaEntity().getFieldByName(field);
+      if (metaField != null && !managedEntity.isFetched(metaField)) {
+        managedEntity.fetchField(metaField);
+      }
+    }
+  }
 
   // Getters & Setters ------------------------------------------------------------------------------ Getters & Setters
 

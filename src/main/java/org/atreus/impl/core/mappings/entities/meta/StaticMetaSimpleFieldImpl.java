@@ -23,7 +23,7 @@
  */
 package org.atreus.impl.core.mappings.entities.meta;
 
-import org.atreus.core.ext.AtreusManagedEntity;
+import org.atreus.impl.core.entities.EntityAccessor;
 
 import java.lang.reflect.Field;
 
@@ -76,9 +76,8 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   @Override
   public Object getValue(Object entity) {
-    // First check if the entity is a managed entity and if so get the underlining object entity
-    if (entity instanceof AtreusManagedEntity) {
-      return ((AtreusManagedEntity) entity).getFieldValue(this);
+    if (entity instanceof EntityAccessor) {
+      return ((EntityAccessor) entity).getFieldValue(javaField);
     }
     try {
       // Otherwise extract the value using java reflection directly
@@ -91,9 +90,8 @@ public class StaticMetaSimpleFieldImpl extends BaseMetaSimpleFieldImpl {
 
   @Override
   public void setValue(Object entity, Object value) {
-    // First check if the entity is a managed entity and if so get the underlining object entity
-    if (entity instanceof AtreusManagedEntity) {
-      ((AtreusManagedEntity) entity).setFieldValue(this, value);
+    if (entity instanceof EntityAccessor) {
+      ((EntityAccessor) entity).setFieldValue(javaField, value);
       return;
     }
     try {

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.proxies;
+package org.atreus.impl.core.proxies.collections;
 
 import javassist.util.proxy.MethodHandler;
 import org.atreus.impl.core.entities.ManagedCollection;

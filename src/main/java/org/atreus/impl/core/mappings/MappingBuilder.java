@@ -166,7 +166,7 @@ public class MappingBuilder {
     }
 
     // Build Proxy Class
-    environment.getProxyManager().defineEntityProxy(entityType);
+    environment.getEntityProxyManager().defineEntityProxy(entityType);
 
     LOG.debug("Registered Entity name={} {}", metaEntity.getName(), metaEntity.getEntityType());
     environment.getMetaManager().addMetaEntity(metaEntity);

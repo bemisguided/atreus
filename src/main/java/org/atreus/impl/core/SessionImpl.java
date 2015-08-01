@@ -123,14 +123,9 @@ public class SessionImpl implements AtreusSessionExt {
   public AtreusManagedEntity entityInstance(AtreusMetaEntity metaEntity, Serializable primaryKey) {
     assertSessionNotClosed();
 
-    try {
-      Object entity = metaEntity.getEntityType().newInstance();
-      metaEntity.getPrimaryKeyField().setValue(entity, primaryKey);
-      return manageEntity(entity);
-    }
-    catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    Object entity = environment.getEntityProxyManager().createEntity(this, metaEntity);
+    metaEntity.getPrimaryKeyField().setValue(entity, primaryKey);
+    return manageEntity(entity);
   }
 
   @Override
@@ -269,7 +264,7 @@ public class SessionImpl implements AtreusSessionExt {
 
     // A primary key has not been bindValue so create a managed entity and return unsaved to the session
     if (primaryKey == null) {
-      return getEntityManager().manageEntity(this, entity);
+      return getEntityManager().wrapEntity(this, entity);
     }
 
     // Look up with in the cache
@@ -279,7 +274,7 @@ public class SessionImpl implements AtreusSessionExt {
     }
 
     // Create a new managed entity and save to the session
-    managedEntity = getEntityManager().manageEntity(this, entity);
+    managedEntity = getEntityManager().wrapEntity(this, entity);
     cacheEntity(managedEntity);
     return managedEntity;
   }

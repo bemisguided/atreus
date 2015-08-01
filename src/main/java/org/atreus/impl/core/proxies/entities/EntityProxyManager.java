@@ -21,30 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.atreus.impl.core.proxies;
+package org.atreus.impl.core.proxies.entities;
 
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import org.atreus.core.ext.AtreusManagedEntity;
 import org.atreus.core.ext.AtreusSessionExt;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
+import org.atreus.impl.core.entities.EntityAccessor;
 import org.atreus.impl.core.entities.ManagedCollection;
 import org.atreus.impl.core.entities.ManagedEntityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * Proxy Manager.
+ * Entity Proxy Manager.
  *
  * @author Martin Crawford
  */
-public class ProxyManager {
+public class EntityProxyManager {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(ProxyManager.class);
+  private static final transient Logger LOG = LoggerFactory.getLogger(EntityProxyManager.class);
+
+  private static final MethodFilter FINALIZE_FILTER = new MethodFilter() {
+    public boolean isHandled(Method m) {
+      if (m.getParameterTypes().length == 0 && m.getName().equals("finalize")) {
+        return false;
+      }
+      return true;
+    }
+  };
 
   // Instance Variables ---------------------------------------------------------------------------- Instance Variables
 
@@ -59,41 +72,13 @@ public class ProxyManager {
   public void defineEntityProxy(Class<?> entityType) {
     ProxyFactory proxyFactory = new ProxyFactory();
     proxyFactory.setSuperclass(entityType);
-    proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class});
+    proxyFactory.setInterfaces(new Class[]{AtreusManagedEntity.class, EntityAccessor.class});
+    proxyFactory.setFilter(FINALIZE_FILTER);
     Class<AtreusManagedEntity> proxyClass = proxyFactory.createClass();
     entityProxyClasses.put(entityType, proxyClass);
   }
 
-  @SuppressWarnings("unchecked")
-  public Class<ManagedCollection> defineCollectionProxy(Class<? extends Collection> collectionType) {
-    Class<? extends Collection> implType = resolveCollectionClass(collectionType);
-    ProxyFactory proxyFactory = new ProxyFactory();
-    proxyFactory.setSuperclass(implType);
-    proxyFactory.setInterfaces(new Class[]{ManagedCollection.class});
-    Class<ManagedCollection> proxyClass = proxyFactory.createClass();
-    collectionProxyClasses.put(collectionType, proxyClass);
-    return proxyClass;
-  }
-
-  public ManagedCollection createManagedCollection(Class<? extends Collection> collectionType) {
-    Class<ManagedCollection> proxyClass = collectionProxyClasses.get(collectionType);
-    if (proxyClass == null) {
-      proxyClass = defineCollectionProxy(collectionType);
-    }
-    try {
-      ManagedCollection managedCollection = proxyClass.newInstance();
-      Class<? extends  Collection> collectionClass = resolveCollectionClass(collectionType);
-      Collection collection = collectionClass.newInstance();
-      CollectionProxyHandler proxyHandler = new CollectionProxyHandler(collection);
-      ((Proxy) managedCollection).setHandler(proxyHandler);
-      return managedCollection;
-    }
-    catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Proxy class could not be created for " + collectionType);
-    }
-  }
-
-  public AtreusManagedEntity createManagedEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
+  public AtreusManagedEntity wrapEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity, Object entity) {
     Class<AtreusManagedEntity> proxyClass = entityProxyClasses.get(metaEntity.getEntityType());
     if (proxyClass == null) {
       throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
@@ -101,7 +86,24 @@ public class ProxyManager {
     try {
       AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
       ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(session, metaEntity, entity);
-      EntityProxyHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
+      MethodHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, entity);
+      ((Proxy) managedEntityProxy).setHandler(proxyHandler);
+      return managedEntityProxy;
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException("Proxy class could not be created for " + metaEntity.getEntityType());
+    }
+  }
+
+  public AtreusManagedEntity createEntity(AtreusSessionExt session, AtreusMetaEntity metaEntity) {
+    Class<AtreusManagedEntity> proxyClass = entityProxyClasses.get(metaEntity.getEntityType());
+    if (proxyClass == null) {
+      throw new RuntimeException("No proxy class available for " + metaEntity.getEntityType());
+    }
+    try {
+      AtreusManagedEntity managedEntityProxy = proxyClass.newInstance();
+      ManagedEntityImpl managedEntityImpl = new ManagedEntityImpl(session, metaEntity, managedEntityProxy);
+      MethodHandler proxyHandler = new EntityProxyHandler(managedEntityImpl, managedEntityProxy);
       ((Proxy) managedEntityProxy).setHandler(proxyHandler);
       return managedEntityProxy;
     }

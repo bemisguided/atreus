@@ -59,7 +59,7 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     initEnvironment();
 
     SimpleTestEntity simpleTestEntity = new SimpleTestEntity();
-    AtreusManagedEntity managedEntity = getEnvironment().getMetaManager().manageEntity(getSession(), simpleTestEntity);
+    AtreusManagedEntity managedEntity = getEnvironment().getMetaManager().wrapEntity(getSession(), simpleTestEntity);
 
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     AtreusMetaField primaryKeyField = metaEntity.getPrimaryKeyField();
@@ -146,7 +146,7 @@ public class ManagedEntityTests extends BaseAtreusCassandraTests {
     Serializable primaryKey = testEntity.getId();
 
     testEntity = new SimpleTestEntity();
-    AtreusManagedEntity managedEntity = getEnvironment().getMetaManager().manageEntity(getSession(), testEntity);
+    AtreusManagedEntity managedEntity = getEnvironment().getMetaManager().wrapEntity(getSession(), testEntity);
     testEntity = (SimpleTestEntity) managedEntity;
     AtreusMetaEntity metaEntity = managedEntity.getMetaEntity();
     AtreusMetaField primaryKeyField = metaEntity.getPrimaryKeyField();

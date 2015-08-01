@@ -30,7 +30,8 @@ import org.atreus.core.AtreusClusterConnectivityException;
 import org.atreus.core.AtreusConfiguration;
 import org.atreus.core.ext.plugins.AtreusPlugin;
 import org.atreus.impl.core.mappings.MappingBuilder;
-import org.atreus.impl.core.proxies.ProxyManager;
+import org.atreus.impl.core.proxies.collections.CollectionProxyManager;
+import org.atreus.impl.core.proxies.entities.EntityProxyManager;
 import org.atreus.impl.core.queries.QueryManager;
 import org.atreus.impl.types.TypeManager;
 import org.slf4j.Logger;
@@ -59,7 +60,8 @@ public class Environment {
   private final MetaManagerImpl metaManager;
   private final MappingBuilder mappingBuilder;
   private final QueryManager queryManager;
-  private final ProxyManager proxyManager;
+  private final EntityProxyManager entityProxyManager;
+  private final CollectionProxyManager collectionProxyManager;
   private final TypeManager typeManager;
   private final List<AtreusPlugin> plugins = new ArrayList<>();
 
@@ -71,7 +73,8 @@ public class Environment {
     this.queryManager = new QueryManager(this);
     this.typeManager = new TypeManager(this);
     this.mappingBuilder = new MappingBuilder(this);
-    this.proxyManager = new ProxyManager();
+    this.entityProxyManager = new EntityProxyManager();
+    this.collectionProxyManager = new CollectionProxyManager();
   }
 
   // Public Methods ------------------------------------------------------------------------------------ Public Methods
@@ -168,8 +171,12 @@ public class Environment {
     return queryManager;
   }
 
-  public ProxyManager getProxyManager() {
-    return proxyManager;
+  public EntityProxyManager getEntityProxyManager() {
+    return entityProxyManager;
+  }
+
+  public CollectionProxyManager getCollectionProxyManager() {
+    return collectionProxyManager;
   }
 
   public TypeManager getTypeManager() {

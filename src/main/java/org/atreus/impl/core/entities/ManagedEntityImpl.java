@@ -29,13 +29,13 @@ import org.atreus.core.ext.meta.AtreusMetaAssociationField;
 import org.atreus.core.ext.meta.AtreusMetaEntity;
 import org.atreus.core.ext.meta.AtreusMetaField;
 import org.atreus.core.ext.meta.AtreusMetaSimpleField;
-import org.atreus.impl.core.mappings.entities.meta.DynamicMetaSimpleFieldImpl;
 import org.atreus.impl.util.MetaFieldIteratorUtils;
 import org.atreus.impl.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -43,7 +43,7 @@ import java.util.*;
  *
  * @author Martin Crawford
  */
-public class ManagedEntityImpl implements AtreusManagedEntity {
+public class ManagedEntityImpl implements AtreusManagedEntity, EntityAccessor {
 
   // Constants ---------------------------------------------------------------------------------------------- Constants
 
@@ -96,10 +96,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
 
   @Override
   public Object getFieldValue(AtreusMetaField metaField) {
-    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
-      return metaField.getValue(this);
-    }
-    return metaField.getValue(entity);
+    return metaField.getValue(this);
   }
 
   @Override
@@ -108,11 +105,7 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
     if (fieldMemento != null) {
       fieldMemento.snapshot(value);
     }
-    if (metaField instanceof DynamicMetaSimpleFieldImpl) {
-      metaField.setValue(this, value);
-      return;
-    }
-    metaField.setValue(entity, value);
+    metaField.setValue(this, value);
   }
 
   @Override
@@ -132,6 +125,28 @@ public class ManagedEntityImpl implements AtreusManagedEntity {
       results.add((AtreusMetaSimpleField) metaField);
     }
     return results;
+  }
+
+  @Override
+  public Object getFieldValue(Field javaField) {
+    try {
+      // Otherwise extract the value using java reflection directly
+      return javaField.get(entity);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void setFieldValue(Field javaField, Object value) {
+    try {
+      // Otherwise bindValue the value using java reflection directly
+      javaField.set(entity, value);
+    }
+    catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   // Protected Methods ------------------------------------------------------------------------------ Protected Methods

@@ -117,9 +117,9 @@ public class MetaManagerImpl implements AtreusMetaManager {
   }
 
   @SuppressWarnings("unchecked")
-  public AtreusManagedEntity manageEntity(AtreusSessionExt session, Object entity) {
+  public AtreusManagedEntity wrapEntity(AtreusSessionExt session, Object entity) {
     AtreusMetaEntity metaEntity = getEntity(entity);
-    AtreusManagedEntity managedEntity = environment.getProxyManager().createManagedEntity(session, metaEntity, entity);
+    AtreusManagedEntity managedEntity = environment.getEntityProxyManager().wrapEntity(session, metaEntity, entity);
     for(AtreusMetaField metaField : metaEntity.getFields()){
       if (!(metaField instanceof AtreusMetaAssociationField)) {
         continue;
@@ -127,12 +127,12 @@ public class MetaManagerImpl implements AtreusMetaManager {
       if (!Collection.class.isAssignableFrom(metaField.getType())) {
         continue;
       }
-      ManagedCollection managedCollection = environment.getProxyManager().createManagedCollection((Class<? extends Collection>) metaField.getType());
+      ManagedCollection managedCollection = environment.getCollectionProxyManager().createCollection((Class<? extends Collection>) metaField.getType());
       Collection collection = (Collection) managedEntity.getFieldValue(metaField);
       if (collection != null) {
         ((Collection) managedCollection).addAll(collection);
       }
-      metaField.setValue(entity, managedCollection);
+      metaField.setValue(managedEntity, managedCollection);
     }
     return managedEntity;
   }
